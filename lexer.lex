@@ -1,30 +1,7 @@
 %{
  #include "scope.h"
+ #include "utils.h"
  int yylval;
- #define ID 1
- #define NUMBER 2
- #define LT 3
- #define LE 4
- #define EQ 5
- #define GT 6
- #define GE 7
- #define NE 8
- #define IF 9
- #define ELSE 10
- #define RELOP 11
- #define PLUS 12
- #define MINUS 13
- #define TIMES 14
- #define DIV 15
- #define MOD 16
- #define ARTHOP 17
- #define ASSIGN 18
- #define OPEN_BRACE 19
- #define CLOSE_BRACE 20
- #define OPEN_CURLY 21
- #define CLOSE_CURLY 22
- #define OPEN_BIG_BRACE 23 
- #define CLOSE_BIG_BRACE 24
 
  // when the program runs we at least need a global scope 
  Scope* first = new Scope;
@@ -69,104 +46,104 @@ number {digit}+(\.{digit}+)?(E[+-]?{digit}+)
 
 {digit}+ {
   yylval = installNumber(currentScope, YYText());
-  return (NUMBER);
+  return (Token::NUMBER);
 }
 
 {identifier} {
   yylval = installID(currentScope, YYText());
-  return (ID);
+  return (Token::ID);
 }
 "+" {
-  yylval = PLUS;
-  return (ARTHOP);
+  yylval = Token::PLUS;
+  return (Token::ARTHOP);
 }
 
 "-" {
-  yylval = MINUS;
-  return (ARTHOP);
+  yylval = Token::MINUS;
+  return (Token::ARTHOP);
 }
 
 "*" {
-  yylval = TIMES;
-  return (ARTHOP);
+  yylval = Token::TIMES;
+  return (Token::ARTHOP);
 }
 
 "/" {
- yylval = DIV;
- return (ARTHOP);
+ yylval = Token::DIV;
+ return (Token::ARTHOP);
 }
 
 "%" {
-  yylval = MOD;
-  return (ARTHOP);
+  yylval = Token::MOD;
+  return (Token::ARTHOP);
 }
 
 "(" {
-   yylval = OPEN_BRACE;
-   return (OPEN_BRACE);
+   yylval = Token::LBRACE;
+   return (Token::LBRACE);
 }
 
 ")" {
-   yylval = CLOSE_BRACE;
-   return (CLOSE_BRACE);
+   yylval = Token::RBRACE;
+   return (Token::RBRACE);
 }
 "{" {
-   yylval = OPEN_CURLY;
+   yylval = Token::LCURLY;
    currentScope = createNewScope(currentScope);
-   return (OPEN_CURLY);
+   return (Token::LCURLY);
 }
 
 "}" {
-   yylval = CLOSE_CURLY;
+   yylval = Token::RCURLY;
    auto temp_scope = currentScope->prev;
    deleteScope(currentScope);
    currentScope = temp_scope;
-   return (CLOSE_CURLY);
+   return (Token::RCURLY);
 }
 
 "[" {
-   yylval = OPEN_BIG_BRACE;
-   return (OPEN_BIG_BRACE);
+   yylval = Token::LBIG;
+   return (Token::LBIG);
 }
 
 "]" {
-   yylval = CLOSE_BIG_BRACE;
-   return (CLOSE_BIG_BRACE);
+   yylval = Token::RBIG;
+   return (Token::RBIG);
 }
 
 "<" {
-   yylval = LT;
-   return (RELOP);
+   yylval = Token::LT;
+   return (Token::RELOP);
 }
 
 "<=" {
-   yylval = LE;
-   return (RELOP);
+   yylval = Token::LE;
+   return (Token::RELOP);
 }
 
 ">" {
-  yylval = GT;
-  return (RELOP); 
+  yylval = Token::GT;
+  return (Token::RELOP); 
 }
 
 ">=" {
-  yylval = GE;
-  return (RELOP);
+  yylval = Token::GE;
+  return (Token::RELOP);
 }
 
 "=" {
-  yylval = ASSIGN;
-  return (ASSIGN);
+  yylval = Token::ASSIGN;
+  return (Token::ASSIGN);
 }
 
 "==" {
-  yylval = EQ;
-  return (RELOP);
+  yylval = Token::EQ;
+  return (Token::RELOP);
 }
 
 "!=" {
-  yylval = NE;
-  return (RELOP);
+  yylval = Token::NE;
+  return (Token::RELOP);
 }
 %%
 
