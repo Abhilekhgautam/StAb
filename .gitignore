@@ -1,0 +1,6 @@
+# ignore obj file
+*.o
+# ignore executable
+prog
+# ignore parser output
+*.output
