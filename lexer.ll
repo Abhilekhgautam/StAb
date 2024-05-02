@@ -46,7 +46,7 @@ blank [ \t\r]
 
 "match" return Token::token_kind_type::MATCH;
 
-"int" return Token::token_kind_type::INT;
+"int" return Token::token_kind_type::DATA_TYPE;
 
 "in" return Token::token_kind_type::IN;
 
@@ -58,10 +58,13 @@ blank [ \t\r]
 
 "xor" return Token::token_kind_type::XOR;
 
+"break" return Token::token_kind_type::CONTROL_FLOW;
+
+"continue" return Token::token_kind_type::CONTROL_FLOW;
+
 {id} return Token::token_kind_type::ID;
 
 "+" return Token::token_kind_type::ARTHOP;
-
 
 "-" return Token::token_kind_type::ARTHOP;
 
