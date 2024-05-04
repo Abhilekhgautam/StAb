@@ -21,7 +21,6 @@ id    [a-zA-Z][a-zA-Z_0-9]*
 digit   [0-9]+
 blank [ \t\r]
 
-
 %{
   using Token = BisonParser::token;
 %}
@@ -29,6 +28,10 @@ blank [ \t\r]
 %%
 {blank}+ {/* do nothing; ignore */}
 {digit}+ return Token::token_kind_type::NUMBER;
+
+"\n" {++currentLine;}
+
+',' return Token::token_kind_type::COMMA;
 
 "fn" return Token::token_kind_type::FN;
 
@@ -60,7 +63,7 @@ blank [ \t\r]
 
 "break" return Token::token_kind_type::CONTROL_FLOW;
 
-"continue" return Token::token_kind_type::CONTROL_FLOW;
+"skip" return Token::token_kind_type::CONTROL_FLOW;
 
 {id} return Token::token_kind_type::ID;
 
@@ -70,7 +73,6 @@ blank [ \t\r]
 
 "*" return Token::token_kind_type::ARTHOP;
 
-
 "/" return Token::token_kind_type::ARTHOP;
 
 "%"  return Token::token_kind_type::ARTHOP;
@@ -78,6 +80,7 @@ blank [ \t\r]
 "("  return Token::token_kind_type::LBRACE;
 
 ")"  return Token::token_kind_type::RBRACE;
+
 "{" return Token::token_kind_type::LCURLY;
 
 "}" return Token::token_kind_type::RCURLY;
@@ -91,7 +94,6 @@ blank [ \t\r]
 "<=" return Token::token_kind_type::RELOP;
 
 ">" return Token::token_kind_type::RELOP;
-
 
 ">=" return Token::token_kind_type::RELOP;
 
