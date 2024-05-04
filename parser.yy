@@ -40,12 +40,12 @@
 %token LBRACE RBRACE LCURLY RCURLY LBIG RBIG ASSIGN
 %token GT LT GE LE EQ NE RELOP ARTHOP KEYWORD
 %token IF ELSE ELSE_IF LOOP FOR WHILE AND OR XOR MATCH
-%token DATA_TYPE IMPORT IN CONTROL_FLOW 
+%token DATA_TYPE IMPORT IN CONTROL_FLOW COMMA 
 
-%start functionDefinition
+%start stmt
 
 %%
- functionDefinition: FN ID LBRACE RBRACE LCURLY stmt RCURLY {
+ functionDefinition: FN ID LBRACE paramList RBRACE LCURLY stmt RCURLY {
                       std::cout << "a function definition was parsed\n"; 
                      } 
 
@@ -58,28 +58,72 @@
  }
 
  loop: LOOP LCURLY stmt RCURLY {
-   std::cout << "a loop statement was found\n";
+   std::cout << "A loop statement was found\n";
  }
 
  for : FOR ID IN ID LCURLY stmt RCURLY{
-    std::cout << "a for loop was detected\n"; 
+    std::cout << "A for loop was detected\n"; 
  }
 
  stmt: %empty
+      | functionDefinition
       | loop stmt
       | for stmt
+      | ifStmt
       | varDeclaration stmt
       | varInitialization stmt
-      | assignExpr stmt;
+      | assignExpr stmt
+      | fnCall stmt;
 
+ expr: ID
+     | arthExpr
+     | relExpr
+     | LBRACE expr RBRACE
+ 
  arthExpr: ID ARTHOP ID
          | ID ARTHOP NUMBER
 	 | NUMBER ARTHOP ID 
 	 | NUMBER ARTHOP NUMBER
 	 ;
+ relExpr: ID RELOP ID
+        | ID RELOP NUMBER
+	| NUMBER RELOP NUMBER 
+	| NUMBER RELOP ID
+	;
+
  assignExpr: ID ASSIGN arthExpr
 	   | ID ASSIGN NUMBER
+	   | ID ASSIGN fnCall
 	   ;
+ 
+ elseStmt: %empty
+         | ELSE LCURLY stmt RCURLY;
+
+ elseifStmt: %empty
+           | ELSE_IF expr LCURLY stmt RCURLY elseifStmt;
+
+ ifStmt: IF expr LCURLY stmt RCURLY elseifStmt elseStmt {
+           std::cout << "A if stmt was parsed\n";
+	 }
+
+ paramList: %empty 
+          | params 
+	  ;
+ 
+ params: params COMMA parameter
+       | parameter
+       ; 
+
+ parameter: DATA_TYPE ID
+
+ argList: %empty 
+	| ID 
+        | argList COMMA ID; 
+
+ fnCall: ID LBRACE argList RBRACE{
+   std::cout << "A function call was parsed\n";
+ }
+
 %%
 
 namespace STAB {
@@ -88,6 +132,6 @@ namespace STAB {
  current = location(YYRHSLOC(rhs, 1).first, YYRHSLOC(rhs, n).second);
  }
  void BisonParser::error(const location &location, const std::string &message){
-   std::cerr << "Error at lines " << location << ": " << message << std::endl;
+   std::cerr << "Error at lines " << location << ": " << message << '\n';
  }
 }
