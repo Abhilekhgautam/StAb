@@ -46,7 +46,7 @@
 
 %%
  functionDefinition: FN ID LBRACE paramList RBRACE LCURLY stmt RCURLY {
-                      std::cout << "a function definition was parsed\n"; 
+                      std::cout << "A function definition was parsed\n"; 
                      } 
 
  varDeclaration: DATA_TYPE ID {
@@ -66,10 +66,10 @@
  }
 
  stmt: %empty
-      | functionDefinition
+      | functionDefinition stmt
       | loop stmt
       | for stmt
-      | ifStmt
+      | ifStmt stmt
       | varDeclaration stmt
       | varInitialization stmt
       | assignExpr stmt
@@ -117,8 +117,11 @@
  parameter: DATA_TYPE ID
 
  argList: %empty 
-	| ID 
-        | argList COMMA ID; 
+        | args; 
+
+ args: expr
+     | args COMMA expr
+     ;
 
  fnCall: ID LBRACE argList RBRACE{
    std::cout << "A function call was parsed\n";
