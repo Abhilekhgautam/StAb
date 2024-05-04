@@ -31,7 +31,7 @@ blank [ \t\r]
 
 "\n" {++currentLine;}
 
-',' return Token::token_kind_type::COMMA;
+"," return Token::token_kind_type::COMMA;
 
 "fn" return Token::token_kind_type::FN;
 
