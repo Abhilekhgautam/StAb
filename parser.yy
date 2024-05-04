@@ -64,6 +64,10 @@
  for : FOR ID IN ID LCURLY stmt RCURLY{
     std::cout << "A for loop was detected\n"; 
  }
+ 
+ while: WHILE expr LCURLY stmt RCURLY {
+     std::cout << "A while loop was detected\n"
+ }
 
  stmt: %empty
       | functionDefinition stmt
