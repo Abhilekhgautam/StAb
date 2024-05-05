@@ -3,16 +3,22 @@
 
 %code requires {
   #include "location.hpp"
-  #include "lexer.hpp"
+  #include "parser.hpp"
+  #include "AST.h"
+
+  namespace STAB{
+    class Lexer;
+  }
 }
 
 %define api.namespace {STAB}
-%define api.parser.class {BisonParser}
-%define api.value.type {std::string}
+%define api.parser.class {Parser}
+%define api.value.type variant 
+%define api.token.raw
 %define api.location.type {location}
 
 %locations
-%define parse.error detailed 
+%define parse.error custom
 %define parse.trace 
 
 %header
@@ -28,62 +34,71 @@
 };
 
 %code {
+  #include "lexer.hpp"
   namespace STAB {
     template <typename RHS>
     void calcLocation(location& current, const RHS& rhs, const std::size_t n);
   }
   #define YYLLOC_DEFAULT(Cur, Rhs, N) calcLocation(Cur, Rhs, N)
   #define yylex lexer.yylex
+
 }
 
-%token ID NUMBER PLUS MINUS TIMES DIV MOD FN
+%token NUMBER PLUS MINUS TIMES DIV MOD FN
 %token LBRACE RBRACE LCURLY RCURLY LBIG RBIG ASSIGN
 %token GT LT GE LE EQ NE RELOP ARTHOP KEYWORD
 %token IF ELSE ELSE_IF LOOP FOR WHILE AND OR XOR MATCH
-%token DATA_TYPE IMPORT IN CONTROL_FLOW COMMA 
-
+%token IMPORT IN CONTROL_FLOW COMMA FN_ARROW MATCH_ARROW
+%token RETURN BREAK SKIP
+%token<std::string> ID "identifier"
+%token<std::string> DATA_TYPE "type"
 %start stmt
 
 %%
- functionDefinition: FN ID LBRACE paramList RBRACE LCURLY stmt RCURLY {
+ 
+ functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE {
+                    std::cout << "Function Prototype of name: " << $2 << '\n'; 
+                   }
+
+ functionDefinition: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE LCURLY stmt RCURLY{
+                      std::cout << "A function " << $2 << " was parsed with the return type " << $7 << '\n';
+                    }
+                   | FN ID LBRACE paramList RBRACE LCURLY stmt RCURLY  {
                       std::cout << "A function definition was parsed\n"; 
                      } 
 
- varDeclaration: DATA_TYPE ID {
-   std::cout << "A variable " << "was Declared\n"; 
- }
+ varDeclaration: DATA_TYPE ID; 
 
- varInitialization: DATA_TYPE ID ASSIGN NUMBER {
-    std::cout << "A Variable was initialized";
- }
+ varInitialization: DATA_TYPE ID ASSIGN NUMBER;
 
- loop: LOOP LCURLY stmt RCURLY {
-   std::cout << "A loop statement was found\n";
- }
+ loop: LOOP LCURLY stmt RCURLY; 
 
- for : FOR ID IN ID LCURLY stmt RCURLY{
-    std::cout << "A for loop was detected\n"; 
- }
+ for : FOR ID IN ID LCURLY stmt RCURLY
  
- while: WHILE expr LCURLY stmt RCURLY {
-     std::cout << "A while loop was detected\n"
- }
+ while: WHILE expr LCURLY stmt RCURLY 
 
  stmt: %empty
       | functionDefinition stmt
       | loop stmt
       | for stmt
+      | while stmt
       | ifStmt stmt
       | varDeclaration stmt
       | varInitialization stmt
       | assignExpr stmt
+      | breakExpr stmt
+      | skipExpr stmt
+      | returnExpr stmt
+      | functionPrototype stmt
       | fnCall stmt;
 
  expr: ID
      | arthExpr
      | relExpr
      | LBRACE expr RBRACE
- 
+     | NUMBER
+     ;
+
  arthExpr: ID ARTHOP ID
          | ID ARTHOP NUMBER
 	 | NUMBER ARTHOP ID 
@@ -99,6 +114,12 @@
 	   | ID ASSIGN NUMBER
 	   | ID ASSIGN fnCall
 	   ;
+  
+ returnExpr: RETURN expr
+
+ breakExpr: BREAK
+ 
+ skipExpr: SKIP
  
  elseStmt: %empty
          | ELSE LCURLY stmt RCURLY;
@@ -121,14 +142,15 @@
  parameter: DATA_TYPE ID
 
  argList: %empty 
-        | args; 
+        | args 
+        ;
 
- args: expr
-     | args COMMA expr
+ args: args COMMA expr
+     | expr
      ;
 
  fnCall: ID LBRACE argList RBRACE{
-   std::cout << "A function call was parsed\n";
+   std::cout << "A function " << $1 << " was called with argument:";
  }
 
 %%
@@ -138,7 +160,11 @@ namespace STAB {
  inline void calcLocation(location& current, const RHS& rhs, const std::size_t n){
  current = location(YYRHSLOC(rhs, 1).first, YYRHSLOC(rhs, n).second);
  }
- void BisonParser::error(const location &location, const std::string &message){
-   std::cerr << "Error at lines " << location << ": " << message << '\n';
+ void Parser::report_syntax_error(const context& ctx) const {
+
+  std::cerr << ctx.location() << ": Syntax Error Something went wrong"; 
+ }
+ void Parser::error(const location &loc, const std::string &message){
+  std::cerr << "Error at lines " << loc << ": " << message << std::endl;
  }
 }
