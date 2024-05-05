@@ -1,14 +1,11 @@
 %{
   #include "lexer.hpp"
-  #include "parser.hpp"
 
   using namespace STAB;
 
   #undef YY_DECL
-  #define YY_DECL int Lexer::yylex(std::string *const lval, location *const lloc)
-
+  #define YY_DECL int Lexer::yylex(STAB::Parser::value_type* lval, location* const lloc)
   #define YY_USER_INIT yylval = lval; yyloc = lloc;
-
   #define YY_USER_ACTION copyLocation();
 %}
 
@@ -22,16 +19,21 @@ digit   [0-9]+
 blank [ \t\r]
 
 %{
-  using Token = BisonParser::token;
+  using Token = STAB::Parser::token;
+  using location = STAB::location;
 %}
 
 %%
 {blank}+ {/* do nothing; ignore */}
 {digit}+ return Token::token_kind_type::NUMBER;
 
-"\n" {++currentLine;}
+'\n' {++currentLine;}
+
+"->" return Token::token_kind_type::FN_ARROW;
 
 "," return Token::token_kind_type::COMMA;
+
+"=>" return Token::token_kind_type::MATCH_ARROW;
 
 "fn" return Token::token_kind_type::FN;
 
@@ -49,8 +51,10 @@ blank [ \t\r]
 
 "match" return Token::token_kind_type::MATCH;
 
-"int" return Token::token_kind_type::DATA_TYPE;
-
+"int" {
+       yylval->emplace<std::string>(yytext);
+       return Token::token_kind_type::DATA_TYPE;
+      }
 "in" return Token::token_kind_type::IN;
 
 "import" return Token::token_kind_type::IMPORT;
@@ -63,9 +67,12 @@ blank [ \t\r]
 
 "break" return Token::token_kind_type::CONTROL_FLOW;
 
-"skip" return Token::token_kind_type::CONTROL_FLOW;
+"continue" return Token::token_kind_type::CONTROL_FLOW;
 
-{id} return Token::token_kind_type::ID;
+{id} {
+       yylval->emplace<std::string>(yytext);
+       return Token::token_kind_type::ID;
+    }
 
 "+" return Token::token_kind_type::ARTHOP;
 
@@ -102,5 +109,4 @@ blank [ \t\r]
 "==" return Token::token_kind_type::RELOP;
 
 "!=" return  Token::token_kind_type::RELOP;
-
 %%
