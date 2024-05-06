@@ -35,6 +35,7 @@
 
 %code {
   #include "lexer.hpp"
+  #include "scope.h"
   namespace STAB {
     template <typename RHS>
     void calcLocation(location& current, const RHS& rhs, const std::size_t n);
@@ -42,6 +43,10 @@
   #define YYLLOC_DEFAULT(Cur, Rhs, N) calcLocation(Cur, Rhs, N)
   #define yylex lexer.yylex
 
+  // we need at least a scope at the beginning
+  auto globalScope = new Scope();
+  // global scope is the current scope initially
+  auto currentScope = globalScope;
 }
 
 %token NUMBER PLUS MINUS TIMES DIV MOD FN
@@ -50,26 +55,68 @@
 %token IF ELSE ELSE_IF LOOP FOR WHILE AND OR XOR MATCH
 %token IMPORT IN CONTROL_FLOW COMMA FN_ARROW MATCH_ARROW
 %token RETURN BREAK SKIP
+%token SEMI_COLON
 %token<std::string> ID "identifier"
 %token<std::string> DATA_TYPE "type"
 %start stmt
 
+%left PLUS MINUS
+%left TIMES DIV
+%left GT LT GE LE EQ NE
 %%
  
- functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE {
-                    std::cout << "Function Prototype of name: " << $2 << '\n'; 
+ functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON{
+                    if (currentScope != globalScope){
+		      std::cout << "Error: A function can only be withing a global scope\n"; 
+		    } else {
+		      if (currentScope->FnExists($2)){
+		        std::cout << "Error: The function " << $2 << " is already defined\n"; 
+		      } else{
+		       // todo: read args and add into the map.
+		       std::map<std::string, std::string> dummy;
+		       currentScope->installFn($2,$7, dummy);
+                       std::cout << "Function Prototype of name: " << $2 << '\n';
+		      }
+		     }
                    }
 
  functionDefinition: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE LCURLY stmt RCURLY{
                       std::cout << "A function " << $2 << " was parsed with the return type " << $7 << '\n';
                     }
                    | FN ID LBRACE paramList RBRACE LCURLY stmt RCURLY  {
-                      std::cout << "A function definition was parsed\n"; 
+                      std::cout << "A function " << $2 << " was defined\n"; 
                      } 
 
- varDeclaration: DATA_TYPE ID; 
+ varDeclaration: DATA_TYPE ID SEMI_COLON {
+                  if(currentScope->idExists($2)){
+		    std::cerr << "Variable " << $2 << " redeclared here.."; 
+		  } else {
+		    
+		    // variable is the key and type is the value
+		    currentScope->installID($2, $1);
+		    std::cout << "Variable " << $2 << " successfully added to the symbol table"; 
+		  }
+                } 
 
- varInitialization: DATA_TYPE ID ASSIGN NUMBER;
+ varInitialization:DATA_TYPE ID ASSIGN fnCall SEMI_COLON {
+                   if(currentScope->idExists($2)){
+		    std::cerr << "Variable " << $2 << " redeclared here.."; 
+		    } else {
+		      // variable is the key and type is the value
+		      currentScope->installID($2, $1);
+		      std::cout << "Variable " << $2 << " successfully added to the symbol table"; 
+		    }
+		  }
+		  | DATA_TYPE ID ASSIGN expr SEMI_COLON {
+                   if(currentScope->idExists($2)){
+		    std::cerr << "Variable " << $2 << " redeclared here.."; 
+		    } else {
+		      // variable is the key and type is the value
+		      currentScope->installID($2, $1);
+		      std::cout << "Variable " << $2 << " successfully added to the symbol table"; 
+		    }
+
+		  }
 
  loop: LOOP LCURLY stmt RCURLY; 
 
@@ -90,39 +137,43 @@
       | skipExpr stmt
       | returnExpr stmt
       | functionPrototype stmt
-      | fnCall stmt;
+      | fnCall stmt
+      ;
 
- expr: ID
-     | arthExpr
-     | relExpr
-     | LBRACE expr RBRACE
-     | NUMBER
+ expr: expr PLUS term 
+     | expr MINUS term 
+     | term 
+     | expr GT expr 
+     | expr LT expr
+     | expr LE expr
+     | expr GE expr
+     | expr EQ expr 
+     | expr NE expr
      ;
 
- arthExpr: ID ARTHOP ID
-         | ID ARTHOP NUMBER
-	 | NUMBER ARTHOP ID 
-	 | NUMBER ARTHOP NUMBER
-	 ;
- relExpr: ID RELOP ID
-        | ID RELOP NUMBER
-	| NUMBER RELOP NUMBER 
-	| NUMBER RELOP ID
-	;
+term: term TIMES factor
+    | term DIV factor
+    | factor
+    ;
 
- assignExpr: ID ASSIGN arthExpr
-	   | ID ASSIGN NUMBER
-	   | ID ASSIGN fnCall
+factor: LBRACE expr RBRACE
+      | ID
+      | NUMBER
+      ;
+
+ assignExpr: ID ASSIGN expr SEMI_COLON
+	   | ID ASSIGN fnCall SEMI_COLON
 	   ;
   
- returnExpr: RETURN expr
+ returnExpr: RETURN expr SEMI_COLON
 
- breakExpr: BREAK
+ breakExpr: BREAK SEMI_COLON
  
- skipExpr: SKIP
+ skipExpr: SKIP SEMI_COLON
  
  elseStmt: %empty
-         | ELSE LCURLY stmt RCURLY;
+         | ELSE LCURLY stmt RCURLY
+	 ;
 
  elseifStmt: %empty
            | ELSE_IF expr LCURLY stmt RCURLY elseifStmt;
@@ -139,7 +190,7 @@
        | parameter
        ; 
 
- parameter: DATA_TYPE ID
+ parameter: DATA_TYPE ID;
 
  argList: %empty 
         | args 
@@ -150,7 +201,12 @@
      ;
 
  fnCall: ID LBRACE argList RBRACE{
-   std::cout << "A function " << $1 << " was called with argument:";
+   if (!globalScope->FnExists($1)){
+    std::cout << "Error: No such function " << $1 << " defined\n";
+   }
+   else {
+    std::cout << "A function " << $1 << " was called with argument:\n";
+   }
  }
 
 %%
