@@ -2,9 +2,8 @@
 %language "c++"
 
 %code requires {
-  #include "location.hpp"
-  #include "parser.hpp"
-  #include "AST.h"
+  #include "../includes/location.hpp"
+  #include "../parser/parser.hpp"
 
   namespace STAB{
     class Lexer;
@@ -34,8 +33,8 @@
 };
 
 %code {
-  #include "lexer.hpp"
-  #include "scope.h"
+  #include "../lexer/lexer.hpp"
+  #include "../includes/scope.h"
   namespace STAB {
     template <typename RHS>
     void calcLocation(location& current, const RHS& rhs, const std::size_t n);

@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 #include <map>
-#include "AST.h"
 
 struct FnTable{
   std::string fnName;

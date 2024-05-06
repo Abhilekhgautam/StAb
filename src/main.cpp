@@ -1,7 +1,7 @@
 #include <cstring>
 #include <iostream>
-#include "lexer.hpp"
-#include "parser.hpp"
+#include "./lexer/lexer.hpp"
+#include "./parser/parser.hpp"
 
 
 int main(int argc, char* argv[]){
