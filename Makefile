@@ -3,20 +3,20 @@
 prog: main.o parser.o lexer.o
 > g++ $^ -o $@
 
-main.o: main.cpp lexer.hpp parser.hpp location.hpp
+main.o: src/main.cpp src/lexer/lexer.hpp src/parser/parser.hpp src/includes/location.hpp
 > g++ -c $< -o $@
 
-lexer.o: lexer.cpp lexer.hpp parser.hpp location.hpp
+lexer.o: src/lexer/lexer.cpp src/lexer/lexer.hpp src/parser/parser.hpp src/includes/location.hpp
 > g++ -c $< -o $@
 
-parser.o: parser.cpp lexer.hpp location.hpp
+parser.o: src/parser/parser.cpp src/lexer/lexer.hpp src/includes/location.hpp
 > g++ -c $< -o $@
 
-lexer.cpp: lexer.ll
-> flex -o lexer.cpp $<
+src/lexer/lexer.cpp: src/lexer/lexer.ll
+> flex -o src/lexer/lexer.cpp $<
 
-parser.hpp parser.cpp parser.output: parser.yy
-> bison -o parser.cpp $<
+src/parser/parser.hpp src/parser/parser.cpp src/parser/parser.output: src/parser/parser.yy
+> bison -o src/parser/parser.cpp $<
 
 .PHONY: clean
 clean:
