@@ -27,7 +27,9 @@ blank [ \t\r]
 {blank}+ {/* do nothing; ignore */}
 {digit}+ return Token::token_kind_type::NUMBER;
 
-'\n' {++currentLine;}
+"\n" {++currentLine;}
+
+";" return Token::token_kind_type::SEMI_COLON;
 
 "->" return Token::token_kind_type::FN_ARROW;
 
@@ -69,20 +71,22 @@ blank [ \t\r]
 
 "continue" return Token::token_kind_type::CONTROL_FLOW;
 
+"return" return Token::token_kind_type::RETURN;
+
 {id} {
        yylval->emplace<std::string>(yytext);
        return Token::token_kind_type::ID;
     }
 
-"+" return Token::token_kind_type::ARTHOP;
+"+" return Token::token_kind_type::PLUS;
 
-"-" return Token::token_kind_type::ARTHOP;
+"-" return Token::token_kind_type::MINUS;
 
-"*" return Token::token_kind_type::ARTHOP;
+"*" return Token::token_kind_type::TIMES;
 
-"/" return Token::token_kind_type::ARTHOP;
+"/" return Token::token_kind_type::DIV;
 
-"%"  return Token::token_kind_type::ARTHOP;
+"%"  return Token::token_kind_type::MOD;
 
 "("  return Token::token_kind_type::LBRACE;
 
@@ -96,17 +100,17 @@ blank [ \t\r]
 
 "]" return Token::token_kind_type::RBIG;
 
-"<" return Token::token_kind_type::RELOP;
+"<" return Token::token_kind_type::LT;
 
-"<=" return Token::token_kind_type::RELOP;
+"<=" return Token::token_kind_type::LE;
 
-">" return Token::token_kind_type::RELOP;
+">" return Token::token_kind_type::GT;
 
-">=" return Token::token_kind_type::RELOP;
+">=" return Token::token_kind_type::GE;
 
 "=" return Token::token_kind_type::ASSIGN;
 
-"==" return Token::token_kind_type::RELOP;
+"==" return Token::token_kind_type::EQ;
 
-"!=" return  Token::token_kind_type::RELOP;
+"!=" return  Token::token_kind_type::NE;
 %%
