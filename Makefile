@@ -1,5 +1,7 @@
 .RECIPEPREFIX = >
 
+all: prog
+
 prog: main.o parser.o lexer.o
 > g++ $^ -o $@
 
@@ -12,7 +14,7 @@ lexer.o: src/lexer/lexer.cpp src/lexer/lexer.hpp src/parser/parser.hpp src/inclu
 parser.o: src/parser/parser.cpp src/lexer/lexer.hpp src/includes/location.hpp
 > g++ -c $< -o $@
 
-src/lexer/lexer.cpp: src/lexer/lexer.ll
+src/lexer/lexer.cpp: src/lexer/lexer.l
 > flex -o src/lexer/lexer.cpp $<
 
 src/parser/parser.hpp src/parser/parser.cpp src/parser/parser.output: src/parser/parser.yy
