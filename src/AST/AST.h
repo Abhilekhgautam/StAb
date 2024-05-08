@@ -1,9 +1,9 @@
 #ifndef AST_H 
 #define AST_H
 
-#include <llvm-18/llvm/IR/DerivedTypes.h>
-#include <llvm-18/llvm/IR/Type.h>
-#include <llvm-18/llvm/IR/Value.h>
+#include <llvm/IR/DerivedTypes.h>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Value.h>
 
 #include <memory>
 #include <string>
@@ -12,7 +12,6 @@
 #include "../includes/STAB.h"
 #include "../includes/location.hpp"
 
-using namespace llvm;
 
 namespace STAB {
     class codeGenContext;
@@ -34,7 +33,7 @@ namespace STAB {
     public:
         virtual ~Node() = default;
 
-        virtual Value* codegen(codeGenContext& ctx) = 0;
+        virtual llvm::Value* codegen(codeGenContext& ctx) = 0;
 
         virtual NodeType getNodeType() = 0;
 
@@ -71,7 +70,7 @@ namespace STAB {
         std::string getValString() override {return std::to_string(value);}
         void Accept(Visitor& v) override {v.VisitInteger(this);}
 
-        Value* codegen(codeGenContext& ctx) override;
+        llvm::Value* codegen(codeGenContext& ctx) override;
     private:
         int value;
     };
@@ -84,7 +83,7 @@ namespace STAB {
 
         virtual ~Identifier() = default;
 
-        Value* codegen(codeGenContext& ctx) override;
+        llvm::Value* codegen(codeGenContext& ctx) override;
         NodeType getNodeType() override { return NodeType::Identifier; }
         std::string getValString() override{ return "identifier reference: " + name;}
         void Accept(Visitor &v) override { v.VisitIdentifier(this); }
@@ -102,7 +101,7 @@ namespace STAB {
                 : expression(expression) {}
         virtual ~ExpressionStatement() { delete expression; }
 
-        Value* codegen(codeGenContext &ctx) override;
+        llvm::Value* codegen(codeGenContext &ctx) override;
         NodeType getNodeType() override { return NodeType::Expr; }
         Expression *getExpression() { return expression; }
         std::string getValString() override { return "expression statement "; }
