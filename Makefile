@@ -5,7 +5,7 @@ all: prog
 prog: main.o parser.o lexer.o
 > g++ $^ -o $@
 
-main.o: src/main.cpp src/lexer/lexer.hpp src/parser/parser.hpp src/includes/location.hpp
+main.o: src/main.cpp src/lexer/lexer.hpp src/parser/parser.hpp src/includes/location.hpp src/CodeGeneration/codeGenContext.h src/CodeGeneration/codeGenContext.cpp
 > g++ -c $< -o $@
 
 lexer.o: src/lexer/lexer.cpp src/lexer/lexer.hpp src/parser/parser.hpp src/includes/location.hpp
