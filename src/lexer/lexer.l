@@ -78,7 +78,10 @@ blank [ \t\r]
        return Token::token_kind_type::ID;
     }
 
-"+" return Token::token_kind_type::PLUS;
+"+" {
+    yylval->emplace<std::string>(yytext);
+    return Token::token_kind_type::PLUS;
+}
 
 "-" return Token::token_kind_type::MINUS;
 
