@@ -4,7 +4,9 @@
 %code requires {
   #include "../includes/location.hpp"
   #include "../parser/parser.hpp"
-
+  #ifndef STAB_AST_H
+  #include "../simple-ast/ast.h"
+  #endif
   namespace STAB{
     class Lexer;
   }
@@ -34,7 +36,6 @@
 
 %code {
   #include "../lexer/lexer.hpp"
-  #include "../includes/scope.h"
   namespace STAB {
     template <typename RHS>
     void calcLocation(location& current, const RHS& rhs, const std::size_t n);
@@ -42,21 +43,25 @@
   #define YYLLOC_DEFAULT(Cur, Rhs, N) calcLocation(Cur, Rhs, N)
   #define yylex lexer.yylex
 
-  // we need at least a scope at the beginning
-  auto globalScope = new Scope();
-  // global scope is the current scope initially
-  auto currentScope = globalScope;
 }
 
-%token NUMBER PLUS MINUS TIMES DIV MOD FN
+%token NUMBER TIMES DIV MOD FN
 %token LBRACE RBRACE LCURLY RCURLY LBIG RBIG ASSIGN
-%token GT LT GE LE EQ NE RELOP ARTHOP KEYWORD
 %token IF ELSE ELSE_IF LOOP FOR WHILE AND OR XOR MATCH
 %token IMPORT IN CONTROL_FLOW COMMA FN_ARROW MATCH_ARROW
 %token RETURN BREAK SKIP
 %token SEMI_COLON
+%token<std::string> PLUS MINUS GT LT GE LE NE EQ "op"
 %token<std::string> ID "identifier"
 %token<std::string> DATA_TYPE "type"
+
+%type<STAB::PrototypeAST*> functionPrototype
+%type<STAB::FunctionAST*> functionDefinition
+
+%type<STAB::ExprAST*> expr
+%type<STAB::ExprAST*> term
+%type<STAB::ExprAST*> stmt
+
 %start stmt
 
 %left PLUS MINUS
@@ -64,56 +69,42 @@
 %left GT LT GE LE EQ NE
 %%
  
- functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON{
-                    if (currentScope != globalScope){
-		      std::cout << "Error: A function can only be withing a global scope\n"; 
-		    } else {
-		      if (currentScope->FnExists($2)){
-		        std::cout << "Error: The function " << $2 << " is already defined\n"; 
-		      } else{
-		       // todo: read args and add into the map.
-		       std::map<std::string, std::string> dummy;
-		       currentScope->installFn($2,$7, dummy);
-                       std::cout << "Function Prototype of name: " << $2 << '\n';
-		      }
-		     }
+ functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
+                       std::vector<std::string> Args;
+                       auto prototype = new STAB::PrototypeAST($7, $2, Args);
+                       llvm::Function* FnIR = prototype->codegen();
+                       FnIR->print(llvm::errs());
+                   }
+                   | FN ID LBRACE paramList RBRACE SEMI_COLON{
+                      std::vector<std::string> Args;
+                      auto prototype = new STAB::PrototypeAST("void", $2, Args);
+                      llvm::Function* FnIR = prototype->codegen();
+                      FnIR->print(llvm::errs());
                    }
 
  functionDefinition: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE LCURLY stmt RCURLY{
-                      std::cout << "A function " << $2 << " was parsed with the return type " << $7 << '\n';
+                       std::vector<std::string> Args;
+                       auto proto = new STAB::PrototypeAST($7, $2, Args);
+
+                       $$ = new FunctionAST(proto, $9);
                     }
-                   | FN ID LBRACE paramList RBRACE LCURLY stmt RCURLY  {
-                      std::cout << "A function " << $2 << " was defined\n"; 
+                    | FN ID LBRACE paramList RBRACE LCURLY stmt RCURLY  {
+                       std::vector<std::string> Args;
+                       auto proto = new STAB::PrototypeAST("void", $2, Args);
+
+                       $$ = new FunctionAST(proto, $7);
                      } 
 
  varDeclaration: DATA_TYPE ID SEMI_COLON {
-                  if(currentScope->idExists($2)){
-		    std::cerr << "Variable " << $2 << " redeclared here.."; 
-		  } else {
-		    
-		    // variable is the key and type is the value
-		    currentScope->installID($2, $1);
-		    std::cout << "Variable " << $2 << " successfully added to the symbol table"; 
-		  }
+                  auto varDecl = new STAB::VariableDeclExprAST($1, $2);
+		  auto varDeclIR = varDecl->codegen();
+		  varDeclIR->print(llvm::errs());
                 } 
 
  varInitialization:DATA_TYPE ID ASSIGN fnCall SEMI_COLON {
-                   if(currentScope->idExists($2)){
-		    std::cerr << "Variable " << $2 << " redeclared here.."; 
-		    } else {
-		      // variable is the key and type is the value
-		      currentScope->installID($2, $1);
-		      std::cout << "Variable " << $2 << " successfully added to the symbol table"; 
-		    }
+
 		  }
 		  | DATA_TYPE ID ASSIGN expr SEMI_COLON {
-                   if(currentScope->idExists($2)){
-		    std::cerr << "Variable " << $2 << " redeclared here.."; 
-		    } else {
-		      // variable is the key and type is the value
-		      currentScope->installID($2, $1);
-		      std::cout << "Variable " << $2 << " successfully added to the symbol table"; 
-		    }
 
 		  }
 
@@ -124,6 +115,7 @@
  while: WHILE expr LCURLY stmt RCURLY 
 
  stmt: %empty
+      | expr stmt
       | functionDefinition stmt
       | loop stmt
       | for stmt
@@ -139,15 +131,31 @@
       | fnCall stmt
       ;
 
- expr: expr PLUS term 
-     | expr MINUS term 
-     | term 
-     | expr GT expr 
-     | expr LT expr
-     | expr LE expr
-     | expr GE expr
-     | expr EQ expr 
-     | expr NE expr
+ expr: expr PLUS expr {
+        $$ = new BinaryExprAST($2, $1, $3);
+      }
+     | expr MINUS expr {
+        $$ = new BinaryExprAST($2, $1, $3);
+     }
+     | term
+     | expr GT expr {
+       $$ = new BinaryExprAST($2, $1, $3);
+     }
+     | expr LT expr {
+       $$ = new BinaryExprAST($2, $1, $3);
+     }
+     | expr LE expr {
+     $$ = new BinaryExprAST($2, $1, $3);
+     }
+     | expr GE expr{
+     $$ = new BinaryExprAST($2, $1, $3);
+     }
+     | expr EQ expr{
+     $$ = new BinaryExprAST($2, $1, $3);
+     }
+     | expr NE expr{
+     $$ = new BinaryExprAST($2, $1, $3);
+     }
      ;
 
 term: term TIMES factor
@@ -160,7 +168,9 @@ factor: LBRACE expr RBRACE
       | NUMBER
       ;
 
- assignExpr: ID ASSIGN expr SEMI_COLON
+ assignExpr: ID ASSIGN expr SEMI_COLON{
+               
+           }
 	   | ID ASSIGN fnCall SEMI_COLON
 	   ;
   
@@ -200,12 +210,9 @@ factor: LBRACE expr RBRACE
      ;
 
  fnCall: ID LBRACE argList RBRACE{
-   if (!globalScope->FnExists($1)){
-    std::cout << "Error: No such function " << $1 << " defined\n";
-   }
-   else {
-    std::cout << "A function " << $1 << " was called with argument:\n";
-   }
+   // todo: read argList into Args
+   //std::vector<STAB::ExprAST*> Args;
+   //$$ = new STAB::CallExprAST($1, Args);
  }
 
 %%
