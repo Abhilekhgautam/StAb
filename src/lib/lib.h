@@ -17,9 +17,8 @@
 
 namespace STAB{
     namespace Lib{
-        extern "C++" DECLSPEC void writeln(std::string str, ...);
-        extern "C++" DECLSPEC void write(std::string str, ...);
-        extern "C++" DECLSPEC std::string read(std::string *str, ...);
+        extern "C++" DECLSPEC void println(char* str, ...);
+        extern "C++" DECLSPEC void print(char* str, ...);
     }
 }
 
