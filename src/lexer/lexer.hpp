@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #if ! defined(yyFlexLexerOnce)
 #define yyFlexLexer yy_stab_FlexLexer
