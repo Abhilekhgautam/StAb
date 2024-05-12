@@ -45,22 +45,19 @@
 
 }
 
-%token NUMBER TIMES DIV MOD FN
+%token MOD FN
 %token LBRACE RBRACE LCURLY RCURLY LBIG RBIG ASSIGN
 %token IF ELSE ELSE_IF LOOP FOR WHILE AND OR XOR MATCH
 %token IMPORT IN CONTROL_FLOW COMMA FN_ARROW MATCH_ARROW
 %token RETURN BREAK SKIP
 %token SEMI_COLON
-%token<std::string> PLUS MINUS GT LT GE LE NE EQ "op"
+%token<std::string> PLUS MINUS TIMES DIV GT LT GE LE NE EQ "op"
 %token<std::string> ID "identifier"
 %token<std::string> DATA_TYPE "type"
+%token<std::string> NUMBER "num"
 
-%type<STAB::PrototypeAST*> functionPrototype
-%type<STAB::FunctionAST*> functionDefinition
-
+%type<STAB::StatementAST*> stmt functionPrototype functionDefinition varDeclaration
 %type<STAB::ExprAST*> expr
-%type<STAB::ExprAST*> term
-%type<STAB::ExprAST*> stmt
 
 %start stmt
 
@@ -71,14 +68,14 @@
  
  functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
                        std::vector<std::string> Args;
-                       auto prototype = new STAB::PrototypeAST($7, $2, Args);
-                       llvm::Function* FnIR = prototype->codegen();
+                       $$ = new STAB::PrototypeAST($7, $2, Args);
+                       auto FnIR = $$->codegen();
                        FnIR->print(llvm::errs());
                    }
                    | FN ID LBRACE paramList RBRACE SEMI_COLON{
                       std::vector<std::string> Args;
-                      auto prototype = new STAB::PrototypeAST("void", $2, Args);
-                      llvm::Function* FnIR = prototype->codegen();
+                      $$ = new STAB::PrototypeAST("void", $2, Args);
+                      auto FnIR = $$->codegen();
                       FnIR->print(llvm::errs());
                    }
 
@@ -96,8 +93,8 @@
                      } 
 
  varDeclaration: DATA_TYPE ID SEMI_COLON {
-                  auto varDecl = new STAB::VariableDeclExprAST($1, $2);
-		  auto varDeclIR = varDecl->codegen();
+                  $$ = new STAB::VariableDeclExprAST($1, $2);
+		  auto varDeclIR = $$->codegen();
 		  varDeclIR->print(llvm::errs());
                 } 
 
@@ -107,6 +104,7 @@
 		  | DATA_TYPE ID ASSIGN expr SEMI_COLON {
 
 		  }
+                  ;
 
  loop: LOOP LCURLY stmt RCURLY; 
 
@@ -115,7 +113,6 @@
  while: WHILE expr LCURLY stmt RCURLY 
 
  stmt: %empty
-      | expr stmt
       | functionDefinition stmt
       | loop stmt
       | for stmt
@@ -124,20 +121,30 @@
       | varDeclaration stmt
       | varInitialization stmt
       | assignExpr stmt
-      | breakExpr stmt
-      | skipExpr stmt
-      | returnExpr stmt
+      | breakStmt stmt
+      | skipStmt stmt
+      | returnStmt stmt
       | functionPrototype stmt
       | fnCall stmt
       ;
 
  expr: expr PLUS expr {
-        $$ = new BinaryExprAST($2, $1, $3);
+        auto binExpr = new BinaryExprAST($2, $1, $3);
+        auto binExprIR = binExpr->codegen();
+	binExprIR->print(llvm::errs());
       }
      | expr MINUS expr {
         $$ = new BinaryExprAST($2, $1, $3);
      }
-     | term
+     | expr TIMES expr {
+        $$ = new BinaryExprAST($2, $1, $3);
+     }
+     | expr DIV expr {
+        $$ = new BinaryExprAST($2, $1, $3);
+     }
+     | LBRACE expr RBRACE {
+        
+     }
      | expr GT expr {
        $$ = new BinaryExprAST($2, $1, $3);
      }
@@ -156,29 +163,31 @@
      | expr NE expr{
      $$ = new BinaryExprAST($2, $1, $3);
      }
+     | ID {
+       $$ = new VariableExprAST($1);
+       auto idIR = $$->codegen();
+       idIR->print(llvm::errs());
+     }
+     | NUMBER {
+        auto val = std::stoi($1);
+        $$ = new NumberExprAST(val);
+	auto numIR = $$->codegen();
+	numIR->print(llvm::errs());
+     }
      ;
 
-term: term TIMES factor
-    | term DIV factor
-    | factor
-    ;
-
-factor: LBRACE expr RBRACE
-      | ID
-      | NUMBER
-      ;
-
  assignExpr: ID ASSIGN expr SEMI_COLON{
-               
+             auto assign = new VariableAssignExprAST($1, $3);
+	     auto genIR = assign->codegen();
+	     genIR->print(llvm::errs());
            }
-	   | ID ASSIGN fnCall SEMI_COLON
 	   ;
   
- returnExpr: RETURN expr SEMI_COLON
+ returnStmt: RETURN expr SEMI_COLON
 
- breakExpr: BREAK SEMI_COLON
+ breakStmt: BREAK SEMI_COLON
  
- skipExpr: SKIP SEMI_COLON
+ skipStmt: SKIP SEMI_COLON
  
  elseStmt: %empty
          | ELSE LCURLY stmt RCURLY
