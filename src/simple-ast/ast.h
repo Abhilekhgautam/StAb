@@ -112,6 +112,35 @@ namespace STAB{
            }
     };
 
+    /// A class for infinite loop
+    /// loop {}
+    class LoopStatementAST: public StatementAST{
+       StatementAST* body;
+       public: 
+          LoopStatementAST(StatementAST* body): body(body){}
+	  llvm::Value* codegen() override {
+            llvm::Function* F = Builder->GetInsertBlock()->getParent();
+	    // block to insert the code for loop body
+	    llvm::BasicBlock* loopBody = llvm::BasicBlock::Create(*TheContext, "loopBody", F);
+	    // block to insert the code after the loop ends;
+	    llvm::BasicBlock* afterLoop = llvm::BasicBlock::Create(*TheContext, "afterLoop", F);
+
+	    // get into loop body 
+	    Builder->CreateBr(loopBody);
+	    Builder->SetInsertPoint(loopBody);
+
+	    auto temp = body->codegen();
+            
+	    // this is an infinte loop 
+	    // again enter the loop body 
+	    Builder->CreateCondBr(llvm::ConstantInt::get(*TheContext, llvm::APInt(32, 1, true)),loopBody, afterLoop);
+	    Builder->SetInsertPoint(afterLoop);
+
+	    return F;
+            
+	  }
+    };
+
     class VariableExprAST : public ExprAST {
       std::string Name;
 
