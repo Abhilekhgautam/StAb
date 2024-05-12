@@ -56,7 +56,7 @@
 %token<std::string> DATA_TYPE "type"
 %token<std::string> NUMBER "num"
 
-%type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while
+%type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while loop
 %type<ExprAST*> expr
 
 %start stmt
@@ -106,7 +106,11 @@
 		  }
                   ;
 
- loop: LOOP LCURLY stmt RCURLY; 
+ loop: LOOP LCURLY stmt RCURLY{
+       $$ = new LoopStatementAST($3);
+       auto loopIR = $$->codegen();
+       loopIR->print(llvm::errs());
+     } 
 
  for : FOR ID IN ID LCURLY stmt RCURLY
  
