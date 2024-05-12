@@ -3,9 +3,6 @@
 //
 #pragma once
 
-#include <llvm-18/llvm/IR/BasicBlock.h>
-#include <llvm-18/llvm/IR/Instructions.h>
-#include <llvm-18/llvm/IR/Metadata.h>
 #ifndef STAB_AST_H
 #define STAB_AST_H
 
@@ -22,6 +19,12 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/DerivedTypes.h"
 
+#include <llvm/ADT/APInt.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/BasicBlock.h>
+#include <llvm/IR/Instructions.h>
+#include <llvm/IR/Metadata.h>
+
 #ifndef STAB_GLOBAL_H
 #include "../globals.h"
 #endif 
@@ -37,9 +40,19 @@ namespace STAB{
         int val;
     public:
         NumberExprAST(int val):val(val){}
+	llvm::Value* codegen() override {
+	 return llvm::ConstantInt::get(*TheContext, llvm::APInt(32, val, true));
+	}
+    };
+    // base class for all statements
+    class StatementAST {
+       public:
+	  virtual llvm::Value* codegen() = 0;
+	    
     };
 
-    class VariableDeclExprAST: public ExprAST {
+
+    class VariableDeclExprAST: public StatementAST {
        std::string Type;
        std::string Name;
      public:
@@ -58,14 +71,36 @@ namespace STAB{
        }
     };
 
-// VariableExprAST - Expression class for referencing a variable, like "a".
     class VariableExprAST : public ExprAST {
-        std::string Name;
+      std::string Name;
 
-    public:
+      public:
         VariableExprAST(const std::string &Name) : Name(Name) {}
+	llvm::Value* codegen() override {
+           llvm::AllocaInst* var = NamedValues[Name];		
+	   // todo: better error handling later 
+	   if (!var){
+	    std::cout << "nullptr deref baby\n";	   
+	   }
+	   return Builder->CreateLoad(var->getAllocatedType(), var, Name.c_str());
+	}
     };
 
+
+    class VariableAssignExprAST: public StatementAST {
+       std::string Name;
+       // just int for now.
+       ExprAST* RHS;
+       public:
+        VariableAssignExprAST(std::string Name, ExprAST* val):
+	    Name(Name), RHS(val){}
+	llvm::Value* codegen() override {
+              // todo:  check if the variable exists
+	      llvm::Value* val = RHS->codegen();
+	      llvm::AllocaInst* var = NamedValues[Name];
+	      return Builder->CreateStore(val, var);
+	}
+    };
 // BinaryExprAST - Expression class for a binary operator.
     class BinaryExprAST : public ExprAST {
         // char would have worked but
@@ -123,7 +158,7 @@ namespace STAB{
 // PrototypeAST - This class represents the "prototype" for a function,
 // which captures its name, and its argument names (thus implicitly the number
 // of arguments the function takes).
-    class PrototypeAST {
+    class PrototypeAST: public StatementAST {
         std::string RetType;
         std::string Name;
         std::vector<std::string> Args;
@@ -134,7 +169,7 @@ namespace STAB{
 
         const std::string &getName() const { return Name; }
 
-        llvm::Function* codegen(){
+        llvm::Function* codegen() override{
 	    // check for the return type 
             // Make the function type:  double(double,double) etc.
             //std::vector<llvm::Type*> Ints(0, llvm::Type::getInt32Ty(*TheContext));
@@ -158,14 +193,20 @@ namespace STAB{
     };
 
 // FunctionAST - This class represents a function definition itself.
-    class FunctionAST {
+    class FunctionAST: public StatementAST {
         PrototypeAST* Proto;
-        ExprAST* Body;
+        StatementAST* Body;
 
     public:
         FunctionAST(PrototypeAST* Proto,
-                    ExprAST* Body)
+                    StatementAST* Body)
                 : Proto(Proto), Body(Body) {}
+	// did this just for my code to compile
+	// todo: add the actual implementation
+	llvm::Function* codegen() override{
+	  llvm::FunctionType* FT;
+	  llvm::Function* F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Proto->getName(), TheModule.get());	
+	}
     };
 }
 
