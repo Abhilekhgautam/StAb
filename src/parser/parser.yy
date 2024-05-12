@@ -56,8 +56,8 @@
 %token<std::string> DATA_TYPE "type"
 %token<std::string> NUMBER "num"
 
-%type<STAB::StatementAST*> stmt functionPrototype functionDefinition varDeclaration
-%type<STAB::ExprAST*> expr
+%type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while
+%type<ExprAST*> expr
 
 %start stmt
 
@@ -110,7 +110,11 @@
 
  for : FOR ID IN ID LCURLY stmt RCURLY
  
- while: WHILE expr LCURLY stmt RCURLY 
+ while: WHILE expr LCURLY stmt RCURLY{
+         $$ = new WhileStatementAST($2, $4);
+	 auto whileIR = $$->codegen();
+	 whileIR->print(llvm::errs());
+      } 
 
  stmt: %empty
       | functionDefinition stmt
@@ -129,12 +133,14 @@
       ;
 
  expr: expr PLUS expr {
-        auto binExpr = new BinaryExprAST($2, $1, $3);
-        auto binExprIR = binExpr->codegen();
+        $$ = new BinaryExprAST($2, $1, $3);
+        auto binExprIR = $$->codegen();
 	binExprIR->print(llvm::errs());
       }
      | expr MINUS expr {
         $$ = new BinaryExprAST($2, $1, $3);
+	auto binExprIR = $$->codegen();
+	binExprIR->print(llvm::errs());
      }
      | expr TIMES expr {
         $$ = new BinaryExprAST($2, $1, $3);
@@ -143,7 +149,7 @@
         $$ = new BinaryExprAST($2, $1, $3);
      }
      | LBRACE expr RBRACE {
-        
+       $$ = $2; 
      }
      | expr GT expr {
        $$ = new BinaryExprAST($2, $1, $3);
@@ -177,8 +183,8 @@
      ;
 
  assignExpr: ID ASSIGN expr SEMI_COLON{
-             auto assign = new VariableAssignExprAST($1, $3);
-	     auto genIR = assign->codegen();
+             $$ = new VariableAssignExprAST($1, $3);
+	     auto genIR = $$->codegen();
 	     genIR->print(llvm::errs());
            }
 	   ;
