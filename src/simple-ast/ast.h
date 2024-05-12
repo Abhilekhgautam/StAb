@@ -3,6 +3,7 @@
 //
 #pragma once
 
+#include <ios>
 #ifndef STAB_AST_H
 #define STAB_AST_H
 
@@ -19,6 +20,8 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/DerivedTypes.h"
 
+#include <llvm/IR/Constant.h>
+#include <llvm/IR/Function.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/BasicBlock.h>
@@ -47,6 +50,7 @@ namespace STAB{
     // base class for all statements
     class StatementAST {
        public:
+	  virtual ~StatementAST() = default;
 	  virtual llvm::Value* codegen() = 0;
 	    
     };
@@ -69,6 +73,43 @@ namespace STAB{
 	 
 	 return Builder->CreateLoad(type, var);
        }
+    };
+
+    class WhileStatementAST: public StatementAST {
+      ExprAST* expr;
+      StatementAST* body;
+      public: 
+         WhileStatementAST(ExprAST* expr, StatementAST* body)
+		 : expr(expr), body(body){}
+	 llvm::Value* codegen() override {
+	    std::cout << "Generating While Statement IR\n";
+	    llvm::Function* F = Builder->GetInsertBlock()->getParent();
+	    if (!F){
+	      std::cout << "nullptr encountered";
+	      return nullptr;
+	    }
+	    llvm::BasicBlock* loopBody = llvm::BasicBlock::Create(*TheContext,"loopBody", F);
+            llvm::BasicBlock* afterLoop = llvm::BasicBlock::Create(*TheContext, "afterLoop", F);
+
+            // go inside loop body 
+	    Builder->CreateBr(loopBody);
+	    Builder->SetInsertPoint(loopBody);
+
+	    // generate code for loop body 
+	    auto temp = body->codegen();
+
+	    llvm::Value* cond = expr->codegen();
+
+	    // compare the expr with 0
+	    cond = Builder->CreateICmpEQ(cond, llvm::ConstantInt::get(*TheContext, llvm::APInt(32, 0, true)));
+
+	    Builder->CreateCondBr(cond, afterLoop, loopBody);
+	    Builder->SetInsertPoint(afterLoop);
+
+	    return F;
+
+	    //return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*TheContext));
+           }
     };
 
     class VariableExprAST : public ExprAST {
@@ -123,17 +164,18 @@ namespace STAB{
             if (!L || !R)
                 return nullptr;
 
-            char op = Op[0];
+            const char* temp = Op.c_str();
+	    char op = temp[0];
 
             switch (op) {
                 case '+':
-                    return Builder->CreateFAdd(L, R, "addtmp");
+                    return Builder->CreateAdd(L, R, "addtmp");
                 case '-':
-                    return Builder->CreateFSub(L, R, "subtmp");
+                    return Builder->CreateSub(L, R, "subtmp");
                 case '*':
-                    return Builder->CreateFMul(L, R, "multmp");
+                    return Builder->CreateMul(L, R, "multmp");
                 case '<':
-                    L = Builder->CreateFCmpULT(L, R, "cmptmp");
+                    L = Builder->CreateICmpULT(L, R, "cmptmp");
                     // Convert bool 0/1 to double 0.0 or 1.0
                     return Builder->CreateUIToFP(L, llvm::Type::getDoubleTy(*TheContext),
                                                  "booltmp");
