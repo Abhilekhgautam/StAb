@@ -3,7 +3,6 @@
 //
 #pragma once
 
-#include <ios>
 #ifndef STAB_AST_H
 #define STAB_AST_H
 
@@ -13,6 +12,7 @@
 #include <iostream>
 #include <memory>
 
+#include <ios>
 #include <llvm/IR/Value.h>
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
@@ -55,7 +55,7 @@ namespace STAB{
 	    
     };
 
-
+    // int x;
     class VariableDeclExprAST: public StatementAST {
        std::string Type;
        std::string Name;
@@ -74,7 +74,10 @@ namespace STAB{
 	 return Builder->CreateLoad(type, var);
        }
     };
-
+    // while loop 
+    // while cond {
+    //
+    // }
     class WhileStatementAST: public StatementAST {
       ExprAST* expr;
       StatementAST* body;
@@ -140,7 +143,7 @@ namespace STAB{
             
 	  }
     };
-
+    // Represents referencing of variables..
     class VariableExprAST : public ExprAST {
       std::string Name;
 
@@ -154,6 +157,8 @@ namespace STAB{
 	   }
 	   return Builder->CreateLoad(var->getAllocatedType(), var, Name.c_str());
 	}
+	// todo: look into sym table 
+	std::string getType(){return "int";}
     };
 
 
@@ -243,20 +248,20 @@ namespace STAB{
         llvm::Function* codegen() override{
 	    // check for the return type 
             // Make the function type:  double(double,double) etc.
-            //std::vector<llvm::Type*> Ints(0, llvm::Type::getInt32Ty(*TheContext));
+            std::vector<llvm::Type*> Ints(Args.size(), llvm::Type::getInt32Ty(*TheContext));
 	    llvm::FunctionType* FT;
 	    if (RetType == "void") {
-	       FT = llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext), {}, false);	    
+	       FT = llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext), Ints, false);	    
 	    }else {
-               FT =  llvm::FunctionType::get(llvm::Type::getInt32Ty(*TheContext), {}, false);
+               FT =  llvm::FunctionType::get(llvm::Type::getInt32Ty(*TheContext), Ints, false);
             }
             llvm::Function *F =
                     llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Name, TheModule.get());
             
             //Set names for all arguments.
-            unsigned Idx = 0;
-            for (auto &Arg : F->args())
-                Arg.setName(Args[Idx++]);
+            //unsigned Idx = 0;
+            //for (auto &Arg : F->args())
+             //   Arg.setName(Args[Idx++]);
 
             return F;
         }
@@ -277,9 +282,16 @@ namespace STAB{
 	llvm::Function* codegen() override{
 	  llvm::FunctionType* FT;
 	  llvm::Function* F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Proto->getName(), TheModule.get());	
+	  llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, Proto->getName(), nullptr);
+	  Builder->CreateBr(fnBlock);
+	  Builder->SetInsertPoint(fnBlock);
+	  Body->codegen();
+	  llvm::BasicBlock* afterFnBlock = llvm::BasicBlock::Create(*TheContext, "afterFnBlock", nullptr);
+	  Builder->SetInsertPoint(afterFnBlock);
+	  // just to check the generated IR
+	  // todo: Change to actual thing that will be returned
+	  return F;
 	}
     };
 }
-
-
 #endif //STAB_AST_H
