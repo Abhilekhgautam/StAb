@@ -25,8 +25,10 @@ blank [ \t\r]
 
 %%
 {blank}+ {/* do nothing; ignore */}
-{digit}+ return Token::token_kind_type::NUMBER;
-
+{digit}+ {
+  yylval->emplace<std::string>(yytext);
+  return Token::token_kind_type::NUMBER;
+}
 "\n" {++currentLine;}
 
 ";" return Token::token_kind_type::SEMI_COLON;
@@ -81,9 +83,12 @@ blank [ \t\r]
 "+" {
     yylval->emplace<std::string>(yytext);
     return Token::token_kind_type::PLUS;
-}
+    }
 
-"-" return Token::token_kind_type::MINUS;
+"-" {
+    yylval->emplace<std::string>(yytext);
+    return Token::token_kind_type::MINUS;
+    }
 
 "*" return Token::token_kind_type::TIMES;
 
