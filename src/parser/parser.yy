@@ -56,8 +56,10 @@
 %token<std::string> DATA_TYPE "type"
 %token<std::string> NUMBER "num"
 
-%type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while loop
+%type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while loop 
+%type<std::vector<std::string>> paramList params
 %type<ExprAST*> expr
+%type<std::vector<ExprAST*>> argList args 
 
 %start stmt
 
@@ -68,28 +70,26 @@
  
  functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
                        std::vector<std::string> Args;
+		       for(const auto elt: $4){
+		         Args.emplace_back(elt);
+		       }
                        $$ = new STAB::PrototypeAST($7, $2, Args);
                        auto FnIR = $$->codegen();
                        FnIR->print(llvm::errs());
                    }
                    | FN ID LBRACE paramList RBRACE SEMI_COLON{
                       std::vector<std::string> Args;
+		      for (const auto elt: $4){
+		        Args.emplace_back(elt);
+		      }
                       $$ = new STAB::PrototypeAST("void", $2, Args);
                       auto FnIR = $$->codegen();
                       FnIR->print(llvm::errs());
                    }
 
  functionDefinition: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE LCURLY stmt RCURLY{
-                       std::vector<std::string> Args;
-                       auto proto = new STAB::PrototypeAST($7, $2, Args);
-
-                       $$ = new FunctionAST(proto, $9);
                     }
                     | FN ID LBRACE paramList RBRACE LCURLY stmt RCURLY  {
-                       std::vector<std::string> Args;
-                       auto proto = new STAB::PrototypeAST("void", $2, Args);
-
-                       $$ = new FunctionAST(proto, $7);
                      } 
 
  varDeclaration: DATA_TYPE ID SEMI_COLON {
@@ -210,22 +210,41 @@
            std::cout << "A if stmt was parsed\n";
 	 }
 
- paramList: %empty 
-          | params 
+ paramList: %empty {
+           }
+          | params {
+	     for (const auto elt: $1)
+	         $$.emplace_back(elt);
+	  }
 	  ;
  
- params: params COMMA parameter
-       | parameter
+ params: params COMMA DATA_TYPE{
+	 for(const auto elt: $1)
+	    $$.emplace_back(elt);
+	 $$.emplace_back($3);
+       }
+       | DATA_TYPE {
+       $$.emplace_back($1);
+       }
        ; 
 
- parameter: DATA_TYPE ID;
-
- argList: %empty 
-        | args 
+ argList: %empty {
+        } 
+        | args {
+	 for(const auto elt: $1){
+	   $$.emplace_back(elt);
+	 }
+	} 
         ;
 
- args: args COMMA expr
-     | expr
+ args: args COMMA expr {
+       for(const auto elt: $1)
+           $$.emplace_back(elt);
+       $$.emplace_back($3);
+     }
+     | expr {
+       $$.emplace_back($1);
+     }
      ;
 
  fnCall: ID LBRACE argList RBRACE{
