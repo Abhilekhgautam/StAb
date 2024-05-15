@@ -90,10 +90,14 @@ blank [ \t\r]
     return Token::token_kind_type::MINUS;
     }
 
-"*" return Token::token_kind_type::TIMES;
-
-"/" return Token::token_kind_type::DIV;
-
+"*" {
+     yylval->emplace<std::string>(yytext);
+     return Token::token_kind_type::TIMES;
+    }
+"/" {
+     yylval->emplace<std::string>(yytext);
+     return Token::token_kind_type::DIV;
+    }
 "%"  return Token::token_kind_type::MOD;
 
 "("  return Token::token_kind_type::LBRACE;
@@ -108,17 +112,31 @@ blank [ \t\r]
 
 "]" return Token::token_kind_type::RBIG;
 
-"<" return Token::token_kind_type::LT;
+"<" {
+     yylval->emplace<std::string>(yytext);
+     return Token::token_kind_type::LT;
+    }
+"<=" {
+      yylval->emplace<std::string>("l");
+      return Token::token_kind_type::LE;
+     }
+">" {
+      yylval->emplace<std::string>(yytext);
+      return Token::token_kind_type::GT;
+    }
 
-"<=" return Token::token_kind_type::LE;
-
-">" return Token::token_kind_type::GT;
-
-">=" return Token::token_kind_type::GE;
-
+">=" {
+      yylval->emplace<std::string>("g");
+      return Token::token_kind_type::GE;
+     }
 "=" return Token::token_kind_type::ASSIGN;
 
-"==" return Token::token_kind_type::EQ;
-
-"!=" return  Token::token_kind_type::NE;
+"==" {
+      yylval->emplace<std::string>("e");
+      return Token::token_kind_type::EQ;
+     }
+"!=" {
+      yylval->emplace<std::string>("n");
+      return  Token::token_kind_type::NE;
+     }
 %%
