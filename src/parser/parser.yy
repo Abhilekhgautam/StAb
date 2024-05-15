@@ -58,9 +58,10 @@
 
 %type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while loop 
 %type<std::vector<std::string>> paramList params
+%type<STAB::VariableDeclAssignExprAST*> varInitialization
 %type<ExprAST*> expr
 %type<std::vector<ExprAST*>> argList args 
-
+%type<std::vector<STAB::VariableDeclExprAST*>> paramListWithVar  paramsWithVar
 %start stmt
 
 %left PLUS MINUS
@@ -87,9 +88,31 @@
                       FnIR->print(llvm::errs());
                    }
 
- functionDefinition: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE LCURLY stmt RCURLY{
+ functionDefinition: FN ID LBRACE paramListWithVar RBRACE FN_ARROW DATA_TYPE LCURLY stmt RCURLY{
+                        std::vector<std::string> argTypes;
+			std::vector<STAB::VariableDeclExprAST*> declVars;
+                        for(const auto elt: $4){
+			  argTypes.emplace_back(elt->getType());
+			  declVars.emplace_back(elt);
+			}
+			auto proto = new STAB::PrototypeAST($7, $2, argTypes);
+			$$ = new STAB::FunctionAST(proto,declVars, $9);
+			std::cout << "New Function Declared\n";
+			auto FnIR = $$->codegen();
+			FnIR->print(llvm::errs());
+
                     }
-                    | FN ID LBRACE paramList RBRACE LCURLY stmt RCURLY  {
+                    | FN ID LBRACE paramListWithVar RBRACE LCURLY stmt RCURLY  {
+		        std::vector<std::string> argTypes;
+                        std::vector<STAB::VariableDeclExprAST*> declVars;
+                        for(const auto elt: $4){
+			  argTypes.emplace_back(elt->getType());
+			  declVars.emplace_back(elt);
+			}
+			auto proto = new STAB::PrototypeAST("void", $2, argTypes);
+			$$ = new STAB::FunctionAST(proto, declVars,  $7);
+			auto FnIR = $$->codegen();
+			FnIR->print(llvm::errs());
                      } 
 
  varDeclaration: DATA_TYPE ID SEMI_COLON {
@@ -102,7 +125,13 @@
 
 		  }
 		  | DATA_TYPE ID ASSIGN expr SEMI_COLON {
-
+                     auto type = $1;
+		     auto name = $2;
+		     auto val = $4;
+		     auto varDecl = new VariableDeclExprAST(type, name);
+		     $$ = new VariableDeclAssignExprAST(varDecl, val);
+		     auto varInitIR = $$->codegen();
+		     varInitIR->print(llvm::errs());
 		  }
                   ;
 
@@ -227,6 +256,25 @@
        $$.emplace_back($1);
        }
        ; 
+
+paramListWithVar: %empty{
+
+		}
+		| paramsWithVar {
+		  for (const auto elt: $1)
+		      $$.emplace_back(elt);
+		}
+		;
+
+paramsWithVar: paramsWithVar COMMA DATA_TYPE ID {
+                for(const auto elt: $1)
+		   $$.emplace_back(elt);
+	     }
+	     | DATA_TYPE ID {
+	       auto newDecl = new STAB::VariableDeclExprAST($1, $2);
+	       $$.emplace_back(newDecl);
+	     }
+
 
  argList: %empty {
         } 
