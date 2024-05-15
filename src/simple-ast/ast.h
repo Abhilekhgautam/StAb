@@ -12,7 +12,6 @@
 #include <iostream>
 #include <memory>
 
-#include <ios>
 #include <llvm/IR/Value.h>
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
@@ -189,6 +188,7 @@ namespace STAB{
     };
 
 
+    // x = 5, x must be declared previously with stmt like int x;
     class VariableAssignExprAST: public StatementAST {
        std::string Name;
        // just int for now.
@@ -203,7 +203,7 @@ namespace STAB{
 	      return Builder->CreateStore(val, var);
 	}
     };
-// BinaryExprAST - Expression class for a binary operator.
+    // BinaryExprAST - Expression class for a binary operator.
     class BinaryExprAST : public ExprAST {
         // char would have worked but
         // kinda hard to integrate with YACC
@@ -237,12 +237,27 @@ namespace STAB{
                 case '*':
                     return Builder->CreateMul(L, R, "multmp");
                 case '<':
-                    L = Builder->CreateICmpULT(L, R, "cmptmp");
-                    // Convert bool 0/1 to double 0.0 or 1.0
-                    return Builder->CreateUIToFP(L, llvm::Type::getDoubleTy(*TheContext),
-                                                 "booltmp");
+                    L = Builder->CreateICmpULT(L, R, "cmplt");
+                    return Builder->CreateZExt(L, llvm::Type::getInt32Ty(*TheContext), "int32Val");
+		case '>':
+		    L = Builder->CreateICmpUGT(L, R, "cmpgt");
+		    return Builder->CreateZExt(L, llvm::Type::getInt32Ty(*TheContext), "int32Val");
+		case 'l':
+	            L = Builder->CreateICmpUGT(L, R, "cmplte");
+                    return Builder->CreateZExt(L, llvm::Type::getInt32Ty(*TheContext), "int32Val");
+		case 'g':
+		    L = Builder->CreateICmpSGE(L, R, "cmpgte");
+                    return Builder->CreateZExt(L, llvm::Type::getInt32Ty(*TheContext), "int32Val");
+		case 'e':
+                    L = Builder->CreateICmpEQ(L, R, "cmpeq");
+                    return Builder->CreateZExt(L, llvm::Type::getInt32Ty(*TheContext), "int32Val");
+		case 'n':
+                    L = Builder->CreateICmpNE(L, R, "cmpne");
+                    return Builder->CreateZExt(L, llvm::Type::getInt32Ty(*TheContext), "int32Val");
+		
                 default:
                     std::cout << "invalid binary operator";
+		    return nullptr;
             }
         }
     };
