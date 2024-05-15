@@ -37,6 +37,7 @@ namespace STAB{
     public:
         virtual ~ExprAST() = default;
         virtual llvm::Value *codegen() = 0;
+	virtual std::string getType() = 0;
     };
 
     class NumberExprAST: public ExprAST{
@@ -46,6 +47,8 @@ namespace STAB{
 	llvm::Value* codegen() override {
 	 return llvm::ConstantInt::get(*TheContext, llvm::APInt(32, val, true));
 	}
+	// just for now
+	std::string getType() override{return "int";}
     };
     // base class for all statements
     class StatementAST {
@@ -59,20 +62,44 @@ namespace STAB{
     class VariableDeclExprAST: public StatementAST {
        std::string Type;
        std::string Name;
+       llvm::Function* parentFn;
      public:
-       VariableDeclExprAST(std::string& Type, std::string& Name):
-	       Type(Type), Name(Name){}
+       VariableDeclExprAST(std::string& Type, std::string& Name, llvm::Function* parent = mainFunction):
+	       Type(Type), Name(Name), parentFn(parent){}
+       std::string getType()const {return Type;}
+       std::string getName() const {return Name;}
+       void setParentFn(llvm::Function* F){
+	    parentFn = F;
+       }
        llvm::Value* codegen() override{
-	 llvm::BasicBlock* bblock = llvm::BasicBlock::Create(*TheContext, "entry", mainFunction, 0);
+	 llvm::BasicBlock* bblock = llvm::BasicBlock::Create(*TheContext, "entry", parentFn, 0);
          
 	 auto type = llvm::Type::getInt32Ty(*TheContext);
 	 Builder->SetInsertPoint(bblock);
 	 llvm::AllocaInst* var = Builder->CreateAlloca(type,nullptr, Name);
-	 NamedValues.insert({Name, var});
-	 NamedLLVMType.insert({Name, type});
+	 NamedValues[Name] = var;
+	 NamedLLVMType[Name] = type;
 	 
 	 return Builder->CreateLoad(type, var);
        }
+    };
+
+    // int x = 5;
+    class VariableDeclAssignExprAST: public StatementAST {
+	VariableDeclExprAST* varDecl;
+	// type is int for now
+	ExprAST* val;
+
+	public: 
+	   VariableDeclAssignExprAST(VariableDeclExprAST* varDecl, ExprAST* val):
+		   varDecl(varDecl), val(val){}
+           llvm::Value* codegen() override {
+               auto temp = varDecl->codegen();
+               auto var = NamedValues[varDecl->getName()];
+	       auto va = val->codegen();
+	      
+	       return Builder->CreateStore(va, var);
+	   }
     };
     // while loop 
     // while cond {
@@ -158,7 +185,7 @@ namespace STAB{
 	   return Builder->CreateLoad(var->getAllocatedType(), var, Name.c_str());
 	}
 	// todo: look into sym table 
-	std::string getType(){return "int";}
+	std::string getType() override {return "int";}
     };
 
 
@@ -192,6 +219,7 @@ namespace STAB{
             delete LHS;
             delete RHS;
         }
+	std::string getType() override{ return "int";}
         llvm::Value* codegen() override{
             llvm::Value *L = LHS->codegen();
             llvm::Value *R = RHS->codegen();
@@ -243,8 +271,8 @@ namespace STAB{
         PrototypeAST(const std::string& RetType,const std::string &Name, std::vector<std::string> Args)
                 : RetType(RetType),Name(Name), Args(std::move(Args)) {}
 
-        const std::string &getName() const { return Name; }
-
+        const std::string getName() const { return Name; }
+        const std::string getReturnType() const {return RetType;}
         llvm::Function* codegen() override{
 	    // check for the return type 
             // Make the function type:  double(double,double) etc.
@@ -271,23 +299,32 @@ namespace STAB{
 // FunctionAST - This class represents a function definition itself.
     class FunctionAST: public StatementAST {
         PrototypeAST* Proto;
+        std::vector<STAB::VariableDeclExprAST*> declVars;
         StatementAST* Body;
-
     public:
         FunctionAST(PrototypeAST* Proto,
+		    std::vector<STAB::VariableDeclExprAST*> declVars,
                     StatementAST* Body)
-                : Proto(Proto), Body(Body) {}
+                : Proto(Proto), declVars(std::move(declVars)), Body(Body) {}
 	// did this just for my code to compile
 	// todo: add the actual implementation
 	llvm::Function* codegen() override{
 	  llvm::FunctionType* FT;
-	  llvm::Function* F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Proto->getName(), TheModule.get());	
-	  llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, Proto->getName(), nullptr);
-	  Builder->CreateBr(fnBlock);
+	  if (Proto->getReturnType() == "void") {
+	       FT = llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext), {}, false);	    
+	    }else {
+               FT =  llvm::FunctionType::get(llvm::Type::getInt32Ty(*TheContext), {}, false);
+            }
+            
+          llvm::Function* F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Proto->getName(), TheModule.get());	
+	  llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, Proto->getName(), F);
 	  Builder->SetInsertPoint(fnBlock);
+	  
+          for(const auto elt: declVars){
+	     elt->setParentFn(F);
+	     auto temp = elt->codegen();	  
+	  }
 	  Body->codegen();
-	  llvm::BasicBlock* afterFnBlock = llvm::BasicBlock::Create(*TheContext, "afterFnBlock", nullptr);
-	  Builder->SetInsertPoint(afterFnBlock);
 	  // just to check the generated IR
 	  // todo: Change to actual thing that will be returned
 	  return F;
