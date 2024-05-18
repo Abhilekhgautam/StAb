@@ -49,12 +49,16 @@
 
   #include "../includes/location.hpp"
   #include "../parser/parser.hpp"
-
+  #include "../includes/scope.h"
+  #include "../globals.h"
+  #ifndef STAB_AST_H
+  #include "../simple-ast/ast.h"
+  #endif
   namespace STAB{
     class Lexer;
   }
 
-#line 58 "src/parser/parser.hpp"
+#line 62 "src/parser/parser.hpp"
 
 
 # include <cstdlib> // std::abort
@@ -188,9 +192,9 @@
 # define YYDEBUG 1
 #endif
 
-#line 13 "src/parser/parser.yy"
+#line 17 "src/parser/parser.yy"
 namespace STAB {
-#line 194 "src/parser/parser.hpp"
+#line 198 "src/parser/parser.hpp"
 
 
 
@@ -386,9 +390,51 @@ namespace STAB {
     /// An auxiliary type to compute the largest semantic type.
     union union_type
     {
+      // expr
+      char dummy1[sizeof (ExprAST*)];
+
+      // varInitialization
+      char dummy2[sizeof (STAB::VariableDeclAssignExprAST*)];
+
+      // functionPrototype
+      // functionDefinition
+      // varDeclaration
+      // loop
+      // while
+      // stmt
+      // assignExpr
+      // returnStmt
+      char dummy3[sizeof (StatementAST*)];
+
+      // PLUS
+      // MINUS
+      // TIMES
+      // DIV
+      // GT
+      // LT
+      // GE
+      // LE
+      // NE
+      // "op"
       // "identifier"
       // "type"
-      char dummy1[sizeof (std::string)];
+      // "num"
+      char dummy4[sizeof (std::string)];
+
+      // argList
+      // args
+      char dummy5[sizeof (std::vector<ExprAST*>)];
+
+      // paramListWithVar
+      // paramsWithVar
+      char dummy6[sizeof (std::vector<STAB::VariableDeclExprAST*>)];
+
+      // stmts
+      char dummy7[sizeof (std::vector<StatementAST*>)];
+
+      // paramList
+      // params
+      char dummy8[sizeof (std::vector<std::string>)];
     };
 
     /// The size of the largest semantic type.
@@ -438,51 +484,48 @@ namespace STAB {
     YYEOF = 0,                     // "end of file"
     YYerror = 1,                   // error
     YYUNDEF = 2,                   // "invalid token"
-    NUMBER = 3,                    // NUMBER
-    PLUS = 4,                      // PLUS
-    MINUS = 5,                     // MINUS
-    TIMES = 6,                     // TIMES
-    DIV = 7,                       // DIV
-    MOD = 8,                       // MOD
-    FN = 9,                        // FN
-    LBRACE = 10,                   // LBRACE
-    RBRACE = 11,                   // RBRACE
-    LCURLY = 12,                   // LCURLY
-    RCURLY = 13,                   // RCURLY
-    LBIG = 14,                     // LBIG
-    RBIG = 15,                     // RBIG
-    ASSIGN = 16,                   // ASSIGN
-    GT = 17,                       // GT
-    LT = 18,                       // LT
-    GE = 19,                       // GE
-    LE = 20,                       // LE
-    EQ = 21,                       // EQ
-    NE = 22,                       // NE
-    RELOP = 23,                    // RELOP
-    ARTHOP = 24,                   // ARTHOP
-    KEYWORD = 25,                  // KEYWORD
-    IF = 26,                       // IF
-    ELSE = 27,                     // ELSE
-    ELSE_IF = 28,                  // ELSE_IF
-    LOOP = 29,                     // LOOP
-    FOR = 30,                      // FOR
-    WHILE = 31,                    // WHILE
-    AND = 32,                      // AND
-    OR = 33,                       // OR
-    XOR = 34,                      // XOR
-    MATCH = 35,                    // MATCH
-    IMPORT = 36,                   // IMPORT
-    IN = 37,                       // IN
-    CONTROL_FLOW = 38,             // CONTROL_FLOW
-    COMMA = 39,                    // COMMA
-    FN_ARROW = 40,                 // FN_ARROW
-    MATCH_ARROW = 41,              // MATCH_ARROW
-    RETURN = 42,                   // RETURN
-    BREAK = 43,                    // BREAK
-    SKIP = 44,                     // SKIP
-    SEMI_COLON = 45,               // SEMI_COLON
-    ID = 46,                       // "identifier"
-    DATA_TYPE = 47                 // "type"
+    MOD = 3,                       // MOD
+    FN = 4,                        // FN
+    LBRACE = 5,                    // LBRACE
+    RBRACE = 6,                    // RBRACE
+    LCURLY = 7,                    // LCURLY
+    RCURLY = 8,                    // RCURLY
+    LBIG = 9,                      // LBIG
+    RBIG = 10,                     // RBIG
+    ASSIGN = 11,                   // ASSIGN
+    IF = 12,                       // IF
+    ELSE = 13,                     // ELSE
+    ELSE_IF = 14,                  // ELSE_IF
+    LOOP = 15,                     // LOOP
+    FOR = 16,                      // FOR
+    WHILE = 17,                    // WHILE
+    AND = 18,                      // AND
+    OR = 19,                       // OR
+    XOR = 20,                      // XOR
+    MATCH = 21,                    // MATCH
+    IMPORT = 22,                   // IMPORT
+    IN = 23,                       // IN
+    CONTROL_FLOW = 24,             // CONTROL_FLOW
+    COMMA = 25,                    // COMMA
+    FN_ARROW = 26,                 // FN_ARROW
+    MATCH_ARROW = 27,              // MATCH_ARROW
+    RETURN = 28,                   // RETURN
+    BREAK = 29,                    // BREAK
+    SKIP = 30,                     // SKIP
+    SEMI_COLON = 31,               // SEMI_COLON
+    PLUS = 32,                     // PLUS
+    MINUS = 33,                    // MINUS
+    TIMES = 34,                    // TIMES
+    DIV = 35,                      // DIV
+    GT = 36,                       // GT
+    LT = 37,                       // LT
+    GE = 38,                       // GE
+    LE = 39,                       // LE
+    NE = 40,                       // NE
+    EQ = 41,                       // "op"
+    ID = 42,                       // "identifier"
+    DATA_TYPE = 43,                // "type"
+    NUMBER = 44                    // "num"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -499,81 +542,78 @@ namespace STAB {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 48, ///< Number of tokens.
+        YYNTOKENS = 45, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
         S_YYUNDEF = 2,                           // "invalid token"
-        S_NUMBER = 3,                            // NUMBER
-        S_PLUS = 4,                              // PLUS
-        S_MINUS = 5,                             // MINUS
-        S_TIMES = 6,                             // TIMES
-        S_DIV = 7,                               // DIV
-        S_MOD = 8,                               // MOD
-        S_FN = 9,                                // FN
-        S_LBRACE = 10,                           // LBRACE
-        S_RBRACE = 11,                           // RBRACE
-        S_LCURLY = 12,                           // LCURLY
-        S_RCURLY = 13,                           // RCURLY
-        S_LBIG = 14,                             // LBIG
-        S_RBIG = 15,                             // RBIG
-        S_ASSIGN = 16,                           // ASSIGN
-        S_GT = 17,                               // GT
-        S_LT = 18,                               // LT
-        S_GE = 19,                               // GE
-        S_LE = 20,                               // LE
-        S_EQ = 21,                               // EQ
-        S_NE = 22,                               // NE
-        S_RELOP = 23,                            // RELOP
-        S_ARTHOP = 24,                           // ARTHOP
-        S_KEYWORD = 25,                          // KEYWORD
-        S_IF = 26,                               // IF
-        S_ELSE = 27,                             // ELSE
-        S_ELSE_IF = 28,                          // ELSE_IF
-        S_LOOP = 29,                             // LOOP
-        S_FOR = 30,                              // FOR
-        S_WHILE = 31,                            // WHILE
-        S_AND = 32,                              // AND
-        S_OR = 33,                               // OR
-        S_XOR = 34,                              // XOR
-        S_MATCH = 35,                            // MATCH
-        S_IMPORT = 36,                           // IMPORT
-        S_IN = 37,                               // IN
-        S_CONTROL_FLOW = 38,                     // CONTROL_FLOW
-        S_COMMA = 39,                            // COMMA
-        S_FN_ARROW = 40,                         // FN_ARROW
-        S_MATCH_ARROW = 41,                      // MATCH_ARROW
-        S_RETURN = 42,                           // RETURN
-        S_BREAK = 43,                            // BREAK
-        S_SKIP = 44,                             // SKIP
-        S_SEMI_COLON = 45,                       // SEMI_COLON
-        S_ID = 46,                               // "identifier"
-        S_DATA_TYPE = 47,                        // "type"
-        S_YYACCEPT = 48,                         // $accept
-        S_functionPrototype = 49,                // functionPrototype
-        S_functionDefinition = 50,               // functionDefinition
-        S_varDeclaration = 51,                   // varDeclaration
-        S_varInitialization = 52,                // varInitialization
-        S_loop = 53,                             // loop
-        S_for = 54,                              // for
-        S_while = 55,                            // while
-        S_stmt = 56,                             // stmt
-        S_expr = 57,                             // expr
-        S_term = 58,                             // term
-        S_factor = 59,                           // factor
-        S_assignExpr = 60,                       // assignExpr
-        S_returnExpr = 61,                       // returnExpr
-        S_breakExpr = 62,                        // breakExpr
-        S_skipExpr = 63,                         // skipExpr
-        S_elseStmt = 64,                         // elseStmt
-        S_elseifStmt = 65,                       // elseifStmt
-        S_ifStmt = 66,                           // ifStmt
-        S_paramList = 67,                        // paramList
-        S_params = 68,                           // params
-        S_parameter = 69,                        // parameter
-        S_argList = 70,                          // argList
-        S_args = 71,                             // args
-        S_fnCall = 72                            // fnCall
+        S_MOD = 3,                               // MOD
+        S_FN = 4,                                // FN
+        S_LBRACE = 5,                            // LBRACE
+        S_RBRACE = 6,                            // RBRACE
+        S_LCURLY = 7,                            // LCURLY
+        S_RCURLY = 8,                            // RCURLY
+        S_LBIG = 9,                              // LBIG
+        S_RBIG = 10,                             // RBIG
+        S_ASSIGN = 11,                           // ASSIGN
+        S_IF = 12,                               // IF
+        S_ELSE = 13,                             // ELSE
+        S_ELSE_IF = 14,                          // ELSE_IF
+        S_LOOP = 15,                             // LOOP
+        S_FOR = 16,                              // FOR
+        S_WHILE = 17,                            // WHILE
+        S_AND = 18,                              // AND
+        S_OR = 19,                               // OR
+        S_XOR = 20,                              // XOR
+        S_MATCH = 21,                            // MATCH
+        S_IMPORT = 22,                           // IMPORT
+        S_IN = 23,                               // IN
+        S_CONTROL_FLOW = 24,                     // CONTROL_FLOW
+        S_COMMA = 25,                            // COMMA
+        S_FN_ARROW = 26,                         // FN_ARROW
+        S_MATCH_ARROW = 27,                      // MATCH_ARROW
+        S_RETURN = 28,                           // RETURN
+        S_BREAK = 29,                            // BREAK
+        S_SKIP = 30,                             // SKIP
+        S_SEMI_COLON = 31,                       // SEMI_COLON
+        S_PLUS = 32,                             // PLUS
+        S_MINUS = 33,                            // MINUS
+        S_TIMES = 34,                            // TIMES
+        S_DIV = 35,                              // DIV
+        S_GT = 36,                               // GT
+        S_LT = 37,                               // LT
+        S_GE = 38,                               // GE
+        S_LE = 39,                               // LE
+        S_NE = 40,                               // NE
+        S_EQ = 41,                               // "op"
+        S_ID = 42,                               // "identifier"
+        S_DATA_TYPE = 43,                        // "type"
+        S_NUMBER = 44,                           // "num"
+        S_YYACCEPT = 45,                         // $accept
+        S_functionPrototype = 46,                // functionPrototype
+        S_functionDefinition = 47,               // functionDefinition
+        S_varDeclaration = 48,                   // varDeclaration
+        S_varInitialization = 49,                // varInitialization
+        S_loop = 50,                             // loop
+        S_for = 51,                              // for
+        S_while = 52,                            // while
+        S_stmts = 53,                            // stmts
+        S_stmt = 54,                             // stmt
+        S_expr = 55,                             // expr
+        S_assignExpr = 56,                       // assignExpr
+        S_returnStmt = 57,                       // returnStmt
+        S_breakStmt = 58,                        // breakStmt
+        S_skipStmt = 59,                         // skipStmt
+        S_elseStmt = 60,                         // elseStmt
+        S_elseifStmt = 61,                       // elseifStmt
+        S_ifStmt = 62,                           // ifStmt
+        S_paramList = 63,                        // paramList
+        S_params = 64,                           // params
+        S_paramListWithVar = 65,                 // paramListWithVar
+        S_paramsWithVar = 66,                    // paramsWithVar
+        S_argList = 67,                          // argList
+        S_args = 68,                             // args
+        S_fnCall = 69                            // fnCall
       };
     };
 
@@ -610,9 +650,58 @@ namespace STAB {
       {
         switch (this->kind ())
     {
+      case symbol_kind::S_expr: // expr
+        value.move< ExprAST* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_varInitialization: // varInitialization
+        value.move< STAB::VariableDeclAssignExprAST* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_functionPrototype: // functionPrototype
+      case symbol_kind::S_functionDefinition: // functionDefinition
+      case symbol_kind::S_varDeclaration: // varDeclaration
+      case symbol_kind::S_loop: // loop
+      case symbol_kind::S_while: // while
+      case symbol_kind::S_stmt: // stmt
+      case symbol_kind::S_assignExpr: // assignExpr
+      case symbol_kind::S_returnStmt: // returnStmt
+        value.move< StatementAST* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_PLUS: // PLUS
+      case symbol_kind::S_MINUS: // MINUS
+      case symbol_kind::S_TIMES: // TIMES
+      case symbol_kind::S_DIV: // DIV
+      case symbol_kind::S_GT: // GT
+      case symbol_kind::S_LT: // LT
+      case symbol_kind::S_GE: // GE
+      case symbol_kind::S_LE: // LE
+      case symbol_kind::S_NE: // NE
+      case symbol_kind::S_EQ: // "op"
       case symbol_kind::S_ID: // "identifier"
       case symbol_kind::S_DATA_TYPE: // "type"
+      case symbol_kind::S_NUMBER: // "num"
         value.move< std::string > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_argList: // argList
+      case symbol_kind::S_args: // args
+        value.move< std::vector<ExprAST*> > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_paramListWithVar: // paramListWithVar
+      case symbol_kind::S_paramsWithVar: // paramsWithVar
+        value.move< std::vector<STAB::VariableDeclExprAST*> > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_stmts: // stmts
+        value.move< std::vector<StatementAST*> > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_paramList: // paramList
+      case symbol_kind::S_params: // params
+        value.move< std::vector<std::string> > (std::move (that.value));
         break;
 
       default:
@@ -639,6 +728,48 @@ namespace STAB {
 #endif
 
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, ExprAST*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const ExprAST*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, STAB::VariableDeclAssignExprAST*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const STAB::VariableDeclAssignExprAST*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, StatementAST*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const StatementAST*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, std::string&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
@@ -646,6 +777,62 @@ namespace STAB {
       {}
 #else
       basic_symbol (typename Base::kind_type t, const std::string& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::vector<ExprAST*>&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::vector<ExprAST*>& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::vector<STAB::VariableDeclExprAST*>&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::vector<STAB::VariableDeclExprAST*>& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::vector<StatementAST*>&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::vector<StatementAST*>& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::vector<std::string>&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::vector<std::string>& v, const location_type& l)
         : Base (t)
         , value (v)
         , location (l)
@@ -676,9 +863,58 @@ namespace STAB {
         // Value type destructor.
 switch (yykind)
     {
+      case symbol_kind::S_expr: // expr
+        value.template destroy< ExprAST* > ();
+        break;
+
+      case symbol_kind::S_varInitialization: // varInitialization
+        value.template destroy< STAB::VariableDeclAssignExprAST* > ();
+        break;
+
+      case symbol_kind::S_functionPrototype: // functionPrototype
+      case symbol_kind::S_functionDefinition: // functionDefinition
+      case symbol_kind::S_varDeclaration: // varDeclaration
+      case symbol_kind::S_loop: // loop
+      case symbol_kind::S_while: // while
+      case symbol_kind::S_stmt: // stmt
+      case symbol_kind::S_assignExpr: // assignExpr
+      case symbol_kind::S_returnStmt: // returnStmt
+        value.template destroy< StatementAST* > ();
+        break;
+
+      case symbol_kind::S_PLUS: // PLUS
+      case symbol_kind::S_MINUS: // MINUS
+      case symbol_kind::S_TIMES: // TIMES
+      case symbol_kind::S_DIV: // DIV
+      case symbol_kind::S_GT: // GT
+      case symbol_kind::S_LT: // LT
+      case symbol_kind::S_GE: // GE
+      case symbol_kind::S_LE: // LE
+      case symbol_kind::S_NE: // NE
+      case symbol_kind::S_EQ: // "op"
       case symbol_kind::S_ID: // "identifier"
       case symbol_kind::S_DATA_TYPE: // "type"
+      case symbol_kind::S_NUMBER: // "num"
         value.template destroy< std::string > ();
+        break;
+
+      case symbol_kind::S_argList: // argList
+      case symbol_kind::S_args: // args
+        value.template destroy< std::vector<ExprAST*> > ();
+        break;
+
+      case symbol_kind::S_paramListWithVar: // paramListWithVar
+      case symbol_kind::S_paramsWithVar: // paramsWithVar
+        value.template destroy< std::vector<STAB::VariableDeclExprAST*> > ();
+        break;
+
+      case symbol_kind::S_stmts: // stmts
+        value.template destroy< std::vector<StatementAST*> > ();
+        break;
+
+      case symbol_kind::S_paramList: // paramList
+      case symbol_kind::S_params: // params
+        value.template destroy< std::vector<std::string> > ();
         break;
 
       default:
@@ -881,81 +1117,6 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_NUMBER (location_type l)
-      {
-        return symbol_type (token::NUMBER, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_NUMBER (const location_type& l)
-      {
-        return symbol_type (token::NUMBER, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_PLUS (location_type l)
-      {
-        return symbol_type (token::PLUS, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_PLUS (const location_type& l)
-      {
-        return symbol_type (token::PLUS, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_MINUS (location_type l)
-      {
-        return symbol_type (token::MINUS, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_MINUS (const location_type& l)
-      {
-        return symbol_type (token::MINUS, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_TIMES (location_type l)
-      {
-        return symbol_type (token::TIMES, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_TIMES (const location_type& l)
-      {
-        return symbol_type (token::TIMES, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_DIV (location_type l)
-      {
-        return symbol_type (token::DIV, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_DIV (const location_type& l)
-      {
-        return symbol_type (token::DIV, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
       make_MOD (location_type l)
       {
         return symbol_type (token::MOD, std::move (l));
@@ -1086,141 +1247,6 @@ switch (yykind)
       make_ASSIGN (const location_type& l)
       {
         return symbol_type (token::ASSIGN, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_GT (location_type l)
-      {
-        return symbol_type (token::GT, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_GT (const location_type& l)
-      {
-        return symbol_type (token::GT, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_LT (location_type l)
-      {
-        return symbol_type (token::LT, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_LT (const location_type& l)
-      {
-        return symbol_type (token::LT, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_GE (location_type l)
-      {
-        return symbol_type (token::GE, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_GE (const location_type& l)
-      {
-        return symbol_type (token::GE, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_LE (location_type l)
-      {
-        return symbol_type (token::LE, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_LE (const location_type& l)
-      {
-        return symbol_type (token::LE, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_EQ (location_type l)
-      {
-        return symbol_type (token::EQ, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_EQ (const location_type& l)
-      {
-        return symbol_type (token::EQ, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_NE (location_type l)
-      {
-        return symbol_type (token::NE, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_NE (const location_type& l)
-      {
-        return symbol_type (token::NE, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_RELOP (location_type l)
-      {
-        return symbol_type (token::RELOP, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_RELOP (const location_type& l)
-      {
-        return symbol_type (token::RELOP, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_ARTHOP (location_type l)
-      {
-        return symbol_type (token::ARTHOP, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_ARTHOP (const location_type& l)
-      {
-        return symbol_type (token::ARTHOP, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_KEYWORD (location_type l)
-      {
-        return symbol_type (token::KEYWORD, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_KEYWORD (const location_type& l)
-      {
-        return symbol_type (token::KEYWORD, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1526,6 +1552,156 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_PLUS (std::string v, location_type l)
+      {
+        return symbol_type (token::PLUS, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_PLUS (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::PLUS, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_MINUS (std::string v, location_type l)
+      {
+        return symbol_type (token::MINUS, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_MINUS (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::MINUS, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_TIMES (std::string v, location_type l)
+      {
+        return symbol_type (token::TIMES, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_TIMES (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::TIMES, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_DIV (std::string v, location_type l)
+      {
+        return symbol_type (token::DIV, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_DIV (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::DIV, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_GT (std::string v, location_type l)
+      {
+        return symbol_type (token::GT, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_GT (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::GT, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LT (std::string v, location_type l)
+      {
+        return symbol_type (token::LT, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_LT (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::LT, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_GE (std::string v, location_type l)
+      {
+        return symbol_type (token::GE, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_GE (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::GE, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LE (std::string v, location_type l)
+      {
+        return symbol_type (token::LE, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_LE (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::LE, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_NE (std::string v, location_type l)
+      {
+        return symbol_type (token::NE, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_NE (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::NE, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_EQ (std::string v, location_type l)
+      {
+        return symbol_type (token::EQ, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_EQ (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::EQ, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_ID (std::string v, location_type l)
       {
         return symbol_type (token::ID, std::move (v), std::move (l));
@@ -1551,6 +1727,21 @@ switch (yykind)
       make_DATA_TYPE (const std::string& v, const location_type& l)
       {
         return symbol_type (token::DATA_TYPE, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_NUMBER (std::string v, location_type l)
+      {
+        return symbol_type (token::NUMBER, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_NUMBER (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::NUMBER, v, l);
       }
 #endif
 
@@ -1583,11 +1774,15 @@ switch (yykind)
 
 
     /// Stored state numbers (used for stacks).
-    typedef unsigned char state_type;
+    typedef signed char state_type;
 
-    /// Report a syntax error
+    /// The arguments of the error message.
+    int yy_syntax_error_arguments_ (const context& yyctx,
+                                    symbol_kind_type yyarg[], int yyargn) const;
+
+    /// Generate an error message.
     /// \param yyctx     the context in which the error occurred.
-    void report_syntax_error (const context& yyctx) const;
+    virtual std::string yysyntax_error_ (const context& yyctx) const;
     /// Compute post-reduction state.
     /// \param yystate   the current state
     /// \param yysym     the nonterminal to push on the stack
@@ -1630,9 +1825,9 @@ switch (yykind)
     // YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
     // positive, shift that token.  If negative, reduce the rule whose
     // number is the opposite.  If YYTABLE_NINF, syntax error.
-    static const unsigned char yytable_[];
+    static const signed char yytable_[];
 
-    static const short yycheck_[];
+    static const signed char yycheck_[];
 
     // YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
     // state STATE-NUM.
@@ -1647,7 +1842,7 @@ switch (yykind)
 
 #if YYDEBUG
     // YYRLINE[YYN] -- Source line where rule number YYN was defined.
-    static const unsigned char yyrline_[];
+    static const short yyrline_[];
     /// Report on the debug stream that the rule \a r is going to be reduced.
     virtual void yy_reduce_print_ (int r) const;
     /// Print the state stack on the debug stream.
@@ -1874,9 +2069,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 213,     ///< Last index in yytable_.
+      yylast_ = 274,     ///< Last index in yytable_.
       yynnts_ = 25,  ///< Number of nonterminal symbols.
-      yyfinal_ = 48 ///< Termination state number.
+      yyfinal_ = 40 ///< Termination state number.
     };
 
 
@@ -1887,9 +2082,9 @@ switch (yykind)
   };
 
 
-#line 13 "src/parser/parser.yy"
+#line 17 "src/parser/parser.yy"
 } // STAB
-#line 1893 "src/parser/parser.hpp"
+#line 2088 "src/parser/parser.hpp"
 
 
 

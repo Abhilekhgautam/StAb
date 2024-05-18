@@ -4,6 +4,8 @@
 %code requires {
   #include "../includes/location.hpp"
   #include "../parser/parser.hpp"
+  #include "../includes/scope.h"
+  #include "../globals.h"
   #ifndef STAB_AST_H
   #include "../simple-ast/ast.h"
   #endif
@@ -19,7 +21,7 @@
 %define api.location.type {location}
 
 %locations
-%define parse.error custom
+%define parse.error detailed
 %define parse.trace 
 
 %header
@@ -36,6 +38,7 @@
 
 %code {
   #include "../lexer/lexer.hpp"
+  #include "../globals.h"
   namespace STAB {
     template <typename RHS>
     void calcLocation(location& current, const RHS& rhs, const std::size_t n);
@@ -43,6 +46,8 @@
   #define YYLLOC_DEFAULT(Cur, Rhs, N) calcLocation(Cur, Rhs, N)
   #define yylex lexer.yylex
 
+  STAB::Scope* globalScope = new STAB::Scope();
+  STAB::Scope* currentScope = globalScope;
 }
 
 %token MOD FN
@@ -56,13 +61,14 @@
 %token<std::string> DATA_TYPE "type"
 %token<std::string> NUMBER "num"
 
-%type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while loop 
+%type<std::vector<StatementAST*>> stmts;
+%type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while loop returnStmt 
 %type<std::vector<std::string>> paramList params
 %type<STAB::VariableDeclAssignExprAST*> varInitialization
-%type<ExprAST*> expr
+%type<ExprAST*> expr 
 %type<std::vector<ExprAST*>> argList args 
 %type<std::vector<STAB::VariableDeclExprAST*>> paramListWithVar  paramsWithVar
-%start stmt
+%start stmts
 
 %left PLUS MINUS
 %left TIMES DIV
@@ -70,25 +76,34 @@
 %%
  
  functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
+		       if (currentScope != globalScope){
+		         std::cout << "Err: Cannot define a function prototype in the non-global scope\n";
+		       }
                        std::vector<std::string> Args;
 		       for(const auto elt: $4){
 		         Args.emplace_back(elt);
 		       }
                        $$ = new STAB::PrototypeAST($7, $2, Args);
-                       auto FnIR = $$->codegen();
+                       auto FnIR = $$->codegen(currentScope);
                        FnIR->print(llvm::errs());
                    }
                    | FN ID LBRACE paramList RBRACE SEMI_COLON{
+		       if (currentScope != globalScope){
+		         std::cout << "Err: Cannot define a function prototype in the non-global scope\n";
+		       }
                       std::vector<std::string> Args;
 		      for (const auto elt: $4){
 		        Args.emplace_back(elt);
 		      }
                       $$ = new STAB::PrototypeAST("void", $2, Args);
-                      auto FnIR = $$->codegen();
+                      auto FnIR = $$->codegen(currentScope);
                       FnIR->print(llvm::errs());
                    }
 
- functionDefinition: FN ID LBRACE paramListWithVar RBRACE FN_ARROW DATA_TYPE LCURLY stmt RCURLY{
+ functionDefinition: FN ID LBRACE paramListWithVar RBRACE FN_ARROW DATA_TYPE LCURLY stmts RCURLY{
+			auto fnScope = new Scope(currentScope);
+			currentScope = fnScope;
+	                currentScope->setFnBlock(mainFunction);	
                         std::vector<std::string> argTypes;
 			std::vector<STAB::VariableDeclExprAST*> declVars;
                         for(const auto elt: $4){
@@ -97,12 +112,11 @@
 			}
 			auto proto = new STAB::PrototypeAST($7, $2, argTypes);
 			$$ = new STAB::FunctionAST(proto,declVars, $9);
-			std::cout << "New Function Declared\n";
-			auto FnIR = $$->codegen();
+			auto FnIR = $$->codegen(currentScope);
 			FnIR->print(llvm::errs());
-
+                        currentScope = globalScope;
                     }
-                    | FN ID LBRACE paramListWithVar RBRACE LCURLY stmt RCURLY  {
+                    | FN ID LBRACE paramListWithVar RBRACE LCURLY stmts RCURLY  {
 		        std::vector<std::string> argTypes;
                         std::vector<STAB::VariableDeclExprAST*> declVars;
                         for(const auto elt: $4){
@@ -111,69 +125,82 @@
 			}
 			auto proto = new STAB::PrototypeAST("void", $2, argTypes);
 			$$ = new STAB::FunctionAST(proto, declVars,  $7);
-			auto FnIR = $$->codegen();
+			auto FnIR = $$->codegen(currentScope);
 			FnIR->print(llvm::errs());
+			currentScope = globalScope;
                      } 
 
  varDeclaration: DATA_TYPE ID SEMI_COLON {
                   $$ = new STAB::VariableDeclExprAST($1, $2);
-		  auto varDeclIR = $$->codegen();
-		  varDeclIR->print(llvm::errs());
                 } 
 
- varInitialization:DATA_TYPE ID ASSIGN fnCall SEMI_COLON {
-
-		  }
-		  | DATA_TYPE ID ASSIGN expr SEMI_COLON {
+ varInitialization: DATA_TYPE ID ASSIGN expr SEMI_COLON {
                      auto type = $1;
 		     auto name = $2;
 		     auto val = $4;
 		     auto varDecl = new VariableDeclExprAST(type, name);
 		     $$ = new VariableDeclAssignExprAST(varDecl, val);
-		     auto varInitIR = $$->codegen();
-		     varInitIR->print(llvm::errs());
 		  }
                   ;
 
- loop: LOOP LCURLY stmt RCURLY{
+ loop: LOOP LCURLY stmts RCURLY{
        $$ = new LoopStatementAST($3);
-       auto loopIR = $$->codegen();
-       loopIR->print(llvm::errs());
-     } 
+     }
+     ;
 
  for : FOR ID IN ID LCURLY stmt RCURLY
  
- while: WHILE expr LCURLY stmt RCURLY{
+ while: WHILE expr LCURLY stmts RCURLY{
          $$ = new WhileStatementAST($2, $4);
-	 auto whileIR = $$->codegen();
-	 whileIR->print(llvm::errs());
       } 
 
+stmts: stmts stmt{
+        for(const auto elt: $1)
+	    $$.emplace_back(elt);
+	$$.emplace_back($2);
+     }
+     | stmt {
+       $$.emplace_back($1);
+     }
+     ;
+
  stmt: %empty
-      | functionDefinition stmt
-      | loop stmt
-      | for stmt
-      | while stmt
-      | ifStmt stmt
-      | varDeclaration stmt
-      | varInitialization stmt
-      | assignExpr stmt
-      | breakStmt stmt
-      | skipStmt stmt
-      | returnStmt stmt
-      | functionPrototype stmt
-      | fnCall stmt
+      | functionDefinition{
+        $$ = $1;
+      }
+      | loop{
+        $$ = $1;
+      }
+      | for 
+      | while {
+         $$ = $1;
+      }
+      | ifStmt 
+      | varDeclaration{
+        $$ = $1;
+      }
+      | varInitialization{
+         $$ = $1;
+      }
+      | assignExpr{
+         $$ = $1;
+      }
+      | breakStmt
+      | skipStmt
+      | returnStmt{
+          $$ = $1; 
+      }
+      | functionPrototype {
+        $$ = $1;
+      }
+      | fnCall
       ;
 
  expr: expr PLUS expr {
         $$ = new BinaryExprAST($2, $1, $3);
-        auto binExprIR = $$->codegen();
-	binExprIR->print(llvm::errs());
       }
      | expr MINUS expr {
         $$ = new BinaryExprAST($2, $1, $3);
-	auto binExprIR = $$->codegen();
-	binExprIR->print(llvm::errs());
      }
      | expr TIMES expr {
         $$ = new BinaryExprAST($2, $1, $3);
@@ -182,47 +209,44 @@
         $$ = new BinaryExprAST($2, $1, $3);
      }
      | LBRACE expr RBRACE {
-       $$ = $2; 
+        $$ = $2; 
      }
      | expr GT expr {
-       $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3);
      }
      | expr LT expr {
-       $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3);
      }
      | expr LE expr {
-     $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3);
      }
      | expr GE expr{
-     $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3);
      }
      | expr EQ expr{
-     $$ = new BinaryExprAST($2, $1, $3);
+       $$ = new BinaryExprAST($2, $1, $3);
      }
      | expr NE expr{
-     $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3);
      }
      | ID {
        $$ = new VariableExprAST($1);
-       auto idIR = $$->codegen();
-       idIR->print(llvm::errs());
      }
      | NUMBER {
         auto val = std::stoi($1);
         $$ = new NumberExprAST(val);
-	auto numIR = $$->codegen();
-	numIR->print(llvm::errs());
      }
      ;
 
  assignExpr: ID ASSIGN expr SEMI_COLON{
              $$ = new VariableAssignExprAST($1, $3);
-	     auto genIR = $$->codegen();
-	     genIR->print(llvm::errs());
            }
 	   ;
   
- returnStmt: RETURN expr SEMI_COLON
+ returnStmt: RETURN expr SEMI_COLON{
+              $$ = new ReturnStmtAST($2);
+           }
+	   ;
 
  breakStmt: BREAK SEMI_COLON
  
@@ -236,7 +260,6 @@
            | ELSE_IF expr LCURLY stmt RCURLY elseifStmt;
 
  ifStmt: IF expr LCURLY stmt RCURLY elseifStmt elseStmt {
-           std::cout << "A if stmt was parsed\n";
 	 }
 
  paramList: %empty {
@@ -308,11 +331,10 @@ namespace STAB {
  inline void calcLocation(location& current, const RHS& rhs, const std::size_t n){
  current = location(YYRHSLOC(rhs, 1).first, YYRHSLOC(rhs, n).second);
  }
- void Parser::report_syntax_error(const context& ctx) const {
-
-  std::cerr << ctx.location() << ": Syntax Error Something went wrong"; 
- }
+//void Parser::report_syntax_error(const context& ctx) const {
+ // std::cerr << ctx.location() << ": Syntax Error Something went wrong"; 
+ //}
  void Parser::error(const location &loc, const std::string &message){
   std::cerr << "Error at lines " << loc << ": " << message << std::endl;
- }
+}
 }
