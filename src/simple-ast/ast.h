@@ -18,7 +18,7 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/DerivedTypes.h"
-
+#include "llvm/IR/Verifier.h"
 #include <llvm/IR/Constant.h>
 #include <llvm/IR/Function.h>
 #include <llvm/ADT/APInt.h>
@@ -35,7 +35,7 @@ namespace STAB{
     class ExprAST{
     public:
         virtual ~ExprAST() = default;
-        virtual llvm::Value *codegen() = 0;
+        virtual llvm::Value *codegen(Scope* s) = 0;
 	virtual std::string getType() = 0;
     };
 
@@ -43,7 +43,7 @@ namespace STAB{
         int val;
     public:
         NumberExprAST(int val):val(val){}
-	llvm::Value* codegen() override {
+	llvm::Value* codegen(Scope* s) override {
 	 return llvm::ConstantInt::get(*TheContext, llvm::APInt(32, val, true));
 	}
 	// just for now
@@ -53,7 +53,7 @@ namespace STAB{
     class StatementAST {
        public:
 	  virtual ~StatementAST() = default;
-	  virtual llvm::Value* codegen() = 0;
+	  virtual llvm::Value* codegen(Scope* s) = 0;
 	    
     };
 
@@ -61,23 +61,20 @@ namespace STAB{
     class VariableDeclExprAST: public StatementAST {
        std::string Type;
        std::string Name;
-       llvm::Function* parentFn;
      public:
-       VariableDeclExprAST(std::string& Type, std::string& Name, llvm::Function* parent = mainFunction):
-	       Type(Type), Name(Name), parentFn(parent){}
+       VariableDeclExprAST(std::string& Type, std::string& Name):
+	       Type(Type), Name(Name){}
        std::string getType()const {return Type;}
        std::string getName() const {return Name;}
-       void setParentFn(llvm::Function* F){
-	    parentFn = F;
-       }
-       llvm::Value* codegen() override{
-	 llvm::BasicBlock* bblock = llvm::BasicBlock::Create(*TheContext, "entry", parentFn, 0);
+       llvm::Value* codegen(Scope* s) override{
+	 llvm::BasicBlock* bblock = llvm::BasicBlock::Create(*TheContext, s->getName(), s->getFnBlock(), 0);
          
 	 auto type = llvm::Type::getInt32Ty(*TheContext);
 	 Builder->SetInsertPoint(bblock);
 	 llvm::AllocaInst* var = Builder->CreateAlloca(type,nullptr, Name);
-	 NamedValues[Name] = var;
-	 NamedLLVMType[Name] = type;
+	 s->installID(Name, var);
+	 //NamedValues[Name] = var;
+	 //NamedLLVMType[Name] = type;
 	 
 	 return Builder->CreateLoad(type, var);
        }
@@ -92,10 +89,11 @@ namespace STAB{
 	public: 
 	   VariableDeclAssignExprAST(VariableDeclExprAST* varDecl, ExprAST* val):
 		   varDecl(varDecl), val(val){}
-           llvm::Value* codegen() override {
-               auto temp = varDecl->codegen();
-               auto var = NamedValues[varDecl->getName()];
-	       auto va = val->codegen();
+           llvm::Value* codegen(Scope* s) override {
+               varDecl->codegen(s);
+	       auto var = s->getID(varDecl->getName());
+               //auto var = NamedValues[varDecl->getName()];
+	       auto va = val->codegen(s);
 	      
 	       return Builder->CreateStore(va, var);
 	   }
@@ -106,13 +104,15 @@ namespace STAB{
     // }
     class WhileStatementAST: public StatementAST {
       ExprAST* expr;
-      StatementAST* body;
+      std::vector<StatementAST*> body;
       public: 
-         WhileStatementAST(ExprAST* expr, StatementAST* body)
-		 : expr(expr), body(body){}
-	 llvm::Value* codegen() override {
-	    std::cout << "Generating While Statement IR\n";
-	    llvm::Function* F = Builder->GetInsertBlock()->getParent();
+         WhileStatementAST(ExprAST* expr, std::vector<StatementAST*> body)
+		 : expr(expr), body(std::move(body)){}
+	 llvm::Value* codegen(Scope* s) override {
+	    llvm::Function* F = s->getFnBlock();
+	    if(F == mainFunction){
+	        std::cout << "Both are same\n";
+	    }
 	    if (!F){
 	      std::cout << "nullptr encountered";
 	      return nullptr;
@@ -125,9 +125,12 @@ namespace STAB{
 	    Builder->SetInsertPoint(loopBody);
 
 	    // generate code for loop body 
-	    auto temp = body->codegen();
+	    for(const auto elt: body){
+	       auto temp = elt->codegen(s);
+	       temp->print(llvm::errs());
+	    }
 
-	    llvm::Value* cond = expr->codegen();
+	    llvm::Value* cond = expr->codegen(s);
 
 	    // compare the expr with 0
 	    cond = Builder->CreateICmpEQ(cond, llvm::ConstantInt::get(*TheContext, llvm::APInt(32, 0, true)));
@@ -144,11 +147,11 @@ namespace STAB{
     /// A class for infinite loop
     /// loop {}
     class LoopStatementAST: public StatementAST{
-       StatementAST* body;
+	    std::vector<StatementAST*> body;
        public: 
-          LoopStatementAST(StatementAST* body): body(body){}
-	  llvm::Value* codegen() override {
-            llvm::Function* F = Builder->GetInsertBlock()->getParent();
+          LoopStatementAST(std::vector<StatementAST*> body): body(std::move(body)){}
+	  llvm::Value* codegen(Scope* s) override {
+            llvm::Function* F = s->getFnBlock();
 	    // block to insert the code for loop body
 	    llvm::BasicBlock* loopBody = llvm::BasicBlock::Create(*TheContext, "loopBody", F);
 	    // block to insert the code after the loop ends;
@@ -158,7 +161,9 @@ namespace STAB{
 	    Builder->CreateBr(loopBody);
 	    Builder->SetInsertPoint(loopBody);
 
-	    auto temp = body->codegen();
+	    for (const auto elt: body){
+	      elt->codegen(s);	    
+	    }
             
 	    // this is an infinte loop 
 	    // again enter the loop body 
@@ -175,11 +180,12 @@ namespace STAB{
 
       public:
         VariableExprAST(const std::string &Name) : Name(Name) {}
-	llvm::Value* codegen() override {
-           llvm::AllocaInst* var = NamedValues[Name];		
+	llvm::Value* codegen(Scope* s) override {
+           //llvm::AllocaInst* var = NamedValues[Name];
+	   auto var = s->getID(Name);
 	   // todo: better error handling later 
 	   if (!var){
-	    std::cout << "nullptr deref baby\n";	   
+	    std::cout << "No such variable " << Name << " in the current scope\n";	   
 	   }
 	   return Builder->CreateLoad(var->getAllocatedType(), var, Name.c_str());
 	}
@@ -196,11 +202,15 @@ namespace STAB{
        public:
         VariableAssignExprAST(std::string Name, ExprAST* val):
 	    Name(Name), RHS(val){}
-	llvm::Value* codegen() override {
+	llvm::Value* codegen(Scope* s) override {
               // todo:  check if the variable exists
-	      llvm::Value* val = RHS->codegen();
-	      llvm::AllocaInst* var = NamedValues[Name];
-	      return Builder->CreateStore(val, var);
+	      auto varInst = s->getID(Name);
+	      if (!varInst){
+		std::cout << "No such variable " << Name << " initialized in the current scope\n";      
+	      }
+	      llvm::Value* val = RHS->codegen(s);
+	      //llvm::AllocaInst* var = NamedValues[Name];
+	      return Builder->CreateStore(val, varInst);
 	}
     };
     // BinaryExprAST - Expression class for a binary operator.
@@ -220,9 +230,9 @@ namespace STAB{
             delete RHS;
         }
 	std::string getType() override{ return "int";}
-        llvm::Value* codegen() override{
-            llvm::Value *L = LHS->codegen();
-            llvm::Value *R = RHS->codegen();
+        llvm::Value* codegen(Scope* s) override{
+            llvm::Value *L = LHS->codegen(s);
+            llvm::Value *R = RHS->codegen(s);
             if (!L || !R)
                 return nullptr;
 
@@ -262,6 +272,17 @@ namespace STAB{
         }
     };
 
+    class ReturnStmtAST: public StatementAST {
+	ExprAST* expr;
+	public: 
+	   ReturnStmtAST(ExprAST* expr): expr(expr){}
+	   llvm::Value* codegen(Scope* s) override{
+	      auto retVal = expr->codegen(s); 
+	      Builder->CreateRet(retVal);
+	      return nullptr;
+	   }
+    };
+
 // CallExprAST - Expression class for function calls.
 //    class CallExprAST : public ExprAST {
 //        std::string Callee;
@@ -288,7 +309,8 @@ namespace STAB{
 
         const std::string getName() const { return Name; }
         const std::string getReturnType() const {return RetType;}
-        llvm::Function* codegen() override{
+        int getArgSize(){return Args.size();}
+        llvm::Function* codegen(Scope* s) override{
 	    // check for the return type 
             // Make the function type:  double(double,double) etc.
             std::vector<llvm::Type*> Ints(Args.size(), llvm::Type::getInt32Ty(*TheContext));
@@ -315,31 +337,59 @@ namespace STAB{
     class FunctionAST: public StatementAST {
         PrototypeAST* Proto;
         std::vector<STAB::VariableDeclExprAST*> declVars;
-        StatementAST* Body;
+	std::vector<StatementAST*> Body;
     public:
         FunctionAST(PrototypeAST* Proto,
 		    std::vector<STAB::VariableDeclExprAST*> declVars,
-                    StatementAST* Body)
-                : Proto(Proto), declVars(std::move(declVars)), Body(Body) {}
+                    std::vector<StatementAST*> Body)
+                : Proto(Proto), declVars(std::move(declVars)), Body(std::move(Body)) {}
 	// did this just for my code to compile
 	// todo: add the actual implementation
-	llvm::Function* codegen() override{
+	llvm::Function* codegen(Scope* s) override{
+	  std::vector<llvm::Type*> params(Proto->getArgSize(), llvm::Type::getInt32Ty(*TheContext));
 	  llvm::FunctionType* FT;
 	  if (Proto->getReturnType() == "void") {
-	       FT = llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext), {}, false);	    
+	       FT = llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext), params, false);	    
 	    }else {
-               FT =  llvm::FunctionType::get(llvm::Type::getInt32Ty(*TheContext), {}, false);
+               FT =  llvm::FunctionType::get(llvm::Type::getInt32Ty(*TheContext), params, false);
             }
             
           llvm::Function* F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Proto->getName(), TheModule.get());	
+	  s->setFnBlock(F);
 	  llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, Proto->getName(), F);
 	  Builder->SetInsertPoint(fnBlock);
 	  
-          for(const auto elt: declVars){
-	     elt->setParentFn(F);
-	     auto temp = elt->codegen();	  
+          for(const auto params: declVars){
+	     params->codegen(s);	  
 	  }
-	  Body->codegen();
+	  for(const auto body: Body){
+             body->codegen(s);		  
+	  }
+	  // Check for proper termination
+          bool hasReturn = false;
+          for (auto &BB : *F) {
+            if (BB.getTerminator()) {
+                if (llvm::isa<llvm::ReturnInst>(BB.getTerminator()) && Proto->getReturnType() == "void") {
+		   std::cerr << "\nError: Void Function cannot have a return statement\n";
+		   return nullptr;
+                } else {
+		  hasReturn = true;	
+		}
+            } else {
+                Builder->SetInsertPoint(&BB);
+                if (Proto->getReturnType() == "void") {
+                    Builder->CreateRetVoid();
+                } 
+              }
+          }
+
+        // If no return statement was found and the function is non-void, this is an error.
+        if (!hasReturn && Proto->getReturnType() != "void") {
+            std::cerr << "\nError: Non-void function does not have a return statement\n";
+            return nullptr;
+        }
+
+	  llvm::verifyFunction(*F);
 	  // just to check the generated IR
 	  // todo: Change to actual thing that will be returned
 	  return F;
