@@ -3,6 +3,7 @@
 //
 #pragma once
 
+#include <llvm-18/llvm/IR/CallingConv.h>
 #ifndef STAB_AST_H
 #define STAB_AST_H
 
@@ -271,7 +272,8 @@ namespace STAB{
             }
         }
     };
-
+   
+    // Statements like, return a;
     class ReturnStmtAST: public StatementAST {
 	ExprAST* expr;
 	public: 
@@ -284,16 +286,37 @@ namespace STAB{
     };
 
 // CallExprAST - Expression class for function calls.
-//    class CallExprAST : public ExprAST {
-//        std::string Callee;
-//        std::vector<ExprAST*> Args;
-//
-//    public:
-//        CallExprAST(const std::string &Callee,
-//                    std::vector<ExprAST*> Args)
-//                : Callee(Callee), Args(std::move(Args)) {}
-//        llvm::Value* codegen() override;
-//    };
+    class CallExprAST : public ExprAST {
+        std::string Callee;
+        std::vector<ExprAST*> Args;
+
+    public:
+        CallExprAST(const std::string &Callee,
+                    std::vector<ExprAST*> Args)
+                : Callee(Callee), Args(std::move(Args)) {}
+	std::string getFnName() const {return Callee;}
+	std::vector<ExprAST*> getArgs(){return Args;}
+        llvm::Value* codegen(Scope* s) override{
+            llvm::Function* calleeFn = TheModule->getFunction(Callee);
+	    if (!calleeFn){
+	       std::cerr << "\nNo Such function exist\n";
+	       return nullptr;
+	    }
+	    // check the number of arguments passed
+	    if(calleeFn->arg_size() != Args.size()){
+	       std::cerr << "\n Function " << Callee << " expects " << calleeFn->arg_size() << " but " << Args.size() << " were passed\n";
+	       return nullptr;
+	    }
+	    std::vector<llvm::Value*> args;
+	    for(const auto expr: Args){
+		args.emplace_back(expr->codegen(s));    
+	    }
+	    return Builder->CreateCall(calleeFn, args, "calltmp");
+	}
+	std::string getType() override {
+           return "";
+	}
+    };
 
 // PrototypeAST - This class represents the "prototype" for a function,
 // which captures its name, and its argument names (thus implicitly the number
@@ -324,9 +347,9 @@ namespace STAB{
                     llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Name, TheModule.get());
             
             //Set names for all arguments.
-            //unsigned Idx = 0;
-            //for (auto &Arg : F->args())
-             //   Arg.setName(Args[Idx++]);
+            unsigned Idx = 0;
+            for (auto &Arg : F->args())
+              Arg.setName(Args[Idx++]);
 
             return F;
         }
@@ -335,10 +358,10 @@ namespace STAB{
 
 // FunctionAST - This class represents a function definition itself.
     class FunctionAST: public StatementAST {
-        PrototypeAST* Proto;
         std::vector<STAB::VariableDeclExprAST*> declVars;
 	std::vector<StatementAST*> Body;
     public:
+        PrototypeAST* Proto;
         FunctionAST(PrototypeAST* Proto,
 		    std::vector<STAB::VariableDeclExprAST*> declVars,
                     std::vector<StatementAST*> Body)
@@ -367,6 +390,7 @@ namespace STAB{
 	  }
 	  // Check for proper termination
           bool hasReturn = false;
+	  llvm::BasicBlock* lastBlock = nullptr;
           for (auto &BB : *F) {
             if (BB.getTerminator()) {
                 if (llvm::isa<llvm::ReturnInst>(BB.getTerminator()) && Proto->getReturnType() == "void") {
@@ -375,14 +399,15 @@ namespace STAB{
                 } else {
 		  hasReturn = true;	
 		}
-            } else {
-                Builder->SetInsertPoint(&BB);
-                if (Proto->getReturnType() == "void") {
-                    Builder->CreateRetVoid();
-                } 
-              }
+		lastBlock = &BB;
+            } 
           }
-
+	  if(lastBlock)
+              Builder->SetInsertPoint(lastBlock);
+         
+	  if (Proto->getReturnType() == "void") {
+                    Builder->CreateRetVoid();
+           } 
         // If no return statement was found and the function is non-void, this is an error.
         if (!hasReturn && Proto->getReturnType() != "void") {
             std::cerr << "\nError: Non-void function does not have a return statement\n";
