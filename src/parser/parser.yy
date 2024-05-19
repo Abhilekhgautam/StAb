@@ -66,6 +66,7 @@
 %type<std::vector<std::string>> paramList params
 %type<STAB::VariableDeclAssignExprAST*> varInitialization
 %type<ExprAST*> expr 
+%type<CallExprAST*> fnCall
 %type<std::vector<ExprAST*>> argList args 
 %type<std::vector<STAB::VariableDeclExprAST*>> paramListWithVar  paramsWithVar
 %start stmts
@@ -77,7 +78,7 @@
  
  functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
 		       if (currentScope != globalScope){
-		         std::cout << "Err: Cannot define a function prototype in the non-global scope\n";
+		         std::cout << "\nErr: Cannot define a function prototype in the non-global scope\n";
 		       }
                        std::vector<std::string> Args;
 		       for(const auto elt: $4){
@@ -89,7 +90,7 @@
                    }
                    | FN ID LBRACE paramList RBRACE SEMI_COLON{
 		       if (currentScope != globalScope){
-		         std::cout << "Err: Cannot define a function prototype in the non-global scope\n";
+		         std::cout << "\nErr: Cannot define a function prototype in the non-global scope\n";
 		       }
                       std::vector<std::string> Args;
 		      for (const auto elt: $4){
@@ -193,7 +194,6 @@ stmts: stmts stmt{
       | functionPrototype {
         $$ = $1;
       }
-      | fnCall
       ;
 
  expr: expr PLUS expr {
@@ -235,6 +235,9 @@ stmts: stmts stmt{
      | NUMBER {
         auto val = std::stoi($1);
         $$ = new NumberExprAST(val);
+     }
+     | fnCall {
+        $$ = new CallExprAST($1->getFnName(), $1->getArgs());
      }
      ;
 
@@ -320,8 +323,11 @@ paramsWithVar: paramsWithVar COMMA DATA_TYPE ID {
 
  fnCall: ID LBRACE argList RBRACE{
    // todo: read argList into Args
-   //std::vector<STAB::ExprAST*> Args;
-   //$$ = new STAB::CallExprAST($1, Args);
+   std::vector<STAB::ExprAST*> Args;
+   for (const auto elt: $3){
+      Args.emplace_back(elt);
+   }
+   $$ = new CallExprAST($1, Args);
  }
 
 %%
