@@ -1,6 +1,5 @@
 #pragma once
 
-#include <llvm-18/llvm/IR/GlobalValue.h>
 #ifndef STAB_GLOBAL_H
 #define STAB_GLOBAL_H
 
@@ -18,6 +17,8 @@
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Function.h>
 
+#include "./includes/scope.h"
+
 extern std::unique_ptr<llvm::LLVMContext> TheContext;
 extern std::unique_ptr<llvm::IRBuilder<>> Builder;
 extern std::unique_ptr<llvm::Module> TheModule;
@@ -25,6 +26,11 @@ extern std::map<std::string, llvm::Type*> NamedLLVMType;
 extern std::map<std::string, llvm::AllocaInst *> NamedValues;
 extern llvm::Function* mainFunction;
 
+/*
+void addNewScope(Scope* s){
+   scopes.emplace_back(s);	
+}
+*/
 inline void initializeModule(){
     // Open a new context and module.
     TheContext = std::make_unique<llvm::LLVMContext>();
@@ -36,6 +42,7 @@ inline void initializeModule(){
      llvm::FunctionType *ftype = llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext), argTypes, false);
      mainFunction = llvm::Function::Create(ftype,llvm::GlobalValue::InternalLinkage, "main", *TheModule);
 }
+
 /// CreateEntryBlockAlloca - Create an alloca instruction in the entry block of
 /// the function.  This is used for mutable variables etc.
 static llvm::AllocaInst *CreateEntryBlockAlloca(llvm::Function *TheFunction,
