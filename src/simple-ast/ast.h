@@ -3,7 +3,6 @@
 //
 #pragma once
 
-#include <llvm-18/llvm/IR/CallingConv.h>
 #ifndef STAB_AST_H
 #define STAB_AST_H
 
@@ -28,9 +27,15 @@
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Metadata.h>
 
+#include <llvm-18/llvm/IR/CallingConv.h>
+
 #ifndef STAB_GLOBAL_H
 #include "../globals.h"
 #endif 
+
+#ifndef STAB_SCOPE_H
+#include "../includes/scope.h"
+#endif
 
 namespace STAB{
     class ExprAST{
