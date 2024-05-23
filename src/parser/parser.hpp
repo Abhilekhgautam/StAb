@@ -390,21 +390,24 @@ namespace STAB {
     /// An auxiliary type to compute the largest semantic type.
     union union_type
     {
+      // fnCall
+      char dummy1[sizeof (CallExprAST*)];
+
       // expr
-      char dummy1[sizeof (ExprAST*)];
+      char dummy2[sizeof (ExprAST*)];
 
       // varInitialization
-      char dummy2[sizeof (STAB::VariableDeclAssignExprAST*)];
+      char dummy3[sizeof (STAB::VariableDeclAssignExprAST*)];
 
-      // functionPrototype
       // functionDefinition
+      // functionPrototype
       // varDeclaration
       // loop
       // while
       // stmt
       // assignExpr
       // returnStmt
-      char dummy3[sizeof (StatementAST*)];
+      char dummy4[sizeof (StatementAST*)];
 
       // PLUS
       // MINUS
@@ -419,22 +422,21 @@ namespace STAB {
       // "identifier"
       // "type"
       // "num"
-      char dummy4[sizeof (std::string)];
+      char dummy5[sizeof (std::string)];
 
       // argList
       // args
-      char dummy5[sizeof (std::vector<ExprAST*>)];
+      char dummy6[sizeof (std::vector<ExprAST*>)];
 
-      // paramListWithVar
       // paramsWithVar
-      char dummy6[sizeof (std::vector<STAB::VariableDeclExprAST*>)];
+      char dummy7[sizeof (std::vector<STAB::VariableDeclExprAST*>)];
 
       // stmts
-      char dummy7[sizeof (std::vector<StatementAST*>)];
+      char dummy8[sizeof (std::vector<StatementAST*>)];
 
       // paramList
       // params
-      char dummy8[sizeof (std::vector<std::string>)];
+      char dummy9[sizeof (std::vector<std::string>)];
     };
 
     /// The size of the largest semantic type.
@@ -485,47 +487,47 @@ namespace STAB {
     YYerror = 1,                   // error
     YYUNDEF = 2,                   // "invalid token"
     MOD = 3,                       // MOD
-    FN = 4,                        // FN
-    LBRACE = 5,                    // LBRACE
-    RBRACE = 6,                    // RBRACE
-    LCURLY = 7,                    // LCURLY
-    RCURLY = 8,                    // RCURLY
-    LBIG = 9,                      // LBIG
-    RBIG = 10,                     // RBIG
-    ASSIGN = 11,                   // ASSIGN
-    IF = 12,                       // IF
-    ELSE = 13,                     // ELSE
-    ELSE_IF = 14,                  // ELSE_IF
-    LOOP = 15,                     // LOOP
-    FOR = 16,                      // FOR
-    WHILE = 17,                    // WHILE
-    AND = 18,                      // AND
-    OR = 19,                       // OR
-    XOR = 20,                      // XOR
-    MATCH = 21,                    // MATCH
-    IMPORT = 22,                   // IMPORT
-    IN = 23,                       // IN
-    CONTROL_FLOW = 24,             // CONTROL_FLOW
-    COMMA = 25,                    // COMMA
-    FN_ARROW = 26,                 // FN_ARROW
-    MATCH_ARROW = 27,              // MATCH_ARROW
-    RETURN = 28,                   // RETURN
-    BREAK = 29,                    // BREAK
-    SKIP = 30,                     // SKIP
-    SEMI_COLON = 31,               // SEMI_COLON
-    PLUS = 32,                     // PLUS
-    MINUS = 33,                    // MINUS
-    TIMES = 34,                    // TIMES
-    DIV = 35,                      // DIV
-    GT = 36,                       // GT
-    LT = 37,                       // LT
-    GE = 38,                       // GE
-    LE = 39,                       // LE
-    NE = 40,                       // NE
-    EQ = 41,                       // "op"
-    ID = 42,                       // "identifier"
-    DATA_TYPE = 43,                // "type"
-    NUMBER = 44                    // "num"
+    LBRACE = 4,                    // LBRACE
+    RBRACE = 5,                    // RBRACE
+    LCURLY = 6,                    // LCURLY
+    RCURLY = 7,                    // RCURLY
+    LBIG = 8,                      // LBIG
+    RBIG = 9,                      // RBIG
+    ASSIGN = 10,                   // ASSIGN
+    IF = 11,                       // IF
+    ELSE = 12,                     // ELSE
+    ELSE_IF = 13,                  // ELSE_IF
+    LOOP = 14,                     // LOOP
+    FOR = 15,                      // FOR
+    WHILE = 16,                    // WHILE
+    AND = 17,                      // AND
+    OR = 18,                       // OR
+    XOR = 19,                      // XOR
+    MATCH = 20,                    // MATCH
+    IMPORT = 21,                   // IMPORT
+    IN = 22,                       // IN
+    CONTROL_FLOW = 23,             // CONTROL_FLOW
+    COMMA = 24,                    // COMMA
+    FN_ARROW = 25,                 // FN_ARROW
+    MATCH_ARROW = 26,              // MATCH_ARROW
+    RETURN = 27,                   // RETURN
+    BREAK = 28,                    // BREAK
+    SKIP = 29,                     // SKIP
+    SEMI_COLON = 30,               // SEMI_COLON
+    PLUS = 31,                     // PLUS
+    MINUS = 32,                    // MINUS
+    TIMES = 33,                    // TIMES
+    DIV = 34,                      // DIV
+    GT = 35,                       // GT
+    LT = 36,                       // LT
+    GE = 37,                       // GE
+    LE = 38,                       // LE
+    NE = 39,                       // NE
+    EQ = 40,                       // "op"
+    ID = 41,                       // "identifier"
+    DATA_TYPE = 42,                // "type"
+    NUMBER = 43,                   // "num"
+    FN = 44                        // FN
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -548,50 +550,50 @@ namespace STAB {
         S_YYerror = 1,                           // error
         S_YYUNDEF = 2,                           // "invalid token"
         S_MOD = 3,                               // MOD
-        S_FN = 4,                                // FN
-        S_LBRACE = 5,                            // LBRACE
-        S_RBRACE = 6,                            // RBRACE
-        S_LCURLY = 7,                            // LCURLY
-        S_RCURLY = 8,                            // RCURLY
-        S_LBIG = 9,                              // LBIG
-        S_RBIG = 10,                             // RBIG
-        S_ASSIGN = 11,                           // ASSIGN
-        S_IF = 12,                               // IF
-        S_ELSE = 13,                             // ELSE
-        S_ELSE_IF = 14,                          // ELSE_IF
-        S_LOOP = 15,                             // LOOP
-        S_FOR = 16,                              // FOR
-        S_WHILE = 17,                            // WHILE
-        S_AND = 18,                              // AND
-        S_OR = 19,                               // OR
-        S_XOR = 20,                              // XOR
-        S_MATCH = 21,                            // MATCH
-        S_IMPORT = 22,                           // IMPORT
-        S_IN = 23,                               // IN
-        S_CONTROL_FLOW = 24,                     // CONTROL_FLOW
-        S_COMMA = 25,                            // COMMA
-        S_FN_ARROW = 26,                         // FN_ARROW
-        S_MATCH_ARROW = 27,                      // MATCH_ARROW
-        S_RETURN = 28,                           // RETURN
-        S_BREAK = 29,                            // BREAK
-        S_SKIP = 30,                             // SKIP
-        S_SEMI_COLON = 31,                       // SEMI_COLON
-        S_PLUS = 32,                             // PLUS
-        S_MINUS = 33,                            // MINUS
-        S_TIMES = 34,                            // TIMES
-        S_DIV = 35,                              // DIV
-        S_GT = 36,                               // GT
-        S_LT = 37,                               // LT
-        S_GE = 38,                               // GE
-        S_LE = 39,                               // LE
-        S_NE = 40,                               // NE
-        S_EQ = 41,                               // "op"
-        S_ID = 42,                               // "identifier"
-        S_DATA_TYPE = 43,                        // "type"
-        S_NUMBER = 44,                           // "num"
+        S_LBRACE = 4,                            // LBRACE
+        S_RBRACE = 5,                            // RBRACE
+        S_LCURLY = 6,                            // LCURLY
+        S_RCURLY = 7,                            // RCURLY
+        S_LBIG = 8,                              // LBIG
+        S_RBIG = 9,                              // RBIG
+        S_ASSIGN = 10,                           // ASSIGN
+        S_IF = 11,                               // IF
+        S_ELSE = 12,                             // ELSE
+        S_ELSE_IF = 13,                          // ELSE_IF
+        S_LOOP = 14,                             // LOOP
+        S_FOR = 15,                              // FOR
+        S_WHILE = 16,                            // WHILE
+        S_AND = 17,                              // AND
+        S_OR = 18,                               // OR
+        S_XOR = 19,                              // XOR
+        S_MATCH = 20,                            // MATCH
+        S_IMPORT = 21,                           // IMPORT
+        S_IN = 22,                               // IN
+        S_CONTROL_FLOW = 23,                     // CONTROL_FLOW
+        S_COMMA = 24,                            // COMMA
+        S_FN_ARROW = 25,                         // FN_ARROW
+        S_MATCH_ARROW = 26,                      // MATCH_ARROW
+        S_RETURN = 27,                           // RETURN
+        S_BREAK = 28,                            // BREAK
+        S_SKIP = 29,                             // SKIP
+        S_SEMI_COLON = 30,                       // SEMI_COLON
+        S_PLUS = 31,                             // PLUS
+        S_MINUS = 32,                            // MINUS
+        S_TIMES = 33,                            // TIMES
+        S_DIV = 34,                              // DIV
+        S_GT = 35,                               // GT
+        S_LT = 36,                               // LT
+        S_GE = 37,                               // GE
+        S_LE = 38,                               // LE
+        S_NE = 39,                               // NE
+        S_EQ = 40,                               // "op"
+        S_ID = 41,                               // "identifier"
+        S_DATA_TYPE = 42,                        // "type"
+        S_NUMBER = 43,                           // "num"
+        S_FN = 44,                               // FN
         S_YYACCEPT = 45,                         // $accept
-        S_functionPrototype = 46,                // functionPrototype
-        S_functionDefinition = 47,               // functionDefinition
+        S_functionDefinition = 46,               // functionDefinition
+        S_functionPrototype = 47,                // functionPrototype
         S_varDeclaration = 48,                   // varDeclaration
         S_varInitialization = 49,                // varInitialization
         S_loop = 50,                             // loop
@@ -609,11 +611,10 @@ namespace STAB {
         S_ifStmt = 62,                           // ifStmt
         S_paramList = 63,                        // paramList
         S_params = 64,                           // params
-        S_paramListWithVar = 65,                 // paramListWithVar
-        S_paramsWithVar = 66,                    // paramsWithVar
-        S_argList = 67,                          // argList
-        S_args = 68,                             // args
-        S_fnCall = 69                            // fnCall
+        S_paramsWithVar = 65,                    // paramsWithVar
+        S_argList = 66,                          // argList
+        S_args = 67,                             // args
+        S_fnCall = 68                            // fnCall
       };
     };
 
@@ -650,6 +651,10 @@ namespace STAB {
       {
         switch (this->kind ())
     {
+      case symbol_kind::S_fnCall: // fnCall
+        value.move< CallExprAST* > (std::move (that.value));
+        break;
+
       case symbol_kind::S_expr: // expr
         value.move< ExprAST* > (std::move (that.value));
         break;
@@ -658,8 +663,8 @@ namespace STAB {
         value.move< STAB::VariableDeclAssignExprAST* > (std::move (that.value));
         break;
 
-      case symbol_kind::S_functionPrototype: // functionPrototype
       case symbol_kind::S_functionDefinition: // functionDefinition
+      case symbol_kind::S_functionPrototype: // functionPrototype
       case symbol_kind::S_varDeclaration: // varDeclaration
       case symbol_kind::S_loop: // loop
       case symbol_kind::S_while: // while
@@ -690,7 +695,6 @@ namespace STAB {
         value.move< std::vector<ExprAST*> > (std::move (that.value));
         break;
 
-      case symbol_kind::S_paramListWithVar: // paramListWithVar
       case symbol_kind::S_paramsWithVar: // paramsWithVar
         value.move< std::vector<STAB::VariableDeclExprAST*> > (std::move (that.value));
         break;
@@ -723,6 +727,20 @@ namespace STAB {
 #else
       basic_symbol (typename Base::kind_type t, const location_type& l)
         : Base (t)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, CallExprAST*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const CallExprAST*& v, const location_type& l)
+        : Base (t)
+        , value (v)
         , location (l)
       {}
 #endif
@@ -863,6 +881,10 @@ namespace STAB {
         // Value type destructor.
 switch (yykind)
     {
+      case symbol_kind::S_fnCall: // fnCall
+        value.template destroy< CallExprAST* > ();
+        break;
+
       case symbol_kind::S_expr: // expr
         value.template destroy< ExprAST* > ();
         break;
@@ -871,8 +893,8 @@ switch (yykind)
         value.template destroy< STAB::VariableDeclAssignExprAST* > ();
         break;
 
-      case symbol_kind::S_functionPrototype: // functionPrototype
       case symbol_kind::S_functionDefinition: // functionDefinition
+      case symbol_kind::S_functionPrototype: // functionPrototype
       case symbol_kind::S_varDeclaration: // varDeclaration
       case symbol_kind::S_loop: // loop
       case symbol_kind::S_while: // while
@@ -903,7 +925,6 @@ switch (yykind)
         value.template destroy< std::vector<ExprAST*> > ();
         break;
 
-      case symbol_kind::S_paramListWithVar: // paramListWithVar
       case symbol_kind::S_paramsWithVar: // paramsWithVar
         value.template destroy< std::vector<STAB::VariableDeclExprAST*> > ();
         break;
@@ -1127,21 +1148,6 @@ switch (yykind)
       make_MOD (const location_type& l)
       {
         return symbol_type (token::MOD, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_FN (location_type l)
-      {
-        return symbol_type (token::FN, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_FN (const location_type& l)
-      {
-        return symbol_type (token::FN, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1744,6 +1750,21 @@ switch (yykind)
         return symbol_type (token::NUMBER, v, l);
       }
 #endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_FN (location_type l)
+      {
+        return symbol_type (token::FN, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_FN (const location_type& l)
+      {
+        return symbol_type (token::FN, l);
+      }
+#endif
 
 
     class context
@@ -2069,9 +2090,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 274,     ///< Last index in yytable_.
-      yynnts_ = 25,  ///< Number of nonterminal symbols.
-      yyfinal_ = 40 ///< Termination state number.
+      yylast_ = 245,     ///< Last index in yytable_.
+      yynnts_ = 24,  ///< Number of nonterminal symbols.
+      yyfinal_ = 2 ///< Termination state number.
     };
 
 
@@ -2084,7 +2105,7 @@ switch (yykind)
 
 #line 17 "src/parser/parser.yy"
 } // STAB
-#line 2088 "src/parser/parser.hpp"
+#line 2109 "src/parser/parser.hpp"
 
 
 

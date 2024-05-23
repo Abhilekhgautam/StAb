@@ -46,11 +46,9 @@
   #define YYLLOC_DEFAULT(Cur, Rhs, N) calcLocation(Cur, Rhs, N)
   #define yylex lexer.yylex
 
-  STAB::Scope* globalScope = new STAB::Scope();
-  STAB::Scope* currentScope = globalScope;
 }
 
-%token MOD FN
+%token MOD
 %token LBRACE RBRACE LCURLY RCURLY LBIG RBIG ASSIGN
 %token IF ELSE ELSE_IF LOOP FOR WHILE AND OR XOR MATCH
 %token IMPORT IN CONTROL_FLOW COMMA FN_ARROW MATCH_ARROW
@@ -68,43 +66,18 @@
 %type<ExprAST*> expr 
 %type<CallExprAST*> fnCall
 %type<std::vector<ExprAST*>> argList args 
-%type<std::vector<STAB::VariableDeclExprAST*>> paramListWithVar  paramsWithVar
-%start stmts
+%type<std::vector<STAB::VariableDeclExprAST*>>paramsWithVar
+
 
 %left PLUS MINUS
 %left TIMES DIV
 %left GT LT GE LE EQ NE
+%nonassoc FN DATA_TYPE 
+
+%start stmts
 %%
  
- functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
-		       if (currentScope != globalScope){
-		         std::cout << "\nErr: Cannot define a function prototype in the non-global scope\n";
-		       }
-                       std::vector<std::string> Args;
-		       for(const auto elt: $4){
-		         Args.emplace_back(elt);
-		       }
-                       $$ = new STAB::PrototypeAST($7, $2, Args);
-                       auto FnIR = $$->codegen(currentScope);
-                       FnIR->print(llvm::errs());
-                   }
-                   | FN ID LBRACE paramList RBRACE SEMI_COLON{
-		       if (currentScope != globalScope){
-		         std::cout << "\nErr: Cannot define a function prototype in the non-global scope\n";
-		       }
-                      std::vector<std::string> Args;
-		      for (const auto elt: $4){
-		        Args.emplace_back(elt);
-		      }
-                      $$ = new STAB::PrototypeAST("void", $2, Args);
-                      auto FnIR = $$->codegen(currentScope);
-                      FnIR->print(llvm::errs());
-                   }
-
- functionDefinition: FN ID LBRACE paramListWithVar RBRACE FN_ARROW DATA_TYPE LCURLY stmts RCURLY{
-			auto fnScope = new Scope(currentScope);
-			currentScope = fnScope;
-	                currentScope->setFnBlock(mainFunction);	
+ functionDefinition: FN ID LBRACE paramsWithVar RBRACE FN_ARROW DATA_TYPE LCURLY stmts RCURLY{
                         std::vector<std::string> argTypes;
 			std::vector<STAB::VariableDeclExprAST*> declVars;
                         for(const auto elt: $4){
@@ -113,23 +86,16 @@
 			}
 			auto proto = new STAB::PrototypeAST($7, $2, argTypes);
 			$$ = new STAB::FunctionAST(proto,declVars, $9);
-			auto FnIR = $$->codegen(currentScope);
-			FnIR->print(llvm::errs());
-                        currentScope = globalScope;
                     }
-                    | FN ID LBRACE paramListWithVar RBRACE LCURLY stmts RCURLY  {
-		        std::vector<std::string> argTypes;
-                        std::vector<STAB::VariableDeclExprAST*> declVars;
-                        for(const auto elt: $4){
-			  argTypes.emplace_back(elt->getType());
-			  declVars.emplace_back(elt);
-			}
-			auto proto = new STAB::PrototypeAST("void", $2, argTypes);
-			$$ = new STAB::FunctionAST(proto, declVars,  $7);
-			auto FnIR = $$->codegen(currentScope);
-			FnIR->print(llvm::errs());
-			currentScope = globalScope;
-                     } 
+
+ functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
+                       std::vector<std::string> Args;
+		       for(const auto elt: $4){
+		         Args.emplace_back(elt);
+		       }
+                       $$ = new STAB::PrototypeAST($7, $2, Args);
+                   }
+
 
  varDeclaration: DATA_TYPE ID SEMI_COLON {
                   $$ = new STAB::VariableDeclExprAST($1, $2);
@@ -146,6 +112,7 @@
 
  loop: LOOP LCURLY stmts RCURLY{
        $$ = new LoopStatementAST($3);
+
      }
      ;
 
@@ -153,20 +120,20 @@
  
  while: WHILE expr LCURLY stmts RCURLY{
          $$ = new WhileStatementAST($2, $4);
+
       } 
 
 stmts: stmts stmt{
-        for(const auto elt: $1)
-	    $$.emplace_back(elt);
-	$$.emplace_back($2);
+       $1.emplace_back($2);
+       $$ = $1;
      }
-     | stmt {
-       $$.emplace_back($1);
+     | %empty {
+       $$ = std::vector<STAB::StatementAST*>();
      }
      ;
 
- stmt: %empty
-      | functionDefinition{
+ stmt:
+      functionDefinition{
         $$ = $1;
       }
       | loop{
@@ -241,7 +208,7 @@ stmts: stmts stmt{
      }
      ;
 
- assignExpr: ID ASSIGN expr SEMI_COLON{
+ assignExpr: ID ASSIGN expr SEMI_COLON %prec ASSIGN{
              $$ = new VariableAssignExprAST($1, $3);
            }
 	   ;
@@ -265,9 +232,8 @@ stmts: stmts stmt{
  ifStmt: IF expr LCURLY stmt RCURLY elseifStmt elseStmt {
 	 }
 
- paramList: %empty {
-           }
-          | params {
+ paramList:
+           params {
 	     for (const auto elt: $1)
 	         $$.emplace_back(elt);
 	  }
@@ -283,15 +249,6 @@ stmts: stmts stmt{
        }
        ; 
 
-paramListWithVar: %empty{
-
-		}
-		| paramsWithVar {
-		  for (const auto elt: $1)
-		      $$.emplace_back(elt);
-		}
-		;
-
 paramsWithVar: paramsWithVar COMMA DATA_TYPE ID {
                 for(const auto elt: $1)
 		   $$.emplace_back(elt);
@@ -300,6 +257,8 @@ paramsWithVar: paramsWithVar COMMA DATA_TYPE ID {
 	       auto newDecl = new STAB::VariableDeclExprAST($1, $2);
 	       $$.emplace_back(newDecl);
 	     }
+	     | %empty
+	     ;
 
 
  argList: %empty {
@@ -322,7 +281,6 @@ paramsWithVar: paramsWithVar COMMA DATA_TYPE ID {
      ;
 
  fnCall: ID LBRACE argList RBRACE{
-   // todo: read argList into Args
    std::vector<STAB::ExprAST*> Args;
    for (const auto elt: $3){
       Args.emplace_back(elt);
@@ -342,5 +300,5 @@ namespace STAB {
  //}
  void Parser::error(const location &loc, const std::string &message){
   std::cerr << "Error at lines " << loc << ": " << message << std::endl;
-}
+  }
 }
