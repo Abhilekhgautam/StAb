@@ -75,6 +75,11 @@ blank [ \t\r]
 
 "return" return Token::token_kind_type::RETURN;
 
+"void" {
+         yylval->emplace<std::string>(yytext);
+	 return Token::token_kind_type::DATA_TYPE;
+       }
+
 {id} {
        yylval->emplace<std::string>(yytext);
        return Token::token_kind_type::ID;
