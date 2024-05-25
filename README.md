@@ -3,7 +3,7 @@ STAB - A General Purpose, Imperative, Static Typed Programming Language.
 # Probable Hello World
 
 ```
- fn main(){
+ fn main() -> void {
     // println adds a new line automatically
     println("Hello, World")
  }
@@ -14,7 +14,7 @@ STAB - A General Purpose, Imperative, Static Typed Programming Language.
 ## While Loop
 
 ```
-fn main(){
+fn main() -> void{
   int x = 5;
   while x {
     x = x - 1;
@@ -25,7 +25,7 @@ fn main(){
 ## loop : Infinite looping construct 
 
 ```
-fn main(){ 
+fn main() -> void{ 
  // infinite loop
  loop {
     println("Hello,World");
@@ -34,7 +34,7 @@ fn main(){
 ```
 
 ## Variable Declaration
- - Only supports `int` type as of now.
+ - Only supports `int`and `void` type as of now.
 ```
  int x;
 ```
@@ -49,13 +49,13 @@ fn factorial(int n) -> int {
 
 # Current Implementation Status 
 
- - Function cannot take args 
+ - Function can take args now.
  - No concept of Scope ( will be implemented next)
- - Variable Referencing don't check if the var exists (needs scope)
- - Only `int` as a type 
+ - Only `int` and `void` as a type.
  - No `for` loop yet, (will be implemented)
  - No class or struct (struct will be implementd)
  - No Array (will be implemented)
  - Has very poor error message
- - Don't generate Native Code, only generates LLVM IR as of now 
+ - Doesn't generate Native Code, only generates LLVM IR as of now 
  - No Support for println yet.
+ - Checks for the existence of the main function
