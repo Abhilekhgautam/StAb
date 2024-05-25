@@ -4,7 +4,7 @@
 %code requires {
   #include "../includes/location.hpp"
   #include "../parser/parser.hpp"
-  #include "../includes/scope.h"
+  #include "../includes/scope.hpp"
   #include "../globals.h"
   #ifndef STAB_AST_H
   #include "../simple-ast/ast.h"
@@ -45,7 +45,6 @@
   }
   #define YYLLOC_DEFAULT(Cur, Rhs, N) calcLocation(Cur, Rhs, N)
   #define yylex lexer.yylex
-
 }
 
 %token MOD
@@ -59,7 +58,7 @@
 %token<std::string> DATA_TYPE "type"
 %token<std::string> NUMBER "num"
 
-%type<std::vector<StatementAST*>> stmts;
+%type<std::vector<StatementAST*>> program stmts;
 %type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while loop returnStmt 
 %type<std::vector<std::string>> paramList params
 %type<STAB::VariableDeclAssignExprAST*> varInitialization
@@ -74,10 +73,12 @@
 %left GT LT GE LE EQ NE
 %nonassoc FN DATA_TYPE 
 
-%start stmts
+%start program
 %%
  
  functionDefinition: FN ID LBRACE paramsWithVar RBRACE FN_ARROW DATA_TYPE LCURLY stmts RCURLY{
+			auto fnScope = new Scope(currentScope);
+			currentScope = fnScope;
                         std::vector<std::string> argTypes;
 			std::vector<STAB::VariableDeclExprAST*> declVars;
                         for(const auto elt: $4){
@@ -85,7 +86,8 @@
 			  declVars.emplace_back(elt);
 			}
 			auto proto = new STAB::PrototypeAST($7, $2, argTypes);
-			$$ = new STAB::FunctionAST(proto,declVars, $9);
+			$$ = new STAB::FunctionAST(proto,declVars, $9, fnScope);
+			currentScope = globalScope;
                     }
 
  functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
@@ -119,10 +121,32 @@
  for : FOR ID IN ID LCURLY stmt RCURLY
  
  while: WHILE expr LCURLY stmts RCURLY{
-         $$ = new WhileStatementAST($2, $4);
+         if (currentScope == globalScope){
+           std::cerr << "\nCannot write a loop statement in the global scope\n"; 
+         }
+       $$ = new WhileStatementAST($2, $4);
 
       } 
 
+program: stmts{
+       globalScope = new Scope(nullptr);
+       currentScope = globalScope;
+
+       std::vector<std::string> Args;
+       std::vector<STAB::VariableDeclExprAST*> declVars;
+  
+       std::vector<STAB::StatementAST*> stmts;
+
+       auto proto = new PrototypeAST("void", "__start__", Args);
+
+       $$ = $1;
+
+       __start__fn = new FunctionAST(proto, declVars, stmts, globalScope);
+      
+       for (const auto stmt: $1)
+           __start__fn->getBody().emplace_back(stmt);
+
+       };
 stmts: stmts stmt{
        $1.emplace_back($2);
        $$ = $1;

@@ -49,7 +49,7 @@
 
   #include "../includes/location.hpp"
   #include "../parser/parser.hpp"
-  #include "../includes/scope.h"
+  #include "../includes/scope.hpp"
   #include "../globals.h"
   #ifndef STAB_AST_H
   #include "../simple-ast/ast.h"
@@ -431,6 +431,7 @@ namespace STAB {
       // paramsWithVar
       char dummy7[sizeof (std::vector<STAB::VariableDeclExprAST*>)];
 
+      // program
       // stmts
       char dummy8[sizeof (std::vector<StatementAST*>)];
 
@@ -599,22 +600,23 @@ namespace STAB {
         S_loop = 50,                             // loop
         S_for = 51,                              // for
         S_while = 52,                            // while
-        S_stmts = 53,                            // stmts
-        S_stmt = 54,                             // stmt
-        S_expr = 55,                             // expr
-        S_assignExpr = 56,                       // assignExpr
-        S_returnStmt = 57,                       // returnStmt
-        S_breakStmt = 58,                        // breakStmt
-        S_skipStmt = 59,                         // skipStmt
-        S_elseStmt = 60,                         // elseStmt
-        S_elseifStmt = 61,                       // elseifStmt
-        S_ifStmt = 62,                           // ifStmt
-        S_paramList = 63,                        // paramList
-        S_params = 64,                           // params
-        S_paramsWithVar = 65,                    // paramsWithVar
-        S_argList = 66,                          // argList
-        S_args = 67,                             // args
-        S_fnCall = 68                            // fnCall
+        S_program = 53,                          // program
+        S_stmts = 54,                            // stmts
+        S_stmt = 55,                             // stmt
+        S_expr = 56,                             // expr
+        S_assignExpr = 57,                       // assignExpr
+        S_returnStmt = 58,                       // returnStmt
+        S_breakStmt = 59,                        // breakStmt
+        S_skipStmt = 60,                         // skipStmt
+        S_elseStmt = 61,                         // elseStmt
+        S_elseifStmt = 62,                       // elseifStmt
+        S_ifStmt = 63,                           // ifStmt
+        S_paramList = 64,                        // paramList
+        S_params = 65,                           // params
+        S_paramsWithVar = 66,                    // paramsWithVar
+        S_argList = 67,                          // argList
+        S_args = 68,                             // args
+        S_fnCall = 69                            // fnCall
       };
     };
 
@@ -699,6 +701,7 @@ namespace STAB {
         value.move< std::vector<STAB::VariableDeclExprAST*> > (std::move (that.value));
         break;
 
+      case symbol_kind::S_program: // program
       case symbol_kind::S_stmts: // stmts
         value.move< std::vector<StatementAST*> > (std::move (that.value));
         break;
@@ -929,6 +932,7 @@ switch (yykind)
         value.template destroy< std::vector<STAB::VariableDeclExprAST*> > ();
         break;
 
+      case symbol_kind::S_program: // program
       case symbol_kind::S_stmts: // stmts
         value.template destroy< std::vector<StatementAST*> > ();
         break;
@@ -2090,9 +2094,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 245,     ///< Last index in yytable_.
-      yynnts_ = 24,  ///< Number of nonterminal symbols.
-      yyfinal_ = 2 ///< Termination state number.
+      yylast_ = 226,     ///< Last index in yytable_.
+      yynnts_ = 25,  ///< Number of nonterminal symbols.
+      yyfinal_ = 3 ///< Termination state number.
     };
 
 
@@ -2105,7 +2109,7 @@ switch (yykind)
 
 #line 17 "src/parser/parser.yy"
 } // STAB
-#line 2109 "src/parser/parser.hpp"
+#line 2113 "src/parser/parser.hpp"
 
 
 
