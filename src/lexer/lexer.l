@@ -17,7 +17,7 @@
 id    [a-zA-Z][a-zA-Z_0-9]*
 digit   [0-9]+
 blank [ \t\r]
-
+str [^\"\\]*\\.[^\"\\]** 
 %{
   using Token = STAB::Parser::token;
   using location = STAB::location;
@@ -80,7 +80,17 @@ blank [ \t\r]
 	 return Token::token_kind_type::DATA_TYPE;
        }
 
-{id} {
+"string" {
+          yylval->emplace<std::string>(yytext);
+	  return Token::token_kind_type::DATA_TYPE;
+         }
+
+\"([^\"\\]*(\\.[^\"\\]*)*)\" {
+        yylval->emplace<std::string>(yytext);
+        return Token::token_kind_type::STRING;
+     }
+
+{id} {  
        yylval->emplace<std::string>(yytext);
        return Token::token_kind_type::ID;
     }
