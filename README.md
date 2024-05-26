@@ -1,4 +1,4 @@
-STAB - A General Purpose, Imperative, Static Typed Programming Language.
+StAb - A General Purpose, Imperative, Static Typed Programming Language.
 
 # Probable Hello World
 
