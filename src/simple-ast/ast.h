@@ -3,6 +3,7 @@
 //
 #pragma once
 
+#include <fstream>
 #ifndef STAB_AST_H
 #define STAB_AST_H
 
@@ -26,7 +27,7 @@
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Metadata.h>
-
+#include <llvm-18/llvm/IR/GlobalValue.h>
 #include <llvm-18/llvm/IR/CallingConv.h>
 
 #ifndef STAB_GLOBAL_H
@@ -57,6 +58,17 @@ namespace STAB{
         // just for now
         std::string getType() override{return "int";}
     };
+
+    class StringExprAST: public ExprAST{
+	std::string val;
+    public:
+        StringExprAST(std::string val):val(val){}
+        llvm::Value* codegen(STAB::Scope* s) override;
+        // just for now
+        std::string getType() override{return "string";}
+	std::string getVal() {return val;}
+    };
+
 
     // int x;
     class VariableDeclExprAST: public StatementAST {
@@ -101,6 +113,16 @@ namespace STAB{
        public:
           LoopStatementAST(std::vector<StatementAST*> body): body(std::move(body)){}
 	  llvm::Value* codegen(STAB::Scope* s) override;
+    };
+
+    // Represents if else ladder.. or just a if
+    class IfStatementAST: public StatementAST {
+       ExprAST* condExpr;
+       std::vector<StatementAST*> ifBody;
+
+    public:
+       IfStatementAST(ExprAST* cond, std::vector<StatementAST*> body): condExpr(cond), ifBody(body){}
+       llvm::Value* codegen(Scope* s) override;
     };
     // Represents referencing of variables..
     class VariableExprAST : public ExprAST {
@@ -166,6 +188,20 @@ namespace STAB{
 	    std::vector<ExprAST*> getArgs(){return Args;}
         llvm::Value* codegen(Scope* s) override;
 	    std::string getType() override {return "";}
+    };
+
+    class CallStatementAST : public StatementAST {
+	 std::string Callee;
+        std::vector<ExprAST*> Args;
+
+    public:
+        CallStatementAST(const std::string &Callee,
+                    std::vector<ExprAST*> Args)
+                : Callee(Callee), Args(std::move(Args)) {}
+	std::string getFnName() const {return Callee;}
+	std::vector<ExprAST*> getArgs(){return Args;}
+        llvm::Value* codegen(Scope* s) override;
+    
     };
 
 // PrototypeAST - This class represents the "prototype" for a function,
