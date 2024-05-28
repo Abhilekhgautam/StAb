@@ -3,10 +3,6 @@
 #ifndef STAB_SCOPE_HPP
 #define STAB_SCOPE_HPP
 
-#include <iostream>
-#include <algorithm>
-#include <utility>
-#include <vector>
 #include <map>
 
 #include "llvm/IR/BasicBlock.h"
