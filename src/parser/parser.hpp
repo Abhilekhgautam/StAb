@@ -407,6 +407,7 @@ namespace STAB {
       // stmt
       // assignExpr
       // returnStmt
+      // fnCallStmt
       char dummy4[sizeof (StatementAST*)];
 
       // PLUS
@@ -422,6 +423,7 @@ namespace STAB {
       // "identifier"
       // "type"
       // "num"
+      // "str"
       char dummy5[sizeof (std::string)];
 
       // argList
@@ -528,7 +530,8 @@ namespace STAB {
     ID = 41,                       // "identifier"
     DATA_TYPE = 42,                // "type"
     NUMBER = 43,                   // "num"
-    FN = 44                        // FN
+    STRING = 44,                   // "str"
+    FN = 45                        // FN
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -545,7 +548,7 @@ namespace STAB {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 45, ///< Number of tokens.
+        YYNTOKENS = 46, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -591,32 +594,34 @@ namespace STAB {
         S_ID = 41,                               // "identifier"
         S_DATA_TYPE = 42,                        // "type"
         S_NUMBER = 43,                           // "num"
-        S_FN = 44,                               // FN
-        S_YYACCEPT = 45,                         // $accept
-        S_functionDefinition = 46,               // functionDefinition
-        S_functionPrototype = 47,                // functionPrototype
-        S_varDeclaration = 48,                   // varDeclaration
-        S_varInitialization = 49,                // varInitialization
-        S_loop = 50,                             // loop
-        S_for = 51,                              // for
-        S_while = 52,                            // while
-        S_program = 53,                          // program
-        S_stmts = 54,                            // stmts
-        S_stmt = 55,                             // stmt
-        S_expr = 56,                             // expr
-        S_assignExpr = 57,                       // assignExpr
-        S_returnStmt = 58,                       // returnStmt
-        S_breakStmt = 59,                        // breakStmt
-        S_skipStmt = 60,                         // skipStmt
-        S_elseStmt = 61,                         // elseStmt
-        S_elseifStmt = 62,                       // elseifStmt
-        S_ifStmt = 63,                           // ifStmt
-        S_paramList = 64,                        // paramList
-        S_params = 65,                           // params
-        S_paramsWithVar = 66,                    // paramsWithVar
-        S_argList = 67,                          // argList
-        S_args = 68,                             // args
-        S_fnCall = 69                            // fnCall
+        S_STRING = 44,                           // "str"
+        S_FN = 45,                               // FN
+        S_YYACCEPT = 46,                         // $accept
+        S_functionDefinition = 47,               // functionDefinition
+        S_functionPrototype = 48,                // functionPrototype
+        S_varDeclaration = 49,                   // varDeclaration
+        S_varInitialization = 50,                // varInitialization
+        S_loop = 51,                             // loop
+        S_for = 52,                              // for
+        S_while = 53,                            // while
+        S_program = 54,                          // program
+        S_stmts = 55,                            // stmts
+        S_stmt = 56,                             // stmt
+        S_expr = 57,                             // expr
+        S_assignExpr = 58,                       // assignExpr
+        S_returnStmt = 59,                       // returnStmt
+        S_breakStmt = 60,                        // breakStmt
+        S_skipStmt = 61,                         // skipStmt
+        S_elseStmt = 62,                         // elseStmt
+        S_elseifStmt = 63,                       // elseifStmt
+        S_ifStmt = 64,                           // ifStmt
+        S_paramList = 65,                        // paramList
+        S_params = 66,                           // params
+        S_paramsWithVar = 67,                    // paramsWithVar
+        S_argList = 68,                          // argList
+        S_args = 69,                             // args
+        S_fnCallStmt = 70,                       // fnCallStmt
+        S_fnCall = 71                            // fnCall
       };
     };
 
@@ -673,6 +678,7 @@ namespace STAB {
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_fnCallStmt: // fnCallStmt
         value.move< StatementAST* > (std::move (that.value));
         break;
 
@@ -689,6 +695,7 @@ namespace STAB {
       case symbol_kind::S_ID: // "identifier"
       case symbol_kind::S_DATA_TYPE: // "type"
       case symbol_kind::S_NUMBER: // "num"
+      case symbol_kind::S_STRING: // "str"
         value.move< std::string > (std::move (that.value));
         break;
 
@@ -904,6 +911,7 @@ switch (yykind)
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_fnCallStmt: // fnCallStmt
         value.template destroy< StatementAST* > ();
         break;
 
@@ -920,6 +928,7 @@ switch (yykind)
       case symbol_kind::S_ID: // "identifier"
       case symbol_kind::S_DATA_TYPE: // "type"
       case symbol_kind::S_NUMBER: // "num"
+      case symbol_kind::S_STRING: // "str"
         value.template destroy< std::string > ();
         break;
 
@@ -1757,6 +1766,21 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_STRING (std::string v, location_type l)
+      {
+        return symbol_type (token::STRING, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_STRING (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::STRING, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_FN (location_type l)
       {
         return symbol_type (token::FN, std::move (l));
@@ -1799,7 +1823,7 @@ switch (yykind)
 
 
     /// Stored state numbers (used for stacks).
-    typedef signed char state_type;
+    typedef unsigned char state_type;
 
     /// The arguments of the error message.
     int yy_syntax_error_arguments_ (const context& yyctx,
@@ -1850,7 +1874,7 @@ switch (yykind)
     // YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
     // positive, shift that token.  If negative, reduce the rule whose
     // number is the opposite.  If YYTABLE_NINF, syntax error.
-    static const signed char yytable_[];
+    static const unsigned char yytable_[];
 
     static const signed char yycheck_[];
 
@@ -2094,8 +2118,8 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 226,     ///< Last index in yytable_.
-      yynnts_ = 25,  ///< Number of nonterminal symbols.
+      yylast_ = 239,     ///< Last index in yytable_.
+      yynnts_ = 26,  ///< Number of nonterminal symbols.
       yyfinal_ = 3 ///< Termination state number.
     };
 
@@ -2109,7 +2133,7 @@ switch (yykind)
 
 #line 17 "src/parser/parser.yy"
 } // STAB
-#line 2113 "src/parser/parser.hpp"
+#line 2137 "src/parser/parser.hpp"
 
 
 

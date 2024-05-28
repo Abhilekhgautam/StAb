@@ -57,9 +57,9 @@
 %token<std::string> ID "identifier"
 %token<std::string> DATA_TYPE "type"
 %token<std::string> NUMBER "num"
-
+%token<std::string> STRING "str"
 %type<std::vector<StatementAST*>> program stmts;
-%type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while loop returnStmt 
+%type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while loop returnStmt fnCallStmt 
 %type<std::vector<std::string>> paramList params
 %type<STAB::VariableDeclAssignExprAST*> varInitialization
 %type<ExprAST*> expr 
@@ -135,16 +135,7 @@ program: stmts{
        std::vector<std::string> Args;
        std::vector<STAB::VariableDeclExprAST*> declVars;
   
-       std::vector<STAB::StatementAST*> stmts;
-
-       auto proto = new PrototypeAST("void", "__start__", Args);
-
        $$ = $1;
-
-       __start__fn = new FunctionAST(proto, declVars, stmts, globalScope);
-      
-       for (const auto stmt: $1)
-           __start__fn->getBody().emplace_back(stmt);
 
        };
 stmts: stmts stmt{
@@ -185,6 +176,9 @@ stmts: stmts stmt{
       | functionPrototype {
         $$ = $1;
       }
+      | fnCallStmt {
+         $$ = $1; 
+      }
       ;
 
  expr: expr PLUS expr {
@@ -219,6 +213,15 @@ stmts: stmts stmt{
      }
      | expr NE expr{
         $$ = new BinaryExprAST($2, $1, $3);
+     }
+     | STRING {
+        std::string val = $1;
+	auto length = val.length();
+	std::string without_quotation;
+	for(int i = 1; i < length - 1 ; ++i){
+	 without_quotation += val[i];
+	}
+	$$ = new StringExprAST(without_quotation);
      }
      | ID {
        $$ = new VariableExprAST($1);
@@ -303,6 +306,13 @@ paramsWithVar: paramsWithVar COMMA DATA_TYPE ID {
        $$.emplace_back($1);
      }
      ;
+ fnCallStmt: ID LBRACE argList RBRACE SEMI_COLON{
+     std::vector<STAB::ExprAST*> Args;
+     for (const auto elt: $3){
+         Args.emplace_back(elt);
+       }
+      $$ = new CallStatementAST($1, Args);
+    }
 
  fnCall: ID LBRACE argList RBRACE{
    std::vector<STAB::ExprAST*> Args;
