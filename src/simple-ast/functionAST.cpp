@@ -23,21 +23,9 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
         return nullptr;
     }
 
-    if (Proto->getName() == "__start__") {
-        F = TheModule->getFunction("__start__");
-        if (!F) {
-            F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, "__start__", TheModule.get());
-            llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, "entry", F);
-            Builder->SetInsertPoint(fnBlock);
-        } else {
-            llvm::BasicBlock &lastBlock = F->back();
-            Builder->SetInsertPoint(&lastBlock);
-        }
-    } else {
-        F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Proto->getName(), TheModule.get());
-        llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, Proto->getName(), F);
-        Builder->SetInsertPoint(fnBlock);      
-    }
+    F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Proto->getName(), TheModule.get());
+    llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, Proto->getName(), F);
+    Builder->SetInsertPoint(fnBlock);      
 
     fnBlocks.emplace_back(F);
     Scope->setFnBlock(F);
@@ -46,7 +34,6 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
     // Codegen for function parameters5
     for(const auto params: declVars) {
 	auto name = params->getName();
-	std::cerr << "\nOk got a " << name << " param baby\n";
 	params->codegen(Scope);
 	names.emplace_back(name);
     }
@@ -71,13 +58,6 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
         } else {
             std::cerr << "\nError: Non-void function does not have a return statement\n";
             return nullptr;
-        }
-    }
-    // Special case for __start__
-    if (Proto->getName() == "__start__") {
-        llvm::BasicBlock* lastBlock = Builder->GetInsertBlock();
-        if (!lastBlock->getTerminator()) {
-            Builder->CreateRetVoid();
         }
     }
 
