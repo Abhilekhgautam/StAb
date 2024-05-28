@@ -28,7 +28,7 @@ namespace STAB{
         // compare the expr with 0
         cond = Builder->CreateICmpEQ(cond, llvm::ConstantInt::get(*TheContext, llvm::APInt(32, 0, true)));
 
-        Builder->CreateCondBr(cond, afterLoop, loopBody);
+        Builder->CreateCondBr(cond, loopBody, afterLoop);
         Builder->SetInsertPoint(afterLoop);
 
         return F;
