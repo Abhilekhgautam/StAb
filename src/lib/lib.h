@@ -15,11 +15,7 @@
 
 #include <string>
 
-namespace STAB{
-    namespace Lib{
-        extern "C++" DECLSPEC void println(char* str, ...);
-        extern "C++" DECLSPEC void print(char* str, ...);
-    }
-}
+extern "C++" DECLSPEC void println(char* str, ...);
+extern "C++" DECLSPEC void print(char* str, ...);
 
 #endif //STAB_LIB_H
