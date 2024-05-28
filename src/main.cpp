@@ -29,7 +29,6 @@ std::map<std::string, llvm::Type*> NamedLLVMType;
 std::unique_ptr<llvm::Module> TheModule;
 std::map<std::string, llvm::AllocaInst *> NamedValues;
 std::vector<STAB::Scope*> scopes;
-STAB::FunctionAST* __start__fn;
 
 std::vector<llvm::Function*> fnBlocks;
 
@@ -60,25 +59,21 @@ int main(int argc, char* argv[]){
 
   parser();
 
-  if(__start__fn){
-       __start__fn->codegen(nullptr);
+  init_builtins();
 
-      // Get the main function 
-      auto main = TheModule->getFunction("main");
 
-      if (!main){
-          std::cerr << "\nError: No main function defined.\nSTAB requires at least a\"main\" function for execution\n";     
-	  return -1;
-      }
+  // Get the main function 
+  auto main = TheModule->getFunction("main");
 
-      // get all the function definitions
-      for(auto const elt: fnBlocks){
-	  // print the generated code
-	  elt->print(llvm::errs());    
-      }
-      
-  } else {
-      std::cerr << "__start__fn fn not defined yet!!\n";
+  if (!main){
+        std::cerr << "\nError: No main function defined.\nSTAB requires at least a \"main\" function for execution\n";     
+	return -1;
   }
+
+  // get all the function definitions
+  for(auto const elt: fnBlocks){
+     // print the generated code
+     elt->print(llvm::errs());    
+   }
 
 }
