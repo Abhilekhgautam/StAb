@@ -22,7 +22,10 @@ SRCS = src/lib/lib.cpp \
        src/simple-ast/variableExprAST.cpp \
        src/simple-ast/whileStatementAST.cpp \
        src/simple-ast/stringExprAST.cpp \
-       src/simple-ast/callStatementAST.cpp
+       src/simple-ast/callStatementAST.cpp \
+       src/simple-ast/ifstmt.cpp \
+       src/simple-ast/condStatement.cpp \
+       src/simple-ast/elseStmt.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
