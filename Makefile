@@ -25,7 +25,8 @@ SRCS = src/lib/lib.cpp \
        src/simple-ast/callStatementAST.cpp \
        src/simple-ast/ifstmt.cpp \
        src/simple-ast/condStatement.cpp \
-       src/simple-ast/elseStmt.cpp
+       src/simple-ast/elseStmt.cpp \
+       src/simple-ast/forStatementAST.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

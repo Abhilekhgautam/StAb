@@ -143,7 +143,27 @@ namespace STAB{
        llvm::Value* codegen(Scope* s) override;
     };
 
+    class RangeStatementAST{
+	ExprAST* start;
+	ExprAST* end;
+	ExprAST* step;
+      public:
+	RangeStatementAST(ExprAST* start, ExprAST* end, ExprAST* step = new NumberExprAST(1)):
+		start(start), end(end), step(step){}
+	ExprAST* getStart(){return start;}
+	ExprAST* getEnd(){return end;}
+	ExprAST* getStep(){return step;}
+    };
 
+    class ForStatementAST: public StatementAST {
+	 VariableDeclExprAST* iterationVariable;
+	 RangeStatementAST* range;
+         std::vector<StatementAST*> body;
+     public:
+	 ForStatementAST(VariableDeclExprAST* var, RangeStatementAST* range, std::vector<StatementAST*> body):
+		 iterationVariable(var), range(range), body(body){}
+	 llvm::Value* codegen(Scope* s) override;
+    };
 
     // Represents referencing of variables..
     class VariableExprAST : public ExprAST {
