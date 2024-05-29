@@ -70,8 +70,9 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
         if (Proto->getReturnType() == "void") {
             Builder->CreateRetVoid();
         } else {
-            std::cerr << "\nError: Non-void function does not have a return statement\n";
-            return nullptr;
+            std::cerr << "\nWarning: Non-void function does not have a return statement\n";
+            auto defaultRetVal = llvm::ConstantInt::get(F->getReturnType(), 0);
+	    Builder->CreateRet(defaultRetVal);
         }
     }
 
