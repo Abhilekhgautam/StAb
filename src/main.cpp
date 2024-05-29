@@ -31,7 +31,7 @@ std::map<std::string, llvm::AllocaInst *> NamedValues;
 std::vector<STAB::Scope*> scopes;
 
 std::vector<llvm::Function*> fnBlocks;
-
+STAB::FunctionAST* __start__fn;
 STAB::Scope* globalScope = nullptr;
 STAB::Scope* currentScope = globalScope;
 
@@ -61,19 +61,25 @@ int main(int argc, char* argv[]){
 
   init_builtins();
 
+  if(__start__fn){
+       __start__fn->codegen(nullptr);
 
-  // Get the main function 
-  auto main = TheModule->getFunction("main");
+      // Get the main function 
+      auto main = TheModule->getFunction("main");
 
-  if (!main){
-        std::cerr << "\nError: No main function defined.\nSTAB requires at least a \"main\" function for execution\n";     
-	return -1;
+      if (!main){
+          std::cerr << "\nError: No main function defined.\nSTAB requires at least a\"main\" function for execution\n";     
+	  return -1;
+      }
+
+      // get all the function definitions
+      for(auto const elt: fnBlocks){
+	  // print the generated code
+	  elt->print(llvm::errs());    
+      }
+      
+  } else {
+      std::cerr << "__start__fn fn not defined yet!!\n";
   }
-
-  // get all the function definitions
-  for(auto const elt: fnBlocks){
-     // print the generated code
-     elt->print(llvm::errs());    
-   }
 
 }

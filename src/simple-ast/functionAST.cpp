@@ -23,9 +23,23 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
         return nullptr;
     }
 
-    F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Proto->getName(), TheModule.get());
-    llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, Proto->getName(), F);
-    Builder->SetInsertPoint(fnBlock);      
+    if(Proto->getName() == "__start__"){
+            // Check if __start__fn already exists
+            F = TheModule->getFunction("__start__");
+            if (!F) {
+                F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, "__start__", TheModule.get());
+                llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, "entry", F);
+                 Builder->SetInsertPoint(fnBlock);
+             } else {
+               // Set the insert point to the end of the existing __start__fn function
+               llvm::BasicBlock &lastBlock = F->back();
+               Builder->SetInsertPoint(&lastBlock);
+             }
+	} else {
+          F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Proto->getName(), TheModule.get());
+          llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, Proto->getName(), F);
+          Builder->SetInsertPoint(fnBlock);
+	}
 
     fnBlocks.emplace_back(F);
     Scope->setFnBlock(F);

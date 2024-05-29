@@ -35,6 +35,7 @@ extern std::map<std::string, llvm::AllocaInst *> NamedValues;
 extern STAB::Scope* globalScope;
 extern STAB::Scope* currentScope;
 extern std::vector<llvm::Function*> fnBlocks;
+extern STAB::FunctionAST* __start__fn;
 /*
 void addNewScope(Scope* s){
    scopes.emplace_back(s);	
@@ -92,6 +93,4 @@ inline void init_builtins(){
   fnBlocks.emplace_back(printfFunc);
   fnBlocks.emplace_back(printlnFunc);
 }
-
-
 #endif 
