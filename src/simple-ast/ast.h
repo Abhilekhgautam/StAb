@@ -115,15 +115,36 @@ namespace STAB{
 	  llvm::Value* codegen(STAB::Scope* s) override;
     };
 
-    // Represents if else ladder.. or just a if
-    class IfStatementAST: public StatementAST {
+    class CondStatementAST: public StatementAST {
        ExprAST* condExpr;
-       std::vector<StatementAST*> ifBody;
+       std::vector<StatementAST*> body; 	    
 
+       public:
+         CondStatementAST(ExprAST* cond, std::vector<StatementAST*> body): condExpr(cond), body(std::move(body)){}
+	 ExprAST* getCond(){return condExpr;};
+	 llvm::Value* codegen(Scope* s) override;
+    };
+
+    class ElseStatementAST: public StatementAST {
+        std::vector<StatementAST*> elseBody;
+	public:
+	  ElseStatementAST(std::vector<StatementAST*> body): elseBody(std::move(body)){}
+	  llvm::Value* codegen(Scope* s) override;
+    };
+
+    // Represents if else ladder
+    class IfStatementAST: public StatementAST {
+       CondStatementAST* ifStmt;
+       CondStatementAST* elseifStmt;
+       ElseStatementAST* elseStmt;
     public:
-       IfStatementAST(ExprAST* cond, std::vector<StatementAST*> body): condExpr(cond), ifBody(body){}
+       IfStatementAST(CondStatementAST* ifStmt,CondStatementAST* elseifStmt, ElseStatementAST* elseStmt):
+	       ifStmt(ifStmt), elseifStmt(elseifStmt), elseStmt(elseStmt){}
        llvm::Value* codegen(Scope* s) override;
     };
+
+
+
     // Represents referencing of variables..
     class VariableExprAST : public ExprAST {
       std::string Name;
