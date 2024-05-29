@@ -50,7 +50,7 @@
 %token MOD
 %token LBRACE RBRACE LCURLY RCURLY LBIG RBIG ASSIGN
 %token IF ELSE ELSE_IF LOOP FOR WHILE AND OR XOR MATCH
-%token IMPORT IN CONTROL_FLOW COMMA FN_ARROW MATCH_ARROW
+%token IMPORT IN TO CONTROL_FLOW COMMA FN_ARROW MATCH_ARROW
 %token RETURN BREAK SKIP
 %token SEMI_COLON
 %token<std::string> PLUS MINUS TIMES DIV GT LT GE LE NE EQ "op"
@@ -59,13 +59,15 @@
 %token<std::string> NUMBER "num"
 %token<std::string> STRING "str"
 %type<std::vector<StatementAST*>> program stmts;
-%type<StatementAST*> stmt ifLadder functionPrototype functionDefinition varDeclaration assignExpr while loop returnStmt fnCallStmt 
+%type<StatementAST*> stmt ifLadder functionPrototype functionDefinition varDeclaration assignExpr while for loop returnStmt fnCallStmt 
 %type<STAB::VariableDeclAssignExprAST*> varInitialization
 %type<ExprAST*> expr 
 %type<CallExprAST*> fnCall
 %type<std::vector<ExprAST*>> argList args 
 %type<std::vector<STAB::VariableDeclExprAST*>> paramList parameters
 %type<std::vector<std::string>> paramListPrototype params
+
+%type<STAB::RangeStatementAST*> range;
 
 %type<STAB::CondStatementAST*> ifStmt elseifStmt
 %type<STAB::ElseStatementAST*> elseStmt
@@ -119,8 +121,17 @@
 
      }
      ;
+ range: expr TO expr{
+        $$ = new RangeStatementAST($1, $3); 
+      }
+      ;
 
- for : FOR ID IN ID LCURLY stmt RCURLY
+ for : FOR ID IN range LCURLY stmts RCURLY{
+        std::string type = "int";
+	auto varDecl = new VariableDeclExprAST(type, $2);
+        $$ = new ForStatementAST(varDecl, $4, $6);
+     }
+     ;
  
  while: WHILE expr LCURLY stmts RCURLY{
          if (currentScope == globalScope){
@@ -164,7 +175,9 @@ stmts: stmts stmt{
       | loop{
         $$ = $1;
       }
-      | for 
+      | for{
+        $$ = $1;
+      } 
       | while {
          $$ = $1;
       }
