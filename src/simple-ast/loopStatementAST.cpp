@@ -20,9 +20,14 @@ namespace STAB{
             elt->codegen(s);
         }
 
+	auto dummyNum = new NumberExprAST(0);
+	auto cond = dummyNum->codegen(s);
+
+	cond = Builder->CreateICmpEQ(cond, llvm::ConstantInt::get(*TheContext, llvm::APInt(32, 0, true)));
+
         // this is an infinte loop
         // again enter the loop body
-        Builder->CreateCondBr(llvm::ConstantInt::get(*TheContext, llvm::APInt(32, 1, true)),loopBody, afterLoop);
+        Builder->CreateCondBr(cond,loopBody, afterLoop);
         Builder->SetInsertPoint(afterLoop);
 
         return F;
