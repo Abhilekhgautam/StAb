@@ -1,6 +1,6 @@
 StAb - A General Purpose, Imperative, Static Typed Programming Language.
 
-# Probable Hello World
+# Hello World
 
 ```
  fn main() -> void {
@@ -51,11 +51,12 @@ fn factorial(int n) -> int {
 
  - Function can take args now.
  - No concept of Scope ( will be implemented next)
- - Only `int` and `void` as a type.
- - No `for` loop yet, (will be implemented)
+ - `int` , `string` and `void` as a type.
+ - Support `for` loop added
  - No class or struct (struct will be implementd)
  - No Array (will be implemented)
  - Has very poor error message
  - Doesn't generate Native Code, only generates LLVM IR as of now 
- - No Support for println yet.
+ - Supports printint to standard output using println
  - Checks for the existence of the main function
+ - support for `if else` statement
