@@ -27,12 +27,12 @@ namespace STAB{
         llvm::BasicBlock* else_Body = llvm::BasicBlock::Create(*TheContext, "elseBody", F);
 	llvm::BasicBlock* afterIfelse = llvm::BasicBlock::Create(*TheContext, "afterIfelse", F);
 
-        Builder->CreateCondBr(cond, if_Body, else_Body);
+        Builder->CreateCondBr(cond, else_Body, if_Body);
 
 	Builder->SetInsertPoint(if_Body);
 	
         // generate code for if body
-        auto ifValue =  ifStmt->codegen(s);
+        ifStmt->codegen(s);
 
 	Builder->CreateBr(afterIfelse);
 
@@ -43,7 +43,7 @@ namespace STAB{
 	Builder->SetInsertPoint(else_Body);
 
 	// generate code for else body
-	auto elseValue = elseStmt->codegen(s);
+         elseStmt->codegen(s);
 
 	Builder->CreateBr(afterIfelse);
 
