@@ -59,14 +59,16 @@
 %token<std::string> NUMBER "num"
 %token<std::string> STRING "str"
 %type<std::vector<StatementAST*>> program stmts;
-%type<StatementAST*> stmt functionPrototype functionDefinition varDeclaration assignExpr while loop returnStmt fnCallStmt 
-%type<std::vector<std::string>> paramList params
+%type<StatementAST*> stmt ifLadder functionPrototype functionDefinition varDeclaration assignExpr while loop returnStmt fnCallStmt 
 %type<STAB::VariableDeclAssignExprAST*> varInitialization
 %type<ExprAST*> expr 
 %type<CallExprAST*> fnCall
 %type<std::vector<ExprAST*>> argList args 
-%type<std::vector<STAB::VariableDeclExprAST*>>paramsWithVar
+%type<std::vector<STAB::VariableDeclExprAST*>> paramList parameters
+%type<std::vector<std::string>> paramListPrototype params
 
+%type<STAB::CondStatementAST*> ifStmt elseifStmt
+%type<STAB::ElseStatementAST*> elseStmt
 
 %left PLUS MINUS
 %left TIMES DIV
@@ -76,7 +78,7 @@
 %start program
 %%
  
- functionDefinition: FN ID LBRACE paramsWithVar RBRACE FN_ARROW DATA_TYPE LCURLY stmts RCURLY{
+ functionDefinition: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE LCURLY stmts RCURLY{
 			auto fnScope = new Scope(currentScope);
 			currentScope = fnScope;
                         std::vector<std::string> argTypes;
@@ -90,7 +92,7 @@
 			currentScope = globalScope;
                     }
 
- functionPrototype: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
+ functionPrototype: FN ID LBRACE paramListPrototype RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
                        std::vector<std::string> Args;
 		       for(const auto elt: $4){
 		         Args.emplace_back(elt);
@@ -187,6 +189,9 @@ stmts: stmts stmt{
       | fnCallStmt {
          $$ = $1; 
       }
+      | ifLadder{
+         $$ = $1;
+      }
       ;
 
  expr: expr PLUS expr {
@@ -258,43 +263,25 @@ stmts: stmts stmt{
  skipStmt: SKIP SEMI_COLON
  
  elseStmt: %empty
-         | ELSE LCURLY stmt RCURLY
+         | ELSE LCURLY stmts RCURLY{
+	    $$ = new ElseStatementAST($3);
+	 }
 	 ;
 
  elseifStmt: %empty
-           | ELSE_IF expr LCURLY stmt RCURLY elseifStmt;
+           | ELSE_IF expr LCURLY stmts RCURLY elseifStmt
+	   {
+	     $$ = nullptr;
+	   };
 
- ifStmt: IF expr LCURLY stmt RCURLY elseifStmt elseStmt {
+ ifStmt: IF expr LCURLY stmts RCURLY {
+	   $$ = new CondStatementAST($2, $4);
 	 }
-
- paramList:
-           params {
-	     for (const auto elt: $1)
-	         $$.emplace_back(elt);
-	  }
-	  ;
- 
- params: params COMMA DATA_TYPE{
-	 for(const auto elt: $1)
-	    $$.emplace_back(elt);
-	 $$.emplace_back($3);
-       }
-       | DATA_TYPE {
-       $$.emplace_back($1);
-       }
-       ; 
-
-paramsWithVar: paramsWithVar COMMA DATA_TYPE ID {
-                for(const auto elt: $1)
-		   $$.emplace_back(elt);
-	     }
-	     | DATA_TYPE ID {
-	       auto newDecl = new STAB::VariableDeclExprAST($1, $2);
-	       $$.emplace_back(newDecl);
-	     }
-	     | %empty
-	     ;
-
+	 ;
+ ifLadder: ifStmt elseifStmt elseStmt{
+            $$ = new IfStatementAST($1, nullptr, $3);
+         }
+         ;
 
  argList: %empty {
         } 
@@ -314,6 +301,42 @@ paramsWithVar: paramsWithVar COMMA DATA_TYPE ID {
        $$.emplace_back($1);
      }
      ;
+paramListPrototype:
+           params {
+	     for (const auto elt: $1)
+	         $$.emplace_back(elt);
+	  }
+	  ;
+ 
+ params: params COMMA DATA_TYPE{
+	 for(const auto elt: $1)
+	    $$.emplace_back(elt);
+	 $$.emplace_back($3);
+       }
+       | DATA_TYPE {
+       $$.emplace_back($1);
+       }
+       ;
+
+paramList: %empty{
+	 }
+	 | parameters {
+	   for(const auto elt: $1)
+	     $$.emplace_back(elt);
+	 }
+	 ;
+
+parameters: parameters COMMA DATA_TYPE ID {
+	      for(const auto elt: $1)
+	         $$.emplace_back(elt);
+              auto decl = new VariableDeclExprAST($3, $4);
+	      $$.emplace_back(decl);
+	  }
+	  | DATA_TYPE ID {
+	     auto decl = new VariableDeclExprAST($1, $2);
+	     $$.emplace_back(decl);
+	  }
+
  fnCallStmt: ID LBRACE argList RBRACE SEMI_COLON{
      std::vector<STAB::ExprAST*> Args;
      for (const auto elt: $3){

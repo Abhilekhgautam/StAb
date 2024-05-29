@@ -396,8 +396,15 @@ namespace STAB {
       // expr
       char dummy2[sizeof (ExprAST*)];
 
+      // elseifStmt
+      // ifStmt
+      char dummy3[sizeof (STAB::CondStatementAST*)];
+
+      // elseStmt
+      char dummy4[sizeof (STAB::ElseStatementAST*)];
+
       // varInitialization
-      char dummy3[sizeof (STAB::VariableDeclAssignExprAST*)];
+      char dummy5[sizeof (STAB::VariableDeclAssignExprAST*)];
 
       // functionDefinition
       // functionPrototype
@@ -407,8 +414,9 @@ namespace STAB {
       // stmt
       // assignExpr
       // returnStmt
+      // ifLadder
       // fnCallStmt
-      char dummy4[sizeof (StatementAST*)];
+      char dummy6[sizeof (StatementAST*)];
 
       // PLUS
       // MINUS
@@ -424,22 +432,23 @@ namespace STAB {
       // "type"
       // "num"
       // "str"
-      char dummy5[sizeof (std::string)];
+      char dummy7[sizeof (std::string)];
 
       // argList
       // args
-      char dummy6[sizeof (std::vector<ExprAST*>)];
+      char dummy8[sizeof (std::vector<ExprAST*>)];
 
-      // paramsWithVar
-      char dummy7[sizeof (std::vector<STAB::VariableDeclExprAST*>)];
+      // paramList
+      // parameters
+      char dummy9[sizeof (std::vector<STAB::VariableDeclExprAST*>)];
 
       // program
       // stmts
-      char dummy8[sizeof (std::vector<StatementAST*>)];
+      char dummy10[sizeof (std::vector<StatementAST*>)];
 
-      // paramList
+      // paramListPrototype
       // params
-      char dummy9[sizeof (std::vector<std::string>)];
+      char dummy11[sizeof (std::vector<std::string>)];
     };
 
     /// The size of the largest semantic type.
@@ -615,13 +624,15 @@ namespace STAB {
         S_elseStmt = 62,                         // elseStmt
         S_elseifStmt = 63,                       // elseifStmt
         S_ifStmt = 64,                           // ifStmt
-        S_paramList = 65,                        // paramList
-        S_params = 66,                           // params
-        S_paramsWithVar = 67,                    // paramsWithVar
-        S_argList = 68,                          // argList
-        S_args = 69,                             // args
-        S_fnCallStmt = 70,                       // fnCallStmt
-        S_fnCall = 71                            // fnCall
+        S_ifLadder = 65,                         // ifLadder
+        S_argList = 66,                          // argList
+        S_args = 67,                             // args
+        S_paramListPrototype = 68,               // paramListPrototype
+        S_params = 69,                           // params
+        S_paramList = 70,                        // paramList
+        S_parameters = 71,                       // parameters
+        S_fnCallStmt = 72,                       // fnCallStmt
+        S_fnCall = 73                            // fnCall
       };
     };
 
@@ -666,6 +677,15 @@ namespace STAB {
         value.move< ExprAST* > (std::move (that.value));
         break;
 
+      case symbol_kind::S_elseifStmt: // elseifStmt
+      case symbol_kind::S_ifStmt: // ifStmt
+        value.move< STAB::CondStatementAST* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_elseStmt: // elseStmt
+        value.move< STAB::ElseStatementAST* > (std::move (that.value));
+        break;
+
       case symbol_kind::S_varInitialization: // varInitialization
         value.move< STAB::VariableDeclAssignExprAST* > (std::move (that.value));
         break;
@@ -678,6 +698,7 @@ namespace STAB {
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_ifLadder: // ifLadder
       case symbol_kind::S_fnCallStmt: // fnCallStmt
         value.move< StatementAST* > (std::move (that.value));
         break;
@@ -704,7 +725,8 @@ namespace STAB {
         value.move< std::vector<ExprAST*> > (std::move (that.value));
         break;
 
-      case symbol_kind::S_paramsWithVar: // paramsWithVar
+      case symbol_kind::S_paramList: // paramList
+      case symbol_kind::S_parameters: // parameters
         value.move< std::vector<STAB::VariableDeclExprAST*> > (std::move (that.value));
         break;
 
@@ -713,7 +735,7 @@ namespace STAB {
         value.move< std::vector<StatementAST*> > (std::move (that.value));
         break;
 
-      case symbol_kind::S_paramList: // paramList
+      case symbol_kind::S_paramListPrototype: // paramListPrototype
       case symbol_kind::S_params: // params
         value.move< std::vector<std::string> > (std::move (that.value));
         break;
@@ -763,6 +785,34 @@ namespace STAB {
       {}
 #else
       basic_symbol (typename Base::kind_type t, const ExprAST*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, STAB::CondStatementAST*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const STAB::CondStatementAST*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, STAB::ElseStatementAST*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const STAB::ElseStatementAST*& v, const location_type& l)
         : Base (t)
         , value (v)
         , location (l)
@@ -899,6 +949,15 @@ switch (yykind)
         value.template destroy< ExprAST* > ();
         break;
 
+      case symbol_kind::S_elseifStmt: // elseifStmt
+      case symbol_kind::S_ifStmt: // ifStmt
+        value.template destroy< STAB::CondStatementAST* > ();
+        break;
+
+      case symbol_kind::S_elseStmt: // elseStmt
+        value.template destroy< STAB::ElseStatementAST* > ();
+        break;
+
       case symbol_kind::S_varInitialization: // varInitialization
         value.template destroy< STAB::VariableDeclAssignExprAST* > ();
         break;
@@ -911,6 +970,7 @@ switch (yykind)
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_ifLadder: // ifLadder
       case symbol_kind::S_fnCallStmt: // fnCallStmt
         value.template destroy< StatementAST* > ();
         break;
@@ -937,7 +997,8 @@ switch (yykind)
         value.template destroy< std::vector<ExprAST*> > ();
         break;
 
-      case symbol_kind::S_paramsWithVar: // paramsWithVar
+      case symbol_kind::S_paramList: // paramList
+      case symbol_kind::S_parameters: // parameters
         value.template destroy< std::vector<STAB::VariableDeclExprAST*> > ();
         break;
 
@@ -946,7 +1007,7 @@ switch (yykind)
         value.template destroy< std::vector<StatementAST*> > ();
         break;
 
-      case symbol_kind::S_paramList: // paramList
+      case symbol_kind::S_paramListPrototype: // paramListPrototype
       case symbol_kind::S_params: // params
         value.template destroy< std::vector<std::string> > ();
         break;
@@ -1874,9 +1935,9 @@ switch (yykind)
     // YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
     // positive, shift that token.  If negative, reduce the rule whose
     // number is the opposite.  If YYTABLE_NINF, syntax error.
-    static const unsigned char yytable_[];
+    static const short yytable_[];
 
-    static const signed char yycheck_[];
+    static const short yycheck_[];
 
     // YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
     // state STATE-NUM.
@@ -2118,8 +2179,8 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 239,     ///< Last index in yytable_.
-      yynnts_ = 26,  ///< Number of nonterminal symbols.
+      yylast_ = 298,     ///< Last index in yytable_.
+      yynnts_ = 28,  ///< Number of nonterminal symbols.
       yyfinal_ = 3 ///< Termination state number.
     };
 
@@ -2133,7 +2194,7 @@ switch (yykind)
 
 #line 17 "src/parser/parser.yy"
 } // STAB
-#line 2137 "src/parser/parser.hpp"
+#line 2198 "src/parser/parser.hpp"
 
 
 
