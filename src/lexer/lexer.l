@@ -85,6 +85,8 @@ str [^\"\\]*\\.[^\"\\]**
 	  return Token::token_kind_type::DATA_TYPE;
          }
 
+"to" return Token::token_kind_type::TO;
+
 \"([^\"\\]*(\\.[^\"\\]*)*)\" {
         yylval->emplace<std::string>(yytext);
         return Token::token_kind_type::STRING;
