@@ -134,9 +134,17 @@ program: stmts{
 
        std::vector<std::string> Args;
        std::vector<STAB::VariableDeclExprAST*> declVars;
-  
+
+       std::vector<STAB::StatementAST*> stmts;
+
+       auto proto = new PrototypeAST("void", "__start__", Args);
+
        $$ = $1;
 
+       __start__fn = new FunctionAST(proto, declVars, stmts, globalScope);
+
+       for (const auto stmt: $1)
+           __start__fn->getBody().emplace_back(stmt);
        };
 stmts: stmts stmt{
        $1.emplace_back($2);
