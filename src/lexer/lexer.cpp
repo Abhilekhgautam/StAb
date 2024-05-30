@@ -425,10 +425,10 @@ struct yy_trans_info
 
 static const flex_int16_t yy_accept[115] = { 0,
          0,    0,   49,   48,    1,    3,   48,   48,   34,   35,
-        36,   32,   30,    6,   31,   33,    2,    4,   41,   45,
+        36,   32,   30,    6,   31,   33,    2,    4,   41,   46,
         43,   29,   39,   40,   29,   29,   29,   29,   29,   29,
         29,   29,   29,   29,   29,   29,   29,   29,   29,   37,
-        38,    1,   47,    0,   28,    0,    5,    2,   42,   46,
+        38,    1,   47,    0,   28,    0,    5,    2,   42,   45,
          7,   44,   29,   29,   29,   29,   29,    8,   29,    9,
         29,   17,   29,   29,   20,   29,   29,   27,   29,   29,
         29,    0,   19,   29,   29,   29,   13,   29,   16,   29,
@@ -563,8 +563,8 @@ static const flex_int16_t yy_rule_linenum[48] = { 0,
         27,   28,   32,   34,   36,   38,   40,   42,   44,   46,
         48,   50,   52,   54,   56,   58,   62,   64,   66,   68,
         70,   72,   74,   76,   78,   83,   88,   90,   95,  100,
-       105,  110,  114,  118,  120,  122,  124,  126,  128,  130,
-       132,  136,  140,  145,  149,  151,  155
+       105,  110,  114,  118,  122,  124,  126,  128,  130,  132,
+       134,  138,  142,  147,  152,  156,  158
 };
 
 /* The intent behind this definition is that it'll catch
@@ -1111,48 +1111,51 @@ YY_RULE_SETUP
 YY_RULE_SETUP
 
 #line 118 "src/lexer/lexer.l"
-return Token::token_kind_type::MOD;
+{
+     yylval->emplace<std::string>(yytext);
+     return Token::token_kind_type::MOD;
+     }
 	/*LINTED*/break;
 	case 35:
 YY_RULE_SETUP
 
-#line 120 "src/lexer/lexer.l"
+#line 122 "src/lexer/lexer.l"
 return Token::token_kind_type::LBRACE;
 	/*LINTED*/break;
 	case 36:
 YY_RULE_SETUP
 
-#line 122 "src/lexer/lexer.l"
+#line 124 "src/lexer/lexer.l"
 return Token::token_kind_type::RBRACE;
 	/*LINTED*/break;
 	case 37:
 YY_RULE_SETUP
 
-#line 124 "src/lexer/lexer.l"
+#line 126 "src/lexer/lexer.l"
 return Token::token_kind_type::LCURLY;
 	/*LINTED*/break;
 	case 38:
 YY_RULE_SETUP
 
-#line 126 "src/lexer/lexer.l"
+#line 128 "src/lexer/lexer.l"
 return Token::token_kind_type::RCURLY;
 	/*LINTED*/break;
 	case 39:
 YY_RULE_SETUP
 
-#line 128 "src/lexer/lexer.l"
+#line 130 "src/lexer/lexer.l"
 return Token::token_kind_type::LBIG;
 	/*LINTED*/break;
 	case 40:
 YY_RULE_SETUP
 
-#line 130 "src/lexer/lexer.l"
+#line 132 "src/lexer/lexer.l"
 return Token::token_kind_type::RBIG;
 	/*LINTED*/break;
 	case 41:
 YY_RULE_SETUP
 
-#line 132 "src/lexer/lexer.l"
+#line 134 "src/lexer/lexer.l"
 {
      yylval->emplace<std::string>(yytext);
      return Token::token_kind_type::LT;
@@ -1161,7 +1164,7 @@ YY_RULE_SETUP
 	case 42:
 YY_RULE_SETUP
 
-#line 136 "src/lexer/lexer.l"
+#line 138 "src/lexer/lexer.l"
 {
       yylval->emplace<std::string>("l");
       return Token::token_kind_type::LE;
@@ -1170,7 +1173,7 @@ YY_RULE_SETUP
 	case 43:
 YY_RULE_SETUP
 
-#line 140 "src/lexer/lexer.l"
+#line 142 "src/lexer/lexer.l"
 {
       yylval->emplace<std::string>(yytext);
       return Token::token_kind_type::GT;
@@ -1179,7 +1182,7 @@ YY_RULE_SETUP
 	case 44:
 YY_RULE_SETUP
 
-#line 145 "src/lexer/lexer.l"
+#line 147 "src/lexer/lexer.l"
 {
       yylval->emplace<std::string>("g");
       return Token::token_kind_type::GE;
@@ -1188,22 +1191,22 @@ YY_RULE_SETUP
 	case 45:
 YY_RULE_SETUP
 
-#line 149 "src/lexer/lexer.l"
-return Token::token_kind_type::ASSIGN;
-	/*LINTED*/break;
-	case 46:
-YY_RULE_SETUP
-
-#line 151 "src/lexer/lexer.l"
+#line 152 "src/lexer/lexer.l"
 {
       yylval->emplace<std::string>("e");
       return Token::token_kind_type::EQ;
      }
 	/*LINTED*/break;
+	case 46:
+YY_RULE_SETUP
+
+#line 156 "src/lexer/lexer.l"
+return Token::token_kind_type::ASSIGN;
+	/*LINTED*/break;
 	case 47:
 YY_RULE_SETUP
 
-#line 155 "src/lexer/lexer.l"
+#line 158 "src/lexer/lexer.l"
 {
       yylval->emplace<std::string>("n");
       return  Token::token_kind_type::NE;
@@ -1212,11 +1215,11 @@ YY_RULE_SETUP
 	case 48:
 YY_RULE_SETUP
 
-#line 159 "src/lexer/lexer.l"
+#line 162 "src/lexer/lexer.l"
 yyecho();
 	/*LINTED*/break;
-#line 1219 "src/lexer/lexer.cpp"
-#line 1220 "src/lexer/lexer.cpp"
+#line 1222 "src/lexer/lexer.cpp"
+#line 1223 "src/lexer/lexer.cpp"
 	case YY_STATE_EOF(INITIAL):
 		/* FALLTHROUGH */
 		yyterminate();
@@ -2225,6 +2228,6 @@ void yyfree (void * ptr ) {
 			free( (char *) ptr );	/* see yyrealloc() for (char *) cast */
 }
 
-#line 159 "src/lexer/lexer.l"
+#line 162 "src/lexer/lexer.l"
 
 
