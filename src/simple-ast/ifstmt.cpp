@@ -3,8 +3,6 @@
 //
 
 #include "./ast.h"
-#include <cstdio>
-#include <llvm-18/llvm/IR/BasicBlock.h>
 
 namespace STAB{
     llvm::Value* STAB::IfStatementAST::codegen(Scope* s){
@@ -19,39 +17,65 @@ namespace STAB{
 
 	if (!cond) return nullptr;
 
+
         // compare the expr with 0
         cond = Builder->CreateICmpEQ(cond, llvm::ConstantInt::get(*TheContext, llvm::APInt(32, 0, true)));
 
-	// don't want ifBody to be shadowed.
-        llvm::BasicBlock* if_Body = llvm::BasicBlock::Create(*TheContext,"ifBody", F);
-        llvm::BasicBlock* else_Body = llvm::BasicBlock::Create(*TheContext, "elseBody", F);
-	llvm::BasicBlock* afterIfelse = llvm::BasicBlock::Create(*TheContext, "afterIfelse", F);
 
-        Builder->CreateCondBr(cond, else_Body, if_Body);
+        if (elseStmt){
 
-	Builder->SetInsertPoint(if_Body);
+	    // don't want ifBody to be shadowed.
+            llvm::BasicBlock* if_Body = llvm::BasicBlock::Create(*TheContext,"ifBody", F);
+            llvm::BasicBlock* else_Body = llvm::BasicBlock::Create(*TheContext, "elseBody", F);
+            llvm::BasicBlock* afterIfelse = llvm::BasicBlock::Create(*TheContext, "afterIfelse", F);
+
+            Builder->CreateCondBr(cond, else_Body, if_Body);
+
+	    Builder->SetInsertPoint(if_Body);
 	
-        // generate code for if body
-        ifStmt->codegen(s);
+           // generate code for if body
+           ifStmt->codegen(s);
 
-	Builder->CreateBr(afterIfelse);
+	   Builder->CreateBr(afterIfelse);
 
-	// Codegen of 'ifBody' can change the current block, update ifBody for the PHI.
-        if_Body = Builder->GetInsertBlock();
+	   // Codegen of 'ifBody' can change the current block, update ifBody for the PHI.
+           if_Body = Builder->GetInsertBlock();
 
-	F->insert(F->end(), else_Body);
-	Builder->SetInsertPoint(else_Body);
+	   F->insert(F->end(), else_Body);
+  	   Builder->SetInsertPoint(else_Body);
 
-	// generate code for else body
-         elseStmt->codegen(s);
+	  // generate code for else body
+          elseStmt->codegen(s);
 
-	Builder->CreateBr(afterIfelse);
+	  Builder->CreateBr(afterIfelse);
 
-	F->insert(F->end(), afterIfelse);
+	  F->insert(F->end(), afterIfelse);
 
-        Builder->SetInsertPoint(afterIfelse);
+          Builder->SetInsertPoint(afterIfelse);
 
-	return F;
+	  return F;
+	} else {
+            // don't want ifBody to be shadowed.
+            llvm::BasicBlock* if_Body = llvm::BasicBlock::Create(*TheContext,"ifBody", F);
+            llvm::BasicBlock* afterIf = llvm::BasicBlock::Create(*TheContext, "afterIf", F);
+
+            Builder->CreateCondBr(cond, afterIf, if_Body);
+
+	    Builder->SetInsertPoint(if_Body);
+	
+           // generate code for if body
+           ifStmt->codegen(s);
+
+	   Builder->CreateBr(afterIf);
+
+	   // Codegen of 'ifBody' can change the current block, update ifBody for the PHI.
+           if_Body = Builder->GetInsertBlock();
+
+  	   Builder->SetInsertPoint(afterIf);
+
+	  return F;
+
+	}
 
         //return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(*TheContext));
     }
