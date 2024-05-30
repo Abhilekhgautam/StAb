@@ -21,6 +21,10 @@ namespace STAB{
                 return Builder->CreateSub(L, R, "subtmp");
             case '*':
                 return Builder->CreateMul(L, R, "multmp");
+	    case '/':
+		return Builder->CreateSDiv(L, R, "intdiv");
+	    case '%':
+		return Builder->CreateURem(L, R,"moddiv");
             case '<':
                 L = Builder->CreateICmpULT(L, R, "cmplt");
                 return Builder->CreateZExt(L, llvm::Type::getInt32Ty(*TheContext), "int32Val");
