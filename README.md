@@ -11,6 +11,12 @@ StAb - A General Purpose, Imperative, Static Typed Programming Language.
 
 # Basic Syntax
 
+## Variable Declaration
+ - Only supports `int`and `void` type as of now.
+```
+ int x;
+```
+
 ## While Loop
 
 ```
@@ -32,11 +38,20 @@ fn main() -> void{
   }
 }
 ```
-
-## Variable Declaration
- - Only supports `int`and `void` type as of now.
+## For Loop
+- The following snippets prints numbers from 0 to 500
 ```
- int x;
+ for i in 0 to 500 {
+  println("%d", i);
+ }
+```
+## If Statement
+```
+int x = 5;
+
+if x < 50 {
+  x = x + 50;
+}
 ```
 
 ## User Defined Function
