@@ -423,6 +423,7 @@ namespace STAB {
       char dummy7[sizeof (StatementAST*)];
 
       // PLUS
+      // MOD
       // MINUS
       // TIMES
       // DIV
@@ -502,36 +503,36 @@ namespace STAB {
     YYEOF = 0,                     // "end of file"
     YYerror = 1,                   // error
     YYUNDEF = 2,                   // "invalid token"
-    MOD = 3,                       // MOD
-    LBRACE = 4,                    // LBRACE
-    RBRACE = 5,                    // RBRACE
-    LCURLY = 6,                    // LCURLY
-    RCURLY = 7,                    // RCURLY
-    LBIG = 8,                      // LBIG
-    RBIG = 9,                      // RBIG
-    ASSIGN = 10,                   // ASSIGN
-    IF = 11,                       // IF
-    ELSE = 12,                     // ELSE
-    ELSE_IF = 13,                  // ELSE_IF
-    LOOP = 14,                     // LOOP
-    FOR = 15,                      // FOR
-    WHILE = 16,                    // WHILE
-    AND = 17,                      // AND
-    OR = 18,                       // OR
-    XOR = 19,                      // XOR
-    MATCH = 20,                    // MATCH
-    IMPORT = 21,                   // IMPORT
-    IN = 22,                       // IN
-    TO = 23,                       // TO
-    CONTROL_FLOW = 24,             // CONTROL_FLOW
-    COMMA = 25,                    // COMMA
-    FN_ARROW = 26,                 // FN_ARROW
-    MATCH_ARROW = 27,              // MATCH_ARROW
-    RETURN = 28,                   // RETURN
-    BREAK = 29,                    // BREAK
-    SKIP = 30,                     // SKIP
-    SEMI_COLON = 31,               // SEMI_COLON
-    PLUS = 32,                     // PLUS
+    LBRACE = 3,                    // LBRACE
+    RBRACE = 4,                    // RBRACE
+    LCURLY = 5,                    // LCURLY
+    RCURLY = 6,                    // RCURLY
+    LBIG = 7,                      // LBIG
+    RBIG = 8,                      // RBIG
+    ASSIGN = 9,                    // ASSIGN
+    IF = 10,                       // IF
+    ELSE = 11,                     // ELSE
+    ELSE_IF = 12,                  // ELSE_IF
+    LOOP = 13,                     // LOOP
+    FOR = 14,                      // FOR
+    WHILE = 15,                    // WHILE
+    AND = 16,                      // AND
+    OR = 17,                       // OR
+    XOR = 18,                      // XOR
+    MATCH = 19,                    // MATCH
+    IMPORT = 20,                   // IMPORT
+    IN = 21,                       // IN
+    TO = 22,                       // TO
+    CONTROL_FLOW = 23,             // CONTROL_FLOW
+    COMMA = 24,                    // COMMA
+    FN_ARROW = 25,                 // FN_ARROW
+    MATCH_ARROW = 26,              // MATCH_ARROW
+    RETURN = 27,                   // RETURN
+    BREAK = 28,                    // BREAK
+    SKIP = 29,                     // SKIP
+    SEMI_COLON = 30,               // SEMI_COLON
+    PLUS = 31,                     // PLUS
+    MOD = 32,                      // MOD
     MINUS = 33,                    // MINUS
     TIMES = 34,                    // TIMES
     DIV = 35,                      // DIV
@@ -567,36 +568,36 @@ namespace STAB {
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
         S_YYUNDEF = 2,                           // "invalid token"
-        S_MOD = 3,                               // MOD
-        S_LBRACE = 4,                            // LBRACE
-        S_RBRACE = 5,                            // RBRACE
-        S_LCURLY = 6,                            // LCURLY
-        S_RCURLY = 7,                            // RCURLY
-        S_LBIG = 8,                              // LBIG
-        S_RBIG = 9,                              // RBIG
-        S_ASSIGN = 10,                           // ASSIGN
-        S_IF = 11,                               // IF
-        S_ELSE = 12,                             // ELSE
-        S_ELSE_IF = 13,                          // ELSE_IF
-        S_LOOP = 14,                             // LOOP
-        S_FOR = 15,                              // FOR
-        S_WHILE = 16,                            // WHILE
-        S_AND = 17,                              // AND
-        S_OR = 18,                               // OR
-        S_XOR = 19,                              // XOR
-        S_MATCH = 20,                            // MATCH
-        S_IMPORT = 21,                           // IMPORT
-        S_IN = 22,                               // IN
-        S_TO = 23,                               // TO
-        S_CONTROL_FLOW = 24,                     // CONTROL_FLOW
-        S_COMMA = 25,                            // COMMA
-        S_FN_ARROW = 26,                         // FN_ARROW
-        S_MATCH_ARROW = 27,                      // MATCH_ARROW
-        S_RETURN = 28,                           // RETURN
-        S_BREAK = 29,                            // BREAK
-        S_SKIP = 30,                             // SKIP
-        S_SEMI_COLON = 31,                       // SEMI_COLON
-        S_PLUS = 32,                             // PLUS
+        S_LBRACE = 3,                            // LBRACE
+        S_RBRACE = 4,                            // RBRACE
+        S_LCURLY = 5,                            // LCURLY
+        S_RCURLY = 6,                            // RCURLY
+        S_LBIG = 7,                              // LBIG
+        S_RBIG = 8,                              // RBIG
+        S_ASSIGN = 9,                            // ASSIGN
+        S_IF = 10,                               // IF
+        S_ELSE = 11,                             // ELSE
+        S_ELSE_IF = 12,                          // ELSE_IF
+        S_LOOP = 13,                             // LOOP
+        S_FOR = 14,                              // FOR
+        S_WHILE = 15,                            // WHILE
+        S_AND = 16,                              // AND
+        S_OR = 17,                               // OR
+        S_XOR = 18,                              // XOR
+        S_MATCH = 19,                            // MATCH
+        S_IMPORT = 20,                           // IMPORT
+        S_IN = 21,                               // IN
+        S_TO = 22,                               // TO
+        S_CONTROL_FLOW = 23,                     // CONTROL_FLOW
+        S_COMMA = 24,                            // COMMA
+        S_FN_ARROW = 25,                         // FN_ARROW
+        S_MATCH_ARROW = 26,                      // MATCH_ARROW
+        S_RETURN = 27,                           // RETURN
+        S_BREAK = 28,                            // BREAK
+        S_SKIP = 29,                             // SKIP
+        S_SEMI_COLON = 30,                       // SEMI_COLON
+        S_PLUS = 31,                             // PLUS
+        S_MOD = 32,                              // MOD
         S_MINUS = 33,                            // MINUS
         S_TIMES = 34,                            // TIMES
         S_DIV = 35,                              // DIV
@@ -716,6 +717,7 @@ namespace STAB {
         break;
 
       case symbol_kind::S_PLUS: // PLUS
+      case symbol_kind::S_MOD: // MOD
       case symbol_kind::S_MINUS: // MINUS
       case symbol_kind::S_TIMES: // TIMES
       case symbol_kind::S_DIV: // DIV
@@ -1007,6 +1009,7 @@ switch (yykind)
         break;
 
       case symbol_kind::S_PLUS: // PLUS
+      case symbol_kind::S_MOD: // MOD
       case symbol_kind::S_MINUS: // MINUS
       case symbol_kind::S_TIMES: // TIMES
       case symbol_kind::S_DIV: // DIV
@@ -1238,21 +1241,6 @@ switch (yykind)
       make_YYUNDEF (const location_type& l)
       {
         return symbol_type (token::YYUNDEF, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_MOD (location_type l)
-      {
-        return symbol_type (token::MOD, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_MOD (const location_type& l)
-      {
-        return symbol_type (token::MOD, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1693,6 +1681,21 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_MOD (std::string v, location_type l)
+      {
+        return symbol_type (token::MOD, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_MOD (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::MOD, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_MINUS (std::string v, location_type l)
       {
         return symbol_type (token::MINUS, std::move (v), std::move (l));
@@ -1981,7 +1984,7 @@ switch (yykind)
     // YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
     // positive, shift that token.  If negative, reduce the rule whose
     // number is the opposite.  If YYTABLE_NINF, syntax error.
-    static const short yytable_[];
+    static const unsigned char yytable_[];
 
     static const short yycheck_[];
 
@@ -2225,7 +2228,7 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 331,     ///< Last index in yytable_.
+      yylast_ = 323,     ///< Last index in yytable_.
       yynnts_ = 29,  ///< Number of nonterminal symbols.
       yyfinal_ = 3 ///< Termination state number.
     };
@@ -2240,7 +2243,7 @@ switch (yykind)
 
 #line 17 "src/parser/parser.yy"
 } // STAB
-#line 2244 "src/parser/parser.hpp"
+#line 2247 "src/parser/parser.hpp"
 
 
 

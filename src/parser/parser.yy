@@ -47,13 +47,12 @@
   #define yylex lexer.yylex
 }
 
-%token MOD
 %token LBRACE RBRACE LCURLY RCURLY LBIG RBIG ASSIGN
 %token IF ELSE ELSE_IF LOOP FOR WHILE AND OR XOR MATCH
 %token IMPORT IN TO CONTROL_FLOW COMMA FN_ARROW MATCH_ARROW
 %token RETURN BREAK SKIP
 %token SEMI_COLON
-%token<std::string> PLUS MINUS TIMES DIV GT LT GE LE NE EQ "op"
+%token<std::string> PLUS MOD MINUS TIMES DIV GT LT GE LE NE EQ "op"
 %token<std::string> ID "identifier"
 %token<std::string> DATA_TYPE "type"
 %token<std::string> NUMBER "num"
@@ -74,7 +73,9 @@
 
 %left PLUS MINUS
 %left TIMES DIV
-%left GT LT GE LE EQ NE
+%left MOD
+%left GT LT GE LE
+%left EQ NE
 %nonassoc FN DATA_TYPE 
 
 %start program
@@ -181,7 +182,6 @@ stmts: stmts stmt{
       | while {
          $$ = $1;
       }
-      | ifStmt 
       | varDeclaration{
         $$ = $1;
       }
@@ -217,6 +217,9 @@ stmts: stmts stmt{
         $$ = new BinaryExprAST($2, $1, $3);
      }
      | expr DIV expr {
+        $$ = new BinaryExprAST($2, $1, $3);
+     }
+     | expr MOD expr {
         $$ = new BinaryExprAST($2, $1, $3);
      }
      | LBRACE expr RBRACE {
@@ -275,7 +278,9 @@ stmts: stmts stmt{
  
  skipStmt: SKIP SEMI_COLON
  
- elseStmt: %empty
+ elseStmt: %empty{
+          $$ = nullptr;
+         }
          | ELSE LCURLY stmts RCURLY{
 	    $$ = new ElseStatementAST($3);
 	 }
