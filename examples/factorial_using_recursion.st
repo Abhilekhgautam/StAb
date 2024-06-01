@@ -1,5 +1,4 @@
 fn factorial(int n) -> int {
-  println("I am Called");
   if n == 0 {
     return 1;
   }
