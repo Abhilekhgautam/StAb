@@ -32,7 +32,7 @@ namespace STAB{
                 L = Builder->CreateICmpUGT(L, R, "cmpgt");
                 return Builder->CreateZExt(L, llvm::Type::getInt32Ty(*TheContext), "int32Val");
             case 'l':
-                L = Builder->CreateICmpUGT(L, R, "cmplte");
+                L = Builder->CreateICmpSLE(L, R, "cmplte");
                 return Builder->CreateZExt(L, llvm::Type::getInt32Ty(*TheContext), "int32Val");
             case 'g':
                 L = Builder->CreateICmpSGE(L, R, "cmpgte");
