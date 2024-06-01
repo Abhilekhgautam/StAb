@@ -1,5 +1,5 @@
-
 #include "./ast.h"
+#include <llvm-18/llvm/IR/BasicBlock.h>
 #include <llvm-18/llvm/IR/Instructions.h>
 #include <llvm-18/llvm/IR/Value.h>
 
@@ -22,13 +22,13 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
         std::cerr << "\nError: Cannot have 2 functions with the same name\n.Function " << Proto->getName() << " already defined\n";
         return nullptr;
     }
-
+    llvm::BasicBlock* fnBlock = nullptr;
     if(Proto->getName() == "__start__"){
             // Check if __start__fn already exists
             F = TheModule->getFunction("__start__");
             if (!F) {
                 F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, "__start__", TheModule.get());
-                llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, "entry", F);
+                fnBlock = llvm::BasicBlock::Create(*TheContext, "entry", F);
                  Builder->SetInsertPoint(fnBlock);
              } else {
                // Set the insert point to the end of the existing __start__fn function
@@ -67,13 +67,18 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
     // Ensure a return statement if none exists
     llvm::BasicBlock* currentBlock = Builder->GetInsertBlock();
     if (!currentBlock->getTerminator()) {
-        if (Proto->getReturnType() == "void") {
+        if (Proto->getReturnType() == "void" && Proto->getName() != "__start__") {
             Builder->CreateRetVoid();
         } else {
             std::cerr << "\nWarning: Non-void function does not have a return statement\n";
             auto defaultRetVal = llvm::ConstantInt::get(F->getReturnType(), 0);
 	    Builder->CreateRet(defaultRetVal);
         }
+    }
+
+    if (Proto->getName() == "__start__"){
+	    Builder->SetInsertPoint(fnBlock);
+	    Builder->CreateRetVoid();
     }
 
     llvm::verifyFunction(*F);
