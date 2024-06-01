@@ -1435,71 +1435,69 @@ namespace STAB {
   case 30: // expr: expr MOD expr
 #line 222 "src/parser/parser.yy"
                      {
-	std::cerr << "\nMOD Parsed " << yystack_[2].value.as < ExprAST* > ()->getType() << " " << yystack_[0].value.as < ExprAST* > ()->getType() << '\n';
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1442 "src/parser/parser.cpp"
+#line 1441 "src/parser/parser.cpp"
     break;
 
   case 31: // expr: LBRACE expr RBRACE
-#line 226 "src/parser/parser.yy"
+#line 225 "src/parser/parser.yy"
                           {
         yylhs.value.as < ExprAST* > () = yystack_[1].value.as < ExprAST* > (); 
      }
-#line 1450 "src/parser/parser.cpp"
+#line 1449 "src/parser/parser.cpp"
     break;
 
   case 32: // expr: expr GT expr
-#line 229 "src/parser/parser.yy"
+#line 228 "src/parser/parser.yy"
                     {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1458 "src/parser/parser.cpp"
+#line 1457 "src/parser/parser.cpp"
     break;
 
   case 33: // expr: expr LT expr
-#line 232 "src/parser/parser.yy"
+#line 231 "src/parser/parser.yy"
                     {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1466 "src/parser/parser.cpp"
+#line 1465 "src/parser/parser.cpp"
     break;
 
   case 34: // expr: expr LE expr
-#line 235 "src/parser/parser.yy"
+#line 234 "src/parser/parser.yy"
                     {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1474 "src/parser/parser.cpp"
+#line 1473 "src/parser/parser.cpp"
     break;
 
   case 35: // expr: expr GE expr
-#line 238 "src/parser/parser.yy"
+#line 237 "src/parser/parser.yy"
                    {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1482 "src/parser/parser.cpp"
+#line 1481 "src/parser/parser.cpp"
     break;
 
   case 36: // expr: expr "op" expr
-#line 241 "src/parser/parser.yy"
+#line 240 "src/parser/parser.yy"
                    {
-       std::cerr << "\nEquals to Parsed " << yystack_[2].value.as < ExprAST* > ()->getType() << " " << yystack_[0].value.as < ExprAST* > ()->getType();
        yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1491 "src/parser/parser.cpp"
+#line 1489 "src/parser/parser.cpp"
     break;
 
   case 37: // expr: expr NE expr
-#line 245 "src/parser/parser.yy"
+#line 243 "src/parser/parser.yy"
                    {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1499 "src/parser/parser.cpp"
+#line 1497 "src/parser/parser.cpp"
     break;
 
   case 38: // expr: "str"
-#line 248 "src/parser/parser.yy"
+#line 246 "src/parser/parser.yy"
               {
         std::string val = yystack_[0].value.as < std::string > ();
 	auto length = val.length();
@@ -1509,190 +1507,190 @@ namespace STAB {
 	}
 	yylhs.value.as < ExprAST* > () = new StringExprAST(without_quotation);
      }
-#line 1513 "src/parser/parser.cpp"
+#line 1511 "src/parser/parser.cpp"
     break;
 
   case 39: // expr: "identifier"
-#line 257 "src/parser/parser.yy"
+#line 255 "src/parser/parser.yy"
           {
        yylhs.value.as < ExprAST* > () = new VariableExprAST(yystack_[0].value.as < std::string > ());
      }
-#line 1521 "src/parser/parser.cpp"
+#line 1519 "src/parser/parser.cpp"
     break;
 
   case 40: // expr: "num"
-#line 260 "src/parser/parser.yy"
+#line 258 "src/parser/parser.yy"
               {
         auto val = std::stoi(yystack_[0].value.as < std::string > ());
         yylhs.value.as < ExprAST* > () = new NumberExprAST(val);
      }
-#line 1530 "src/parser/parser.cpp"
+#line 1528 "src/parser/parser.cpp"
     break;
 
   case 41: // expr: fnCall
-#line 264 "src/parser/parser.yy"
+#line 262 "src/parser/parser.yy"
               {
         yylhs.value.as < ExprAST* > () = new CallExprAST(yystack_[0].value.as < CallExprAST* > ()->getFnName(), yystack_[0].value.as < CallExprAST* > ()->getArgs());
      }
-#line 1538 "src/parser/parser.cpp"
+#line 1536 "src/parser/parser.cpp"
     break;
 
   case 42: // assignExpr: "identifier" ASSIGN expr SEMI_COLON
-#line 269 "src/parser/parser.yy"
+#line 267 "src/parser/parser.yy"
                                                    {
              yylhs.value.as < StatementAST* > () = new VariableAssignExprAST(yystack_[3].value.as < std::string > (), yystack_[1].value.as < ExprAST* > ());
            }
-#line 1546 "src/parser/parser.cpp"
+#line 1544 "src/parser/parser.cpp"
     break;
 
   case 43: // returnStmt: RETURN expr SEMI_COLON
-#line 274 "src/parser/parser.yy"
+#line 272 "src/parser/parser.yy"
                                    {
               yylhs.value.as < StatementAST* > () = new ReturnStmtAST(yystack_[1].value.as < ExprAST* > ());
            }
-#line 1554 "src/parser/parser.cpp"
+#line 1552 "src/parser/parser.cpp"
     break;
 
   case 46: // elseStmt: %empty
-#line 283 "src/parser/parser.yy"
+#line 281 "src/parser/parser.yy"
                  {
           yylhs.value.as < STAB::ElseStatementAST* > () = nullptr;
          }
-#line 1562 "src/parser/parser.cpp"
+#line 1560 "src/parser/parser.cpp"
     break;
 
   case 47: // elseStmt: ELSE LCURLY stmts RCURLY
-#line 286 "src/parser/parser.yy"
+#line 284 "src/parser/parser.yy"
                                    {
 	    yylhs.value.as < STAB::ElseStatementAST* > () = new ElseStatementAST(yystack_[1].value.as < std::vector<StatementAST*> > ());
 	 }
-#line 1570 "src/parser/parser.cpp"
+#line 1568 "src/parser/parser.cpp"
     break;
 
   case 49: // elseifStmt: ELSE_IF expr LCURLY stmts RCURLY elseifStmt
-#line 293 "src/parser/parser.yy"
+#line 291 "src/parser/parser.yy"
            {
 	     yylhs.value.as < STAB::CondStatementAST* > () = nullptr;
 	   }
-#line 1578 "src/parser/parser.cpp"
+#line 1576 "src/parser/parser.cpp"
     break;
 
   case 50: // ifStmt: IF expr LCURLY stmts RCURLY
-#line 297 "src/parser/parser.yy"
+#line 295 "src/parser/parser.yy"
                                      {
 	   yylhs.value.as < STAB::CondStatementAST* > () = new CondStatementAST(yystack_[3].value.as < ExprAST* > (), yystack_[1].value.as < std::vector<StatementAST*> > ());
 	 }
-#line 1586 "src/parser/parser.cpp"
+#line 1584 "src/parser/parser.cpp"
     break;
 
   case 51: // ifLadder: ifStmt elseifStmt elseStmt
-#line 301 "src/parser/parser.yy"
+#line 299 "src/parser/parser.yy"
                                      {
             yylhs.value.as < StatementAST* > () = new IfStatementAST(yystack_[2].value.as < STAB::CondStatementAST* > (), nullptr, yystack_[0].value.as < STAB::ElseStatementAST* > ());
          }
-#line 1594 "src/parser/parser.cpp"
+#line 1592 "src/parser/parser.cpp"
     break;
 
   case 52: // argList: %empty
-#line 306 "src/parser/parser.yy"
+#line 304 "src/parser/parser.yy"
                  {
         }
-#line 1601 "src/parser/parser.cpp"
+#line 1599 "src/parser/parser.cpp"
     break;
 
   case 53: // argList: args
-#line 308 "src/parser/parser.yy"
+#line 306 "src/parser/parser.yy"
                {
 	 for(const auto elt: yystack_[0].value.as < std::vector<ExprAST*> > ()){
 	   yylhs.value.as < std::vector<ExprAST*> > ().emplace_back(elt);
 	 }
 	}
-#line 1611 "src/parser/parser.cpp"
+#line 1609 "src/parser/parser.cpp"
     break;
 
   case 54: // args: args COMMA expr
-#line 315 "src/parser/parser.yy"
+#line 313 "src/parser/parser.yy"
                        {
        for(const auto elt: yystack_[2].value.as < std::vector<ExprAST*> > ())
            yylhs.value.as < std::vector<ExprAST*> > ().emplace_back(elt);
        yylhs.value.as < std::vector<ExprAST*> > ().emplace_back(yystack_[0].value.as < ExprAST* > ());
      }
-#line 1621 "src/parser/parser.cpp"
+#line 1619 "src/parser/parser.cpp"
     break;
 
   case 55: // args: expr
-#line 320 "src/parser/parser.yy"
+#line 318 "src/parser/parser.yy"
             {
        yylhs.value.as < std::vector<ExprAST*> > ().emplace_back(yystack_[0].value.as < ExprAST* > ());
      }
-#line 1629 "src/parser/parser.cpp"
+#line 1627 "src/parser/parser.cpp"
     break;
 
   case 56: // paramListPrototype: params
-#line 325 "src/parser/parser.yy"
+#line 323 "src/parser/parser.yy"
                   {
 	     for (const auto elt: yystack_[0].value.as < std::vector<std::string> > ())
 	         yylhs.value.as < std::vector<std::string> > ().emplace_back(elt);
 	  }
-#line 1638 "src/parser/parser.cpp"
+#line 1636 "src/parser/parser.cpp"
     break;
 
   case 57: // params: params COMMA "type"
-#line 331 "src/parser/parser.yy"
+#line 329 "src/parser/parser.yy"
                                {
 	 for(const auto elt: yystack_[2].value.as < std::vector<std::string> > ())
 	    yylhs.value.as < std::vector<std::string> > ().emplace_back(elt);
 	 yylhs.value.as < std::vector<std::string> > ().emplace_back(yystack_[0].value.as < std::string > ());
        }
-#line 1648 "src/parser/parser.cpp"
+#line 1646 "src/parser/parser.cpp"
     break;
 
   case 58: // params: "type"
-#line 336 "src/parser/parser.yy"
+#line 334 "src/parser/parser.yy"
                    {
        yylhs.value.as < std::vector<std::string> > ().emplace_back(yystack_[0].value.as < std::string > ());
        }
-#line 1656 "src/parser/parser.cpp"
+#line 1654 "src/parser/parser.cpp"
     break;
 
   case 59: // paramList: %empty
-#line 341 "src/parser/parser.yy"
+#line 339 "src/parser/parser.yy"
                  {
 	 }
-#line 1663 "src/parser/parser.cpp"
+#line 1661 "src/parser/parser.cpp"
     break;
 
   case 60: // paramList: parameters
-#line 343 "src/parser/parser.yy"
+#line 341 "src/parser/parser.yy"
                       {
 	   for(const auto elt: yystack_[0].value.as < std::vector<STAB::VariableDeclExprAST*> > ())
 	     yylhs.value.as < std::vector<STAB::VariableDeclExprAST*> > ().emplace_back(elt);
 	 }
-#line 1672 "src/parser/parser.cpp"
+#line 1670 "src/parser/parser.cpp"
     break;
 
   case 61: // parameters: parameters COMMA "type" "identifier"
-#line 349 "src/parser/parser.yy"
+#line 347 "src/parser/parser.yy"
                                           {
 	      for(const auto elt: yystack_[3].value.as < std::vector<STAB::VariableDeclExprAST*> > ())
 	         yylhs.value.as < std::vector<STAB::VariableDeclExprAST*> > ().emplace_back(elt);
               auto decl = new VariableDeclExprAST(yystack_[1].value.as < std::string > (), yystack_[0].value.as < std::string > ());
 	      yylhs.value.as < std::vector<STAB::VariableDeclExprAST*> > ().emplace_back(decl);
 	  }
-#line 1683 "src/parser/parser.cpp"
+#line 1681 "src/parser/parser.cpp"
     break;
 
   case 62: // parameters: "type" "identifier"
-#line 355 "src/parser/parser.yy"
+#line 353 "src/parser/parser.yy"
                          {
 	     auto decl = new VariableDeclExprAST(yystack_[1].value.as < std::string > (), yystack_[0].value.as < std::string > ());
 	     yylhs.value.as < std::vector<STAB::VariableDeclExprAST*> > ().emplace_back(decl);
 	  }
-#line 1692 "src/parser/parser.cpp"
+#line 1690 "src/parser/parser.cpp"
     break;
 
   case 63: // fnCallStmt: "identifier" LBRACE argList RBRACE SEMI_COLON
-#line 360 "src/parser/parser.yy"
+#line 358 "src/parser/parser.yy"
                                                 {
      std::vector<STAB::ExprAST*> Args;
      for (const auto elt: yystack_[2].value.as < std::vector<ExprAST*> > ()){
@@ -1700,11 +1698,11 @@ namespace STAB {
        }
       yylhs.value.as < StatementAST* > () = new CallStatementAST(yystack_[4].value.as < std::string > (), Args);
     }
-#line 1704 "src/parser/parser.cpp"
+#line 1702 "src/parser/parser.cpp"
     break;
 
   case 64: // fnCall: "identifier" LBRACE argList RBRACE
-#line 368 "src/parser/parser.yy"
+#line 366 "src/parser/parser.yy"
                                  {
    std::vector<STAB::ExprAST*> Args;
    for (const auto elt: yystack_[1].value.as < std::vector<ExprAST*> > ()){
@@ -1712,11 +1710,11 @@ namespace STAB {
    }
    yylhs.value.as < CallExprAST* > () = new CallExprAST(yystack_[3].value.as < std::string > (), Args);
  }
-#line 1716 "src/parser/parser.cpp"
+#line 1714 "src/parser/parser.cpp"
     break;
 
 
-#line 1720 "src/parser/parser.cpp"
+#line 1718 "src/parser/parser.cpp"
 
             default:
               break;
@@ -2230,10 +2228,10 @@ namespace STAB {
        0,    84,    84,    98,   107,   111,   120,   125,   130,   137,
      145,   163,   167,   173,   176,   179,   182,   185,   188,   191,
      194,   195,   196,   199,   202,   205,   210,   213,   216,   219,
-     222,   226,   229,   232,   235,   238,   241,   245,   248,   257,
-     260,   264,   269,   274,   279,   281,   283,   286,   291,   292,
-     297,   301,   306,   308,   315,   320,   325,   331,   336,   341,
-     343,   349,   355,   360,   368
+     222,   225,   228,   231,   234,   237,   240,   243,   246,   255,
+     258,   262,   267,   272,   277,   279,   281,   284,   289,   290,
+     295,   299,   304,   306,   313,   318,   323,   329,   334,   339,
+     341,   347,   353,   358,   366
   };
 
   void
@@ -2271,9 +2269,9 @@ namespace STAB {
 
 #line 17 "src/parser/parser.yy"
 } // STAB
-#line 2275 "src/parser/parser.cpp"
+#line 2273 "src/parser/parser.cpp"
 
-#line 376 "src/parser/parser.yy"
+#line 374 "src/parser/parser.yy"
 
 
 namespace STAB {
