@@ -115,8 +115,10 @@ str [^\"\\]*\\.[^\"\\]**
      yylval->emplace<std::string>(yytext);
      return Token::token_kind_type::DIV;
     }
-"%"  return Token::token_kind_type::MOD;
-
+"%"  {
+     yylval->emplace<std::string>(yytext);
+     return Token::token_kind_type::MOD;
+     }
 "("  return Token::token_kind_type::LBRACE;
 
 ")"  return Token::token_kind_type::RBRACE;
@@ -146,12 +148,13 @@ str [^\"\\]*\\.[^\"\\]**
       yylval->emplace<std::string>("g");
       return Token::token_kind_type::GE;
      }
-"=" return Token::token_kind_type::ASSIGN;
 
 "==" {
       yylval->emplace<std::string>("e");
       return Token::token_kind_type::EQ;
      }
+"=" return Token::token_kind_type::ASSIGN;
+
 "!=" {
       yylval->emplace<std::string>("n");
       return  Token::token_kind_type::NE;
