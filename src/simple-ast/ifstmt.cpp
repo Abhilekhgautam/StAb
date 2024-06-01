@@ -41,19 +41,16 @@ namespace STAB{
 	   // Codegen of 'ifBody' can change the current block, update ifBody for the PHI.
            if_Body = Builder->GetInsertBlock();
 
-	   F->insert(F->end(), else_Body);
   	   Builder->SetInsertPoint(else_Body);
 
-	  // generate code for else body
-          elseStmt->codegen(s);
+	   // generate code for else body
+           elseStmt->codegen(s);
 
-	  Builder->CreateBr(afterIfelse);
+	   Builder->CreateBr(afterIfelse);
 
-	  F->insert(F->end(), afterIfelse);
+           Builder->SetInsertPoint(afterIfelse);
 
-          Builder->SetInsertPoint(afterIfelse);
-
-	  return F;
+	   return F;
 	} else {
             // don't want ifBody to be shadowed.
             llvm::BasicBlock* if_Body = llvm::BasicBlock::Create(*TheContext,"ifBody", F);
