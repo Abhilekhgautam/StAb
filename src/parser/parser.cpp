@@ -2275,14 +2275,71 @@ namespace STAB {
 
 
 namespace STAB {
+
+ std::string improveErrMessage(std::string message){
+    std::unordered_map<std::string, std::string> tokenMap = {
+        {"LBRACE", "'('"},
+        {"RBRACE", "')'"},
+        {"LCURLY", "'{'"},
+        {"RCURLY", "'}'"},
+        {"LBIG", "'['"},
+        {"RBIG", "']'"},
+        {"ASSIGN", "'='"},
+        {"IF", "'if'"},
+        {"ELSE", "'else'"},
+        {"ELSE_IF", "'else if'"},
+        {"LOOP", "'loop'"},
+        {"FOR", "'for'"},
+        {"WHILE", "'while'"},
+        {"AND", "'&&'"},
+        {"OR", "'||'"},
+        {"XOR", "'^'"},
+        {"MATCH", "'match'"},
+        {"IMPORT", "'import'"},
+        {"IN", "'in'"},
+        {"TO", "'to'"},
+        {"COMMA", "','"},
+        {"FN_ARROW", "'->'"},
+        {"MATCH_ARROW", "'=>'"},
+        {"RETURN", "'return'"},
+        {"BREAK", "'break'"},
+        {"SKIP", "'skip'"},
+        {"SEMI_COLON", "';'"},
+        {"PLUS", "'+'"},
+        {"MOD", "'%'"},
+        {"MINUS", "'-'"},
+        {"TIMES", "'*'"},
+        {"DIV", "'/'"},
+        {"GT", "'>'"},
+        {"LT", "'<'"},
+        {"GE", "'>='"},
+        {"LE", "'<='"},
+        {"NE", "'!='"},
+        {"EQ", "'=='"},
+    };
+
+    // Iterate over each token and perform replacements
+    for (const auto& [token, symbol] : tokenMap) {
+        size_t pos = 0;
+        while ((pos = message.find(token, pos)) != std::string::npos) {
+            message.replace(pos, token.length(), symbol);
+            pos += symbol.length();
+        }
+    }
+    return message;
+ }
+
  template <typename RHS>
  inline void calcLocation(location& current, const RHS& rhs, const std::size_t n){
- current = location(YYRHSLOC(rhs, 1).first, YYRHSLOC(rhs, n).second);
+   current = location(YYRHSLOC(rhs, 1).first, YYRHSLOC(rhs, n).second);
  }
 //void Parser::report_syntax_error(const context& ctx) const {
  // std::cerr << ctx.location() << ": Syntax Error Something went wrong"; 
  //}
- void Parser::error(const location &loc, const std::string &message){
-  std::cerr << "Error at lines " << loc << ": " << message << std::endl;
+ void Parser::error(const location &loc,const std::string& message){
+   std::string improved_message = improveErrMessage(message);
+   std::cout << "\n[" << loc.first << "]" << " " << lexer.getSourceLine(loc.first) << '\n';
+   std::cerr << "Error at line " << loc.first << ": " << improved_message << std::endl;
+   return;
   }
 }
