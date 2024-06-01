@@ -12,7 +12,7 @@ StAb - A General Purpose, Imperative, Static Typed Programming Language.
 # Basic Syntax
 
 ## Variable Declaration
- - Only supports `int`and `void` type as of now.
+ - Only supports `int`, `string` and `void` type as of now.
 ```
  int x;
 ```
@@ -72,6 +72,7 @@ fn factorial(int n) -> int {
  - No Array (will be implemented)
  - Has very poor error message
  - Doesn't generate Native Code, only generates LLVM IR as of now 
- - Supports printint to standard output using println
- - Checks for the existence of the main function
- - support for `if else` statement
+ - Supports printint to standard output using `println`
+ - Checks for the existence of the `main` function
+ - Support for `if else` statement
+ - Improved Error Reporting
