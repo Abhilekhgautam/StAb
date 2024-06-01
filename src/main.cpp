@@ -55,6 +55,7 @@ int main(int argc, char* argv[]){
 
   initializeModule();
   STAB::Lexer lexer(source_file, debug);
+  lexer.initSourceLine();
   STAB::Parser parser(lexer, debug);
 
   parser();
@@ -68,7 +69,7 @@ int main(int argc, char* argv[]){
       auto main = TheModule->getFunction("main");
 
       if (!main){
-          std::cerr << "\nError: No main function defined.\nSTAB requires at least a\"main\" function for execution\n";     
+          std::cerr << "\nError: No main function defined.\nSTAB requires at least a \"main\" function for execution\n";     
 	  return -1;
       }
 
