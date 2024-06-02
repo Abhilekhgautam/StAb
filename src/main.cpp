@@ -32,7 +32,7 @@ std::vector<STAB::Scope*> scopes;
 
 std::vector<llvm::Function*> fnBlocks;
 STAB::FunctionAST* __start__fn;
-STAB::Scope* globalScope = nullptr;
+STAB::Scope* globalScope = new STAB::Scope(nullptr);
 STAB::Scope* currentScope = globalScope;
 
 namespace fs = std::filesystem;
