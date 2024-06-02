@@ -82,7 +82,7 @@
 %%
  
  functionDefinition: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE LCURLY stmts RCURLY{
-			auto fnScope = new Scope(currentScope);
+			auto fnScope = new Scope(currentScope, $2);
 			currentScope = fnScope;
                         std::vector<std::string> argTypes;
 			std::vector<STAB::VariableDeclExprAST*> declVars;
@@ -135,17 +135,11 @@
      ;
  
  while: WHILE expr LCURLY stmts RCURLY{
-         if (currentScope == globalScope){
-           std::cerr << "\nCannot write a loop statement in the global scope\n"; 
-         }
        $$ = new WhileStatementAST($2, $4);
 
       } 
 
 program: stmts{
-       globalScope = new Scope(nullptr);
-       currentScope = globalScope;
-
        std::vector<std::string> Args;
        std::vector<STAB::VariableDeclExprAST*> declVars;
 
