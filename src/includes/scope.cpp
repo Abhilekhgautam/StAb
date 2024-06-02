@@ -24,10 +24,22 @@ namespace STAB{
 
 // check if a variable name already exists within the current scope
     llvm::AllocaInst* STAB::Scope::getID(std::string id) const{
+	Scope* prevScope = prev;
         auto found = SymbolTable.find(id);
         if (found != SymbolTable.end()){
             return found->second;
         }
+	if (prevScope){
+	    auto symTable = prevScope->SymbolTable;
+	    while(prevScope){
+	        auto found = symTable.find(id);
+                if (found != symTable.end()){
+                   return found->second;
+                 }
+	        prevScope = prevScope->prev;
+	        symTable = prevScope->SymbolTable;
+            }
+	}
         return nullptr;
     }
 }

@@ -4,7 +4,6 @@
 #define STAB_SCOPE_HPP
 
 #include <map>
-
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Instructions.h"
 #include <llvm/IR/Function.h>
@@ -15,7 +14,7 @@ namespace STAB{
        std::string name;
        llvm::Function* F;
       public:
-        Scope* prev;
+       Scope* prev;
        Scope(Scope* e = nullptr, std::string name = ""):name(name), prev(e){}
 
        void setFnBlock(llvm::Function* Fn);
