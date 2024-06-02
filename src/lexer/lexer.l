@@ -29,6 +29,7 @@ str [^\"\\]*\\.[^\"\\]**
   yylval->emplace<std::string>(yytext);
   return Token::token_kind_type::NUMBER;
 }
+"//".* /* eat up the entire line */
 "\n" {++currentLine;}
 
 ";" return Token::token_kind_type::SEMI_COLON;
