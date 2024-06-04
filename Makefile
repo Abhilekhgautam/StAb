@@ -2,7 +2,7 @@
 
 LLVM_CONFIG = llvm-config
 LLVM_CXXFLAGS = `$(LLVM_CONFIG) --cxxflags`
-LLVM_LDFLAGS = `$(LLVM_CONFIG) --ldflags --system-libs --libs core`
+LLVM_LDFLAGS = `$(LLVM_CONFIG) --ldflags --system-libs --libs all`
 
 SRCS = src/lib/lib.cpp \
        src/main.cpp \
