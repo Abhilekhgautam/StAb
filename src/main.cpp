@@ -2,6 +2,10 @@
 #include <iostream>
 #include "./lexer/lexer.hpp"
 #include "includes/scope.hpp"
+#include <llvm-18/llvm/ADT/ArrayRef.h>
+#include <llvm-18/llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm-18/llvm/Support/CodeGen.h>
+#include <llvm-18/llvm/Target/TargetOptions.h>
 #include <map>
 #include <string>
 #include <memory>
@@ -13,8 +17,13 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Type.h"
-
 #include <llvm/IR/Instructions.h>
+#include "llvm/MC/TargetRegistry.h"
+#include "llvm/Target/TargetMachine.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/Target/TargetOptions.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/FileSystem.h"
 #include <vector>
 #ifndef STAB_GLOBAL_H
 #include "globals.h"
@@ -69,16 +78,53 @@ int main(int argc, char* argv[]){
       auto main = TheModule->getFunction("main");
 
       if (!main){
-          std::cerr << "\nError: No main function defined.\nSTAB requires at least a \"main\" function for execution\n";     
+          std::cerr << "\nError: No main function defined.\nStAb requires at least a \"main\" function for execution\n";     
 	  return -1;
       }
+      LLVMInitializeAllTargetInfos();
+      LLVMInitializeAllTargets();
+      LLVMInitializeAllTargetMCs();
+      LLVMInitializeAllAsmParsers();
+      LLVMInitializeAllAsmPrinters();
+      auto TargetTriple = LLVMGetDefaultTargetTriple();
+      std::string Error;
+      auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, Error);
 
-      // get all the function definitions
-      for(auto const elt: fnBlocks){
-	  // print the generated code
-	  elt->print(llvm::errs());    
+      if(!Target){
+	 llvm::errs() << Error;
+	 return 1;
       }
-      
+
+      auto CPU = "generic";
+      auto Features = "";
+      llvm::TargetOptions opt;
+
+      auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, llvm::Reloc::PIC_);
+
+      TheModule->setDataLayout(TargetMachine->createDataLayout());
+      TheModule->setTargetTriple(TargetTriple);
+
+      auto Filename = "output.o";
+      std::error_code EC;
+      llvm::raw_fd_ostream dest(Filename, EC, llvm::sys::fs::OF_None);
+
+      if (EC) {
+	 llvm::errs() << "Could not open file: " << EC.message();
+         return 1;
+       }
+
+       llvm::legacy::PassManager pass;
+       auto FileType = llvm::CodeGenFileType::ObjectFile;
+
+       if (TargetMachine->addPassesToEmitFile(pass, dest, nullptr, FileType)){
+	       llvm:: errs() << "TargetMachine can't emit a file of this type";
+	  return 1;
+       }
+       pass.run(*TheModule);
+       dest.flush();
+       const char* command = "clang output.o -o output";
+
+       std::system(command);
   } else {
       std::cerr << "__start__fn fn not defined yet!!\n";
   }
