@@ -57,6 +57,7 @@ namespace STAB{
         llvm::Value* codegen(STAB::Scope* s) override;
         // just for now
         std::string getType() override{return "int";}
+	int getVal(){return val;}
     };
 
     class StringExprAST: public ExprAST{

@@ -7,6 +7,7 @@
 namespace STAB{
     llvm::Value* STAB::LoopStatementAST::codegen(Scope* s){
         llvm::Function* F = s->getFnBlock();
+	
         // block to insert the code for loop body
         llvm::BasicBlock* loopBody = llvm::BasicBlock::Create(*TheContext, "loopBody", F);
         // block to insert the code after the loop ends;
@@ -16,12 +17,14 @@ namespace STAB{
         Builder->CreateBr(loopBody);
         Builder->SetInsertPoint(loopBody);
 
+        auto loopScope = new Scope(s);
+
         for (const auto elt: body){
-            elt->codegen(s);
+            elt->codegen(loopScope);
         }
 
 	auto dummyNum = new NumberExprAST(0);
-	auto cond = dummyNum->codegen(s);
+	auto cond = dummyNum->codegen(loopScope);
 
 	cond = Builder->CreateICmpEQ(cond, llvm::ConstantInt::get(*TheContext, llvm::APInt(32, 0, true)));
 

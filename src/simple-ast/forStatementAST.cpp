@@ -1,4 +1,5 @@
 #include "./ast.h"
+#include <llvm-18/llvm/IR/Instructions.h>
 #include <llvm-18/llvm/IR/Type.h>
 
 namespace STAB {
@@ -9,39 +10,42 @@ namespace STAB {
             return nullptr;
         }
 
-        auto loopStart = range->getStart()->codegen(s);
-        auto loopEnd = range->getEnd()->codegen(s);
-        auto loopStep = range->getStep()->codegen(s);
+	auto forScope = new Scope(s);
+
+        auto loopStart = range->getStart()->codegen(forScope);
+        auto loopEnd = range->getEnd()->codegen(forScope);
+        auto loopStep = range->getStep()->codegen(forScope);
 
 	std::string operation;
 
 	if(loopStart == loopEnd){
 	  return F;	
 	}
-
-	if (loopStart < loopEnd){
-          operation = "Add";
-	} else {
-	  operation = "Sub";	
-	}
+        operation = "Add";
 	
         // Set the value for iteration variable
-        auto temp = iterationVariable->codegen(s);
-        Builder->CreateStore(loopStart, s->getID(iterationVariable->getName()));
+        iterationVariable->codegen(s);
+
+        auto var = s->getID(iterationVariable->getName());
+
+	if (!var){std::cerr << "\nnullptr cha bey\n";}
+
+	auto val = std::get_if<llvm::AllocaInst*>(&var.value());
+	if (!val){std::cerr << "\nval nullptr cha bey\n";}
+        Builder->CreateStore(loopStart, *val);
 
         llvm::BasicBlock* loopBody = llvm::BasicBlock::Create(*TheContext,"loopBody", F);
         llvm::BasicBlock* afterLoop = llvm::BasicBlock::Create(*TheContext, "afterLoop", F);
-
 
         // go inside loop body
         Builder->CreateBr(loopBody);
         Builder->SetInsertPoint(loopBody);
 
-	llvm::Value* currentVal = Builder->CreateLoad(llvm::Type::getInt32Ty(*TheContext), s->getID(iterationVariable->getName()));
+	llvm::Value* currentVal = Builder->CreateLoad(llvm::Type::getInt32Ty(*TheContext),*val);
 	
         // generate code for loop body
         for(const auto elt: body){
-            elt->codegen(s);
+            elt->codegen(forScope);
         }
 	llvm::Value* nextVal;
         if (operation == "Add"){
@@ -49,7 +53,7 @@ namespace STAB {
 	} else {
            nextVal = Builder->CreateSub(currentVal, loopStep);		
 	}
-        Builder->CreateStore(nextVal, s->getID(iterationVariable->getName()));
+        Builder->CreateStore(nextVal, *val);
 
         // compare the expr with 0
 	llvm::Value* cond = Builder->CreateICmpSLE(nextVal, loopEnd);

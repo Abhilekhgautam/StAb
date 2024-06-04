@@ -39,13 +39,18 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
           F = llvm::Function::Create(FT, llvm::Function::ExternalLinkage, Proto->getName(), TheModule.get());
           llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, Proto->getName(), F);
           Builder->SetInsertPoint(fnBlock);
+
+	  if(Proto->getName() == "main"){
+             auto startFunction = TheModule->getFunction("__start__");
+	     Builder->CreateCall(startFunction, {});	  
+	  }
 	}
 
     fnBlocks.emplace_back(F);
     Scope->setFnBlock(F);
 
     std::vector<std::string> names;
-    // Codegen for function parameters5
+    // Codegen for function parameters
     for(const auto params: declVars) {
 	auto name = params->getName();
 	params->codegen(Scope);
@@ -55,8 +60,10 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
     // Store each function argument
     unsigned idx = 0;
     for (auto &Arg : F->args()) {
-        Builder->CreateStore(&Arg, Scope->getID(names[idx]));
-	++idx;
+	   auto test = Scope->getID(names[idx]);
+	   auto val = std::get_if<llvm::AllocaInst*>(&test.value());
+           Builder->CreateStore(&Arg, *val);
+	   ++idx;
     }
 
     // Codegen for function body

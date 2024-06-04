@@ -32,9 +32,11 @@ namespace STAB{
             Builder->CreateCondBr(cond, else_Body, if_Body);
 
 	    Builder->SetInsertPoint(if_Body);
-	
+ 
+	    auto ifScope = new Scope(s);
+
            // generate code for if body
-           ifStmt->codegen(s);
+           ifStmt->codegen(ifScope);
 
 	   Builder->CreateBr(afterIfelse);
 
@@ -43,8 +45,10 @@ namespace STAB{
 
   	   Builder->SetInsertPoint(else_Body);
 
+	   auto elseScope = new Scope(s);
+
 	   // generate code for else body
-           elseStmt->codegen(s);
+           elseStmt->codegen(elseScope);
 
 	   Builder->CreateBr(afterIfelse);
 
@@ -60,8 +64,11 @@ namespace STAB{
 
 	    Builder->SetInsertPoint(if_Body);
 	
+            auto ifScope = new Scope(s);
+
+
            // generate code for if body
-           ifStmt->codegen(s);
+           ifStmt->codegen(ifScope);
 
 	   Builder->CreateBr(afterIf);
 
