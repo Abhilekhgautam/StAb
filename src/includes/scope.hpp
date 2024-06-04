@@ -1,5 +1,8 @@
 #pragma once
 
+#include <llvm-18/llvm/IR/SymbolTableListTraits.h>
+#include <variant>
+#include <optional>
 #ifndef STAB_SCOPE_HPP
 #define STAB_SCOPE_HPP
 
@@ -8,9 +11,10 @@
 #include "llvm/IR/Instructions.h"
 #include <llvm/IR/Function.h>
 
-namespace STAB{
+namespace STAB{ 
+      using valType = std::variant<llvm::AllocaInst*, llvm::GlobalVariable*>;
     class Scope {
-       std::map<std::string, llvm::AllocaInst*> SymbolTable;
+       std::map<std::string, valType> SymbolTable;
        std::string name;
        llvm::Function* F;
       public:
@@ -25,11 +29,12 @@ namespace STAB{
        std::string getName() const;
 
        // install variable name to the idTable
-       void installID(std::string key, llvm::AllocaInst*  value);
+       void installID(std::string key, valType value);
 
        // check if a variable name already exists within the current scope
-       llvm::AllocaInst* getID(std::string id) const;
+       std::optional<valType> getID(std::string id) const;
 
  };
+
 }
 #endif

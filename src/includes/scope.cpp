@@ -4,6 +4,7 @@
 
 #include "scope.hpp"
 #include "../globals.h"
+#include <optional>
 
 namespace STAB{
     void STAB::Scope::setFnBlock(llvm::Function* Fn){
@@ -17,13 +18,13 @@ namespace STAB{
     llvm::Function* STAB::Scope::getFnBlock(){return F;}
     std::string STAB::Scope::getName() const {return name;}
 
-// install variable name to the idTable
-    void STAB::Scope::installID(std::string key, llvm::AllocaInst*  value){
+    // install variable name to the idTable
+    void STAB::Scope::installID(std::string key, valType value) {
         SymbolTable.insert({key, value});
     }
 
-// check if a variable name already exists within the current scope
-    llvm::AllocaInst* STAB::Scope::getID(std::string id) const{
+    // check if a variable name already exists within the current scope
+    std::optional<valType> STAB::Scope::getID(std::string id) const {
 	Scope* prevScope = prev;
         auto found = SymbolTable.find(id);
         if (found != SymbolTable.end()){
@@ -40,7 +41,7 @@ namespace STAB{
 	        symTable = prevScope->SymbolTable;
             }
 	}
-        return nullptr;
+        return std::nullopt;
     }
 }
 
