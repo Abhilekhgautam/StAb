@@ -19,6 +19,8 @@ namespace STAB{
 
         auto loopScope = new Scope(s);
 
+	loopScope->setFnBlock(F);
+
         for (const auto elt: body){
             elt->codegen(loopScope);
         }

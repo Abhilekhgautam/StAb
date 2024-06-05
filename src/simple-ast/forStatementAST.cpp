@@ -12,6 +12,8 @@ namespace STAB {
 
 	auto forScope = new Scope(s);
 
+	forScope->setFnBlock(F);
+
         auto loopStart = range->getStart()->codegen(forScope);
         auto loopEnd = range->getEnd()->codegen(forScope);
         auto loopStep = range->getStep()->codegen(forScope);

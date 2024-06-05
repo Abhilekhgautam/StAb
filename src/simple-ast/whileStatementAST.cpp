@@ -13,6 +13,7 @@ llvm::Value* STAB::WhileStatementAST::codegen(Scope* s) {
     }
 
     auto whileScope = new Scope(s);
+    whileScope->setFnBlock(F);
 
     llvm::BasicBlock* loopBody = llvm::BasicBlock::Create(*TheContext, "loopBody", F);
     llvm::BasicBlock* afterLoop = llvm::BasicBlock::Create(*TheContext, "afterLoop", F);

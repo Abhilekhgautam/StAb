@@ -35,6 +35,7 @@ namespace STAB{
  
 	    auto ifScope = new Scope(s);
 
+	    ifScope->setFnBlock(F);
            // generate code for if body
            ifStmt->codegen(ifScope);
 
@@ -46,7 +47,7 @@ namespace STAB{
   	   Builder->SetInsertPoint(else_Body);
 
 	   auto elseScope = new Scope(s);
-
+           elseScope->setFnBlock(F);
 	   // generate code for else body
            elseStmt->codegen(elseScope);
 
@@ -66,6 +67,7 @@ namespace STAB{
 	
             auto ifScope = new Scope(s);
 
+	    ifScope->setFnBlock(F);
 
            // generate code for if body
            ifStmt->codegen(ifScope);
