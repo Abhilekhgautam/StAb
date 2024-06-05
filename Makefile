@@ -26,7 +26,10 @@ SRCS = src/lib/lib.cpp \
        src/simple-ast/ifstmt.cpp \
        src/simple-ast/condStatement.cpp \
        src/simple-ast/elseStmt.cpp \
-       src/simple-ast/forStatementAST.cpp
+       src/simple-ast/forStatementAST.cpp \
+       src/simple-ast/arrayAST.cpp \
+       src/simple-ast/arrayRefAST.cpp \
+       src/simple-ast/arrayAssignAST.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
