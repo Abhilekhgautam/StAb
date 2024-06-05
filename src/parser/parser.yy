@@ -66,6 +66,10 @@
 %type<std::vector<STAB::VariableDeclExprAST*>> paramList parameters
 %type<std::vector<std::string>> paramListPrototype params
 
+%type<STAB::ArrayAST*> arrayDecl;
+%type<STAB::ArrayRefAST*> arrayRef;
+%type<STAB::ArrayAssignAST*> arrayAssign;
+
 %type<STAB::RangeStatementAST*> range;
 
 %type<STAB::CondStatementAST*> ifStmt elseifStmt
@@ -116,6 +120,21 @@
 		     $$ = new VariableDeclAssignExprAST(varDecl, val);
 		  }
                   ;
+
+ arrayDecl: DATA_TYPE ID LBIG expr RBIG SEMI_COLON{
+              $$ = new ArrayAST($1, $2, $4);
+          }
+	  ;
+
+ arrayAssign: ID LBIG expr RBIG ASSIGN expr SEMI_COLON{
+              $$ = new ArrayAssignAST($1, $3, $6);
+            }
+	    ;
+
+ arrayRef: ID LBIG expr RBIG {
+           $$ = new ArrayRefAST($1, $3);
+         }
+         ;
 
  loop: LOOP LCURLY stmts RCURLY{
        $$ = new LoopStatementAST($3);
@@ -199,6 +218,12 @@ stmts: stmts stmt{
       | ifLadder{
          $$ = $1;
       }
+      | arrayDecl {
+         $$ = $1;
+      }
+      | arrayAssign {
+         $$ = $1;
+      }
       ;
 
  expr: expr PLUS expr {
@@ -255,6 +280,9 @@ stmts: stmts stmt{
      }
      | fnCall {
         $$ = new CallExprAST($1->getFnName(), $1->getArgs());
+     }
+     | arrayRef {
+        $$ = $1;
      }
      ;
 

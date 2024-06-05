@@ -396,18 +396,27 @@ namespace STAB {
       // expr
       char dummy2[sizeof (ExprAST*)];
 
+      // arrayDecl
+      char dummy3[sizeof (STAB::ArrayAST*)];
+
+      // arrayAssign
+      char dummy4[sizeof (STAB::ArrayAssignAST*)];
+
+      // arrayRef
+      char dummy5[sizeof (STAB::ArrayRefAST*)];
+
       // elseifStmt
       // ifStmt
-      char dummy3[sizeof (STAB::CondStatementAST*)];
+      char dummy6[sizeof (STAB::CondStatementAST*)];
 
       // elseStmt
-      char dummy4[sizeof (STAB::ElseStatementAST*)];
+      char dummy7[sizeof (STAB::ElseStatementAST*)];
 
       // range
-      char dummy5[sizeof (STAB::RangeStatementAST*)];
+      char dummy8[sizeof (STAB::RangeStatementAST*)];
 
       // varInitialization
-      char dummy6[sizeof (STAB::VariableDeclAssignExprAST*)];
+      char dummy9[sizeof (STAB::VariableDeclAssignExprAST*)];
 
       // functionDefinition
       // functionPrototype
@@ -420,7 +429,7 @@ namespace STAB {
       // returnStmt
       // ifLadder
       // fnCallStmt
-      char dummy7[sizeof (StatementAST*)];
+      char dummy10[sizeof (StatementAST*)];
 
       // PLUS
       // MOD
@@ -437,23 +446,23 @@ namespace STAB {
       // "type"
       // "num"
       // "str"
-      char dummy8[sizeof (std::string)];
+      char dummy11[sizeof (std::string)];
 
       // argList
       // args
-      char dummy9[sizeof (std::vector<ExprAST*>)];
+      char dummy12[sizeof (std::vector<ExprAST*>)];
 
       // paramList
       // parameters
-      char dummy10[sizeof (std::vector<STAB::VariableDeclExprAST*>)];
+      char dummy13[sizeof (std::vector<STAB::VariableDeclExprAST*>)];
 
       // program
       // stmts
-      char dummy11[sizeof (std::vector<StatementAST*>)];
+      char dummy14[sizeof (std::vector<StatementAST*>)];
 
       // paramListPrototype
       // params
-      char dummy12[sizeof (std::vector<std::string>)];
+      char dummy15[sizeof (std::vector<std::string>)];
     };
 
     /// The size of the largest semantic type.
@@ -617,30 +626,33 @@ namespace STAB {
         S_functionPrototype = 49,                // functionPrototype
         S_varDeclaration = 50,                   // varDeclaration
         S_varInitialization = 51,                // varInitialization
-        S_loop = 52,                             // loop
-        S_range = 53,                            // range
-        S_for = 54,                              // for
-        S_while = 55,                            // while
-        S_program = 56,                          // program
-        S_stmts = 57,                            // stmts
-        S_stmt = 58,                             // stmt
-        S_expr = 59,                             // expr
-        S_assignExpr = 60,                       // assignExpr
-        S_returnStmt = 61,                       // returnStmt
-        S_breakStmt = 62,                        // breakStmt
-        S_skipStmt = 63,                         // skipStmt
-        S_elseStmt = 64,                         // elseStmt
-        S_elseifStmt = 65,                       // elseifStmt
-        S_ifStmt = 66,                           // ifStmt
-        S_ifLadder = 67,                         // ifLadder
-        S_argList = 68,                          // argList
-        S_args = 69,                             // args
-        S_paramListPrototype = 70,               // paramListPrototype
-        S_params = 71,                           // params
-        S_paramList = 72,                        // paramList
-        S_parameters = 73,                       // parameters
-        S_fnCallStmt = 74,                       // fnCallStmt
-        S_fnCall = 75                            // fnCall
+        S_arrayDecl = 52,                        // arrayDecl
+        S_arrayAssign = 53,                      // arrayAssign
+        S_arrayRef = 54,                         // arrayRef
+        S_loop = 55,                             // loop
+        S_range = 56,                            // range
+        S_for = 57,                              // for
+        S_while = 58,                            // while
+        S_program = 59,                          // program
+        S_stmts = 60,                            // stmts
+        S_stmt = 61,                             // stmt
+        S_expr = 62,                             // expr
+        S_assignExpr = 63,                       // assignExpr
+        S_returnStmt = 64,                       // returnStmt
+        S_breakStmt = 65,                        // breakStmt
+        S_skipStmt = 66,                         // skipStmt
+        S_elseStmt = 67,                         // elseStmt
+        S_elseifStmt = 68,                       // elseifStmt
+        S_ifStmt = 69,                           // ifStmt
+        S_ifLadder = 70,                         // ifLadder
+        S_argList = 71,                          // argList
+        S_args = 72,                             // args
+        S_paramListPrototype = 73,               // paramListPrototype
+        S_params = 74,                           // params
+        S_paramList = 75,                        // paramList
+        S_parameters = 76,                       // parameters
+        S_fnCallStmt = 77,                       // fnCallStmt
+        S_fnCall = 78                            // fnCall
       };
     };
 
@@ -683,6 +695,18 @@ namespace STAB {
 
       case symbol_kind::S_expr: // expr
         value.move< ExprAST* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_arrayDecl: // arrayDecl
+        value.move< STAB::ArrayAST* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_arrayAssign: // arrayAssign
+        value.move< STAB::ArrayAssignAST* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_arrayRef: // arrayRef
+        value.move< STAB::ArrayRefAST* > (std::move (that.value));
         break;
 
       case symbol_kind::S_elseifStmt: // elseifStmt
@@ -799,6 +823,48 @@ namespace STAB {
       {}
 #else
       basic_symbol (typename Base::kind_type t, const ExprAST*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, STAB::ArrayAST*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const STAB::ArrayAST*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, STAB::ArrayAssignAST*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const STAB::ArrayAssignAST*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, STAB::ArrayRefAST*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const STAB::ArrayRefAST*& v, const location_type& l)
         : Base (t)
         , value (v)
         , location (l)
@@ -975,6 +1041,18 @@ switch (yykind)
 
       case symbol_kind::S_expr: // expr
         value.template destroy< ExprAST* > ();
+        break;
+
+      case symbol_kind::S_arrayDecl: // arrayDecl
+        value.template destroy< STAB::ArrayAST* > ();
+        break;
+
+      case symbol_kind::S_arrayAssign: // arrayAssign
+        value.template destroy< STAB::ArrayAssignAST* > ();
+        break;
+
+      case symbol_kind::S_arrayRef: // arrayRef
+        value.template destroy< STAB::ArrayRefAST* > ();
         break;
 
       case symbol_kind::S_elseifStmt: // elseifStmt
@@ -2228,8 +2306,8 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 323,     ///< Last index in yytable_.
-      yynnts_ = 29,  ///< Number of nonterminal symbols.
+      yylast_ = 405,     ///< Last index in yytable_.
+      yynnts_ = 32,  ///< Number of nonterminal symbols.
       yyfinal_ = 3 ///< Termination state number.
     };
 
@@ -2243,7 +2321,7 @@ switch (yykind)
 
 #line 17 "src/parser/parser.yy"
 } // STAB
-#line 2247 "src/parser/parser.hpp"
+#line 2325 "src/parser/parser.hpp"
 
 
 
