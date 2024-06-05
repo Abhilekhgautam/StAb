@@ -69,7 +69,7 @@ fn factorial(int n) -> int {
  - `int` , `string` and `void` as a type.
  - Support `for` loop added
  - No class or struct (struct will be implementd)
- - No Array (will be implemented)
+ - Support for Array added
  - Has very poor error message
  - Doesn't generate Native Code, only generates LLVM IR as of now 
  - Supports printint to standard output using `println`
