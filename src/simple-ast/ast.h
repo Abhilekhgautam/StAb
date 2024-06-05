@@ -70,7 +70,36 @@ namespace STAB{
 	std::string getVal() {return val;}
     };
 
+    class ArrayAST: public StatementAST {
+        std::string type;
+	std::string name;
+	ExprAST* size;
+      public:
+	ArrayAST(std::string type, std::string name, ExprAST* size):type(type), name(name), size(size){}
+	std::string getType() const {return type;}
+	std::string getName() const {return name;}
+	llvm::Value* codegen(STAB::Scope* s) override;
+    };
 
+    class ArrayAssignAST: public StatementAST {
+         std::string name;
+	 ExprAST* index;
+	 ExprAST* val;
+     public:
+        ArrayAssignAST(std::string name, ExprAST* index, ExprAST* val): name(name), index(index), val(val){}	 
+	llvm::Value* codegen(Scope* s) override;
+    };
+
+    class ArrayRefAST: public ExprAST{
+	 std::string name;
+	 ExprAST* expr;
+    public:
+	 ArrayRefAST(std::string name, ExprAST* expr):
+		 name(name), expr(expr){}
+	 llvm::Value* codegen(Scope* s) override;
+	 // only int for now.
+	 std::string getType() override{ return "int";}
+    };
     // int x;
     class VariableDeclExprAST: public StatementAST {
        std::string Type;
@@ -229,7 +258,7 @@ namespace STAB{
 	    std::string getFnName() const {return Callee;}
 	    std::vector<ExprAST*> getArgs(){return Args;}
         llvm::Value* codegen(Scope* s) override;
-	    std::string getType() override {return "";}
+	    std::string getType() override {return "fn";}
     };
 
     class CallStatementAST : public StatementAST {

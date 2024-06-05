@@ -19,7 +19,6 @@ namespace STAB{
 		  }
 		  // add new line for println
                   auto temp = Args[i]->codegen(s);
-		  temp->print(llvm::errs());
 		  ArgsV.push_back(temp);
 	     }
 
