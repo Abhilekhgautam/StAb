@@ -13,15 +13,19 @@
 namespace STAB {
  class Lexer: public yy_stab_FlexLexer{
     std::size_t currentLine = 1;
+    std::size_t currentColumn = 1;
     std::istream& in;
     Parser::value_type* yylval = nullptr;
     location *yyloc = nullptr;
     std::vector<std::string> sourceLines;
+
+    void step(std::size_t steps = 1){currentColumn += steps;}
+
     void copyValue(const std::size_t leftTrim = 0, const std::size_t rightTrim = 0 , const bool trimCr = false);
 
 
     void copyLocation(){
-	*yyloc = location(currentLine, currentLine);    
+	*yyloc = location(currentLine, currentColumn);    
     }
 
     public:
@@ -29,7 +33,7 @@ namespace STAB {
           yy_stab_FlexLexer::set_debug(debug);
        }
 
-       const std::string getSourceLine(std::size_t index){
+       const std::string getSource(std::size_t index){
 	   return sourceLines[index - 1];
        }
 

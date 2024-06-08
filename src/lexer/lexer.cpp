@@ -562,11 +562,11 @@ static const flex_int16_t yy_chk[189] = { 0,
 
 /* Rule to line-number mapping */
 static const flex_int16_t yy_rule_linenum[49] = { 0,
-        27,   28,   32,   33,   35,   37,   39,   41,   43,   45,
-        47,   49,   51,   53,   55,   57,   59,   63,   65,   67,
-        69,   71,   73,   75,   77,   79,   84,   89,   91,   96,
-       101,  106,  111,  115,  119,  123,  125,  127,  129,  131,
-       133,  135,  139,  143,  148,  153,  157,  159
+        27,   28,   33,   34,   36,   40,   44,   48,   52,   56,
+        60,   64,   68,   72,   76,   78,   80,   85,   87,   89,
+        91,   93,   95,   97,   99,  101,  107,  113,  115,  121,
+       127,  133,  139,  144,  149,  154,  156,  158,  160,  162,
+       164,  166,  171,  176,  182,  188,  193,  195
 };
 
 /* The intent behind this definition is that it'll catch
@@ -584,7 +584,7 @@ static const flex_int16_t yy_rule_linenum[49] = { 0,
 #line 1 "src/lexer/lexer.l"
 #line 2 "src/lexer/lexer.l"
   #include "lexer.hpp"
-
+  #include <cstring>
   using namespace STAB;
 
   #undef YY_DECL
@@ -883,7 +883,7 @@ YY_DECL {
 YY_RULE_SETUP
 
 #line 27 "src/lexer/lexer.l"
-{/* do nothing; ignore */}
+{/* do nothing; ignore */step(strlen(yytext));}
 	/*LINTED*/break;
 	case 2:
 YY_RULE_SETUP
@@ -891,343 +891,389 @@ YY_RULE_SETUP
 #line 28 "src/lexer/lexer.l"
 {
   yylval->emplace<std::string>(yytext);
+  step(strlen(yytext));
   return Token::token_kind_type::NUMBER;
 }
 	/*LINTED*/break;
 	case 3:
 YY_RULE_SETUP
 
-#line 32 "src/lexer/lexer.l"
+#line 33 "src/lexer/lexer.l"
 /* eat up the entire line */
 	/*LINTED*/break;
 	case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
 
-#line 33 "src/lexer/lexer.l"
-{++currentLine;}
+#line 34 "src/lexer/lexer.l"
+{++currentLine; currentColumn = 1;}
 	/*LINTED*/break;
 	case 5:
 YY_RULE_SETUP
 
-#line 35 "src/lexer/lexer.l"
-return Token::token_kind_type::SEMI_COLON;
+#line 36 "src/lexer/lexer.l"
+{
+     step();
+     return Token::token_kind_type::SEMI_COLON;
+    }
 	/*LINTED*/break;
 	case 6:
 YY_RULE_SETUP
 
-#line 37 "src/lexer/lexer.l"
-return Token::token_kind_type::FN_ARROW;
+#line 40 "src/lexer/lexer.l"
+{
+      step(2);
+      return Token::token_kind_type::FN_ARROW;
+     }
 	/*LINTED*/break;
 	case 7:
 YY_RULE_SETUP
 
-#line 39 "src/lexer/lexer.l"
-return Token::token_kind_type::COMMA;
+#line 44 "src/lexer/lexer.l"
+{
+     step();
+     return Token::token_kind_type::COMMA;
+    }
 	/*LINTED*/break;
 	case 8:
 YY_RULE_SETUP
 
-#line 41 "src/lexer/lexer.l"
-return Token::token_kind_type::MATCH_ARROW;
+#line 48 "src/lexer/lexer.l"
+{
+      step(2);
+      return Token::token_kind_type::MATCH_ARROW;
+     }
 	/*LINTED*/break;
 	case 9:
 YY_RULE_SETUP
 
-#line 43 "src/lexer/lexer.l"
-return Token::token_kind_type::FN;
+#line 52 "src/lexer/lexer.l"
+{
+     step(2);
+     return Token::token_kind_type::FN;
+     }
 	/*LINTED*/break;
 	case 10:
 YY_RULE_SETUP
 
-#line 45 "src/lexer/lexer.l"
-return Token::token_kind_type::IF;
+#line 56 "src/lexer/lexer.l"
+{
+     step(2);
+     return Token::token_kind_type::IF;
+     }
 	/*LINTED*/break;
 	case 11:
 YY_RULE_SETUP
 
-#line 47 "src/lexer/lexer.l"
-return Token::token_kind_type::ELSE;
+#line 60 "src/lexer/lexer.l"
+{
+        step(4);
+        return Token::token_kind_type::ELSE;
+        }
 	/*LINTED*/break;
 	case 12:
 YY_RULE_SETUP
 
-#line 49 "src/lexer/lexer.l"
-return Token::token_kind_type::ELSE_IF;
+#line 64 "src/lexer/lexer.l"
+{
+            step(6);
+            return Token::token_kind_type::ELSE_IF;
+           }
 	/*LINTED*/break;
 	case 13:
 YY_RULE_SETUP
 
-#line 51 "src/lexer/lexer.l"
-return Token::token_kind_type::LOOP;
+#line 68 "src/lexer/lexer.l"
+{
+        step(4);
+        return Token::token_kind_type::LOOP;
+       }
 	/*LINTED*/break;
 	case 14:
 YY_RULE_SETUP
 
-#line 53 "src/lexer/lexer.l"
-return Token::token_kind_type::FOR;
+#line 72 "src/lexer/lexer.l"
+{ step(3);
+        return Token::token_kind_type::FOR;
+      }
 	/*LINTED*/break;
 	case 15:
 YY_RULE_SETUP
 
-#line 55 "src/lexer/lexer.l"
-return Token::token_kind_type::WHILE;
+#line 76 "src/lexer/lexer.l"
+{ step(5);return Token::token_kind_type::WHILE;}
 	/*LINTED*/break;
 	case 16:
 YY_RULE_SETUP
 
-#line 57 "src/lexer/lexer.l"
-return Token::token_kind_type::MATCH;
+#line 78 "src/lexer/lexer.l"
+{step(5); return Token::token_kind_type::MATCH;}
 	/*LINTED*/break;
 	case 17:
 YY_RULE_SETUP
 
-#line 59 "src/lexer/lexer.l"
+#line 80 "src/lexer/lexer.l"
 {
        yylval->emplace<std::string>(yytext);
+       step(3);
        return Token::token_kind_type::DATA_TYPE;
       }
 	/*LINTED*/break;
 	case 18:
 YY_RULE_SETUP
 
-#line 63 "src/lexer/lexer.l"
-return Token::token_kind_type::IN;
+#line 85 "src/lexer/lexer.l"
+{ step(2); return Token::token_kind_type::IN;}
 	/*LINTED*/break;
 	case 19:
 YY_RULE_SETUP
 
-#line 65 "src/lexer/lexer.l"
-return Token::token_kind_type::IMPORT;
+#line 87 "src/lexer/lexer.l"
+{ step(6); return Token::token_kind_type::IMPORT;}
 	/*LINTED*/break;
 	case 20:
 YY_RULE_SETUP
 
-#line 67 "src/lexer/lexer.l"
-return Token::token_kind_type::AND;
+#line 89 "src/lexer/lexer.l"
+{ step(3); return Token::token_kind_type::AND;}
 	/*LINTED*/break;
 	case 21:
 YY_RULE_SETUP
 
-#line 69 "src/lexer/lexer.l"
-return Token::token_kind_type::OR;
+#line 91 "src/lexer/lexer.l"
+{ step(2); return Token::token_kind_type::OR;}
 	/*LINTED*/break;
 	case 22:
 YY_RULE_SETUP
 
-#line 71 "src/lexer/lexer.l"
-return Token::token_kind_type::XOR;
+#line 93 "src/lexer/lexer.l"
+{ step(3);return Token::token_kind_type::XOR;}
 	/*LINTED*/break;
 	case 23:
 YY_RULE_SETUP
 
-#line 73 "src/lexer/lexer.l"
+#line 95 "src/lexer/lexer.l"
 return Token::token_kind_type::CONTROL_FLOW;
 	/*LINTED*/break;
 	case 24:
 YY_RULE_SETUP
 
-#line 75 "src/lexer/lexer.l"
+#line 97 "src/lexer/lexer.l"
 return Token::token_kind_type::CONTROL_FLOW;
 	/*LINTED*/break;
 	case 25:
 YY_RULE_SETUP
 
-#line 77 "src/lexer/lexer.l"
-return Token::token_kind_type::RETURN;
+#line 99 "src/lexer/lexer.l"
+{ step(6); return Token::token_kind_type::RETURN;}
 	/*LINTED*/break;
 	case 26:
 YY_RULE_SETUP
 
-#line 79 "src/lexer/lexer.l"
+#line 101 "src/lexer/lexer.l"
 {
          yylval->emplace<std::string>(yytext);
+	 step(4);
 	 return Token::token_kind_type::DATA_TYPE;
        }
 	/*LINTED*/break;
 	case 27:
 YY_RULE_SETUP
 
-#line 84 "src/lexer/lexer.l"
+#line 107 "src/lexer/lexer.l"
 {
           yylval->emplace<std::string>(yytext);
+	  step(6);
 	  return Token::token_kind_type::DATA_TYPE;
          }
 	/*LINTED*/break;
 	case 28:
 YY_RULE_SETUP
 
-#line 89 "src/lexer/lexer.l"
-return Token::token_kind_type::TO;
+#line 113 "src/lexer/lexer.l"
+{ step(2); return Token::token_kind_type::TO;}
 	/*LINTED*/break;
 	case 29:
 /* rule 29 can match eol */
 YY_RULE_SETUP
 
-#line 91 "src/lexer/lexer.l"
+#line 115 "src/lexer/lexer.l"
 {
         yylval->emplace<std::string>(yytext);
+	step(strlen(yytext));
         return Token::token_kind_type::STRING;
      }
 	/*LINTED*/break;
 	case 30:
 YY_RULE_SETUP
 
-#line 96 "src/lexer/lexer.l"
+#line 121 "src/lexer/lexer.l"
 {  
        yylval->emplace<std::string>(yytext);
+       step(strlen(yytext));
        return Token::token_kind_type::ID;
     }
 	/*LINTED*/break;
 	case 31:
 YY_RULE_SETUP
 
-#line 101 "src/lexer/lexer.l"
+#line 127 "src/lexer/lexer.l"
 {
     yylval->emplace<std::string>(yytext);
+    step();
     return Token::token_kind_type::PLUS;
     }
 	/*LINTED*/break;
 	case 32:
 YY_RULE_SETUP
 
-#line 106 "src/lexer/lexer.l"
+#line 133 "src/lexer/lexer.l"
 {
     yylval->emplace<std::string>(yytext);
+    step();
     return Token::token_kind_type::MINUS;
     }
 	/*LINTED*/break;
 	case 33:
 YY_RULE_SETUP
 
-#line 111 "src/lexer/lexer.l"
+#line 139 "src/lexer/lexer.l"
 {
      yylval->emplace<std::string>(yytext);
+     step();
      return Token::token_kind_type::TIMES;
     }
 	/*LINTED*/break;
 	case 34:
 YY_RULE_SETUP
 
-#line 115 "src/lexer/lexer.l"
+#line 144 "src/lexer/lexer.l"
 {
      yylval->emplace<std::string>(yytext);
+     step();
      return Token::token_kind_type::DIV;
     }
 	/*LINTED*/break;
 	case 35:
 YY_RULE_SETUP
 
-#line 119 "src/lexer/lexer.l"
+#line 149 "src/lexer/lexer.l"
 {
      yylval->emplace<std::string>(yytext);
+     step();
      return Token::token_kind_type::MOD;
      }
 	/*LINTED*/break;
 	case 36:
 YY_RULE_SETUP
 
-#line 123 "src/lexer/lexer.l"
-return Token::token_kind_type::LBRACE;
+#line 154 "src/lexer/lexer.l"
+{ step(); return Token::token_kind_type::LBRACE;}
 	/*LINTED*/break;
 	case 37:
 YY_RULE_SETUP
 
-#line 125 "src/lexer/lexer.l"
-return Token::token_kind_type::RBRACE;
+#line 156 "src/lexer/lexer.l"
+{ step(); return Token::token_kind_type::RBRACE;}
 	/*LINTED*/break;
 	case 38:
 YY_RULE_SETUP
 
-#line 127 "src/lexer/lexer.l"
-return Token::token_kind_type::LCURLY;
+#line 158 "src/lexer/lexer.l"
+{ step(); return Token::token_kind_type::LCURLY;}
 	/*LINTED*/break;
 	case 39:
 YY_RULE_SETUP
 
-#line 129 "src/lexer/lexer.l"
-return Token::token_kind_type::RCURLY;
+#line 160 "src/lexer/lexer.l"
+{ step(); return Token::token_kind_type::RCURLY;}
 	/*LINTED*/break;
 	case 40:
 YY_RULE_SETUP
 
-#line 131 "src/lexer/lexer.l"
-return Token::token_kind_type::LBIG;
+#line 162 "src/lexer/lexer.l"
+{ step(); return Token::token_kind_type::LBIG;}
 	/*LINTED*/break;
 	case 41:
 YY_RULE_SETUP
 
-#line 133 "src/lexer/lexer.l"
-return Token::token_kind_type::RBIG;
+#line 164 "src/lexer/lexer.l"
+{ step(); return Token::token_kind_type::RBIG;}
 	/*LINTED*/break;
 	case 42:
 YY_RULE_SETUP
 
-#line 135 "src/lexer/lexer.l"
+#line 166 "src/lexer/lexer.l"
 {
      yylval->emplace<std::string>(yytext);
+     step(strlen(yytext));
      return Token::token_kind_type::LT;
     }
 	/*LINTED*/break;
 	case 43:
 YY_RULE_SETUP
 
-#line 139 "src/lexer/lexer.l"
+#line 171 "src/lexer/lexer.l"
 {
       yylval->emplace<std::string>("l");
+      step(2);
       return Token::token_kind_type::LE;
      }
 	/*LINTED*/break;
 	case 44:
 YY_RULE_SETUP
 
-#line 143 "src/lexer/lexer.l"
+#line 176 "src/lexer/lexer.l"
 {
       yylval->emplace<std::string>(yytext);
+      step();
       return Token::token_kind_type::GT;
     }
 	/*LINTED*/break;
 	case 45:
 YY_RULE_SETUP
 
-#line 148 "src/lexer/lexer.l"
+#line 182 "src/lexer/lexer.l"
 {
       yylval->emplace<std::string>("g");
-      return Token::token_kind_type::GE;
+      step(2);
+     return Token::token_kind_type::GE;
      }
 	/*LINTED*/break;
 	case 46:
 YY_RULE_SETUP
 
-#line 153 "src/lexer/lexer.l"
+#line 188 "src/lexer/lexer.l"
 {
       yylval->emplace<std::string>("e");
+      step(2);
       return Token::token_kind_type::EQ;
      }
 	/*LINTED*/break;
 	case 47:
 YY_RULE_SETUP
 
-#line 157 "src/lexer/lexer.l"
-return Token::token_kind_type::ASSIGN;
+#line 193 "src/lexer/lexer.l"
+{ step(); return Token::token_kind_type::ASSIGN;}
 	/*LINTED*/break;
 	case 48:
 YY_RULE_SETUP
 
-#line 159 "src/lexer/lexer.l"
+#line 195 "src/lexer/lexer.l"
 {
       yylval->emplace<std::string>("n");
+      step(2);
       return  Token::token_kind_type::NE;
      }
 	/*LINTED*/break;
 	case 49:
 YY_RULE_SETUP
 
-#line 163 "src/lexer/lexer.l"
+#line 200 "src/lexer/lexer.l"
 yyecho();
 	/*LINTED*/break;
-#line 1230 "src/lexer/lexer.cpp"
-#line 1231 "src/lexer/lexer.cpp"
+#line 1276 "src/lexer/lexer.cpp"
+#line 1277 "src/lexer/lexer.cpp"
 	case YY_STATE_EOF(INITIAL):
 		/* FALLTHROUGH */
 		yyterminate();
@@ -2236,6 +2282,6 @@ void yyfree (void * ptr ) {
 			free( (char *) ptr );	/* see yyrealloc() for (char *) cast */
 }
 
-#line 163 "src/lexer/lexer.l"
+#line 200 "src/lexer/lexer.l"
 
 
