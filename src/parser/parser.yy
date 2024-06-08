@@ -39,6 +39,7 @@
 %code {
   #include "../lexer/lexer.hpp"
   #include "../globals.h"
+  #include "../includes/highlight-term.hpp"
   namespace STAB {
     template <typename RHS>
     void calcLocation(location& current, const RHS& rhs, const std::size_t n);
@@ -459,8 +460,11 @@ namespace STAB {
  //}
  void Parser::error(const location &loc,const std::string& message){
    std::string improved_message = improveErrMessage(message);
-   std::cout << "\n[" << loc.first << "]" << " " << lexer.getSourceLine(loc.first) << '\n';
-   std::cerr << "Error at line " << loc.first << ": " << improved_message << std::endl;
+   color("red", "Error:");
+   color("blue",improved_message, true);
+   std::cout << "[" << loc.first << "]" << lexer.getSource(loc.first) << '\n';
+   // + 2 to counter the addition of line number
+   color("green",setArrow(loc.second + 2), true);
    return;
   }
 }
