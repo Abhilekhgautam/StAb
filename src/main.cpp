@@ -6,6 +6,7 @@
 #include <llvm-18/llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm-18/llvm/Support/CodeGen.h>
 #include <llvm-18/llvm/Target/TargetOptions.h>
+
 #include <map>
 #include <string>
 #include <memory>
@@ -32,6 +33,8 @@
 #include "./includes/scope.h"
 #endif
 
+#include "includes/highlight-term.hpp"
+
 std::unique_ptr<llvm::LLVMContext> TheContext;
 std::unique_ptr<llvm::IRBuilder<>> Builder;
 std::map<std::string, llvm::Type*> NamedLLVMType;
@@ -50,13 +53,15 @@ int main(int argc, char* argv[]){
   const bool debug = argc > 1 && std::strcmp(argv[1], "--debug") == 0;
 
   if (argc != 2){
-     std::cerr << "Invalid Command Usage\n";
-     std::cerr << "Usage: " << argv[0] << " <file name>\n";
+     color("red","Invalid Command Usage", true);
+     color("green","Usage: ");
+     color("blue", std::string(argv[0]) +" <file name>", true);
      return -1;
   }
 
   if (!fs::exists(argv[1])){
-     std::cerr << "No such file: " << argv[1] << " exists\n";
+     color("red", "No such file: ");
+     color("blue",std::string(argv[1])+ "exists", true);
      return -1;
   }
 
@@ -78,7 +83,8 @@ int main(int argc, char* argv[]){
       auto main = TheModule->getFunction("main");
 
       if (!main){
-          std::cerr << "\nError: No main function defined.\nStAb requires at least a \"main\" function for execution\n";     
+          color("red","Error: ");
+	  color("blue","No main function defined.\nStAb requires at least a \"main\" function for execution",true);     
 	  return -1;
       }
       LLVMInitializeAllTargetInfos();
@@ -125,8 +131,5 @@ int main(int argc, char* argv[]){
        const char* command = "clang output.o -o output";
 
        std::system(command);
-  } else {
-      std::cerr << "__start__fn fn not defined yet!!\n";
   }
-
 }
