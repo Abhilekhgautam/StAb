@@ -34,8 +34,12 @@
 #include "../globals.h"
 #endif
 
+
 #include "../includes/scope.hpp"
 
+#ifndef HIGHLIGHT_TERM_
+  #include "../includes/highlight-term.hpp"
+#endif
 namespace STAB{
     class ExprAST{
     public:
