@@ -1,3 +1,5 @@
+# ifndef HIGHLIGHT_TERM_
+#define HIGHLIGHT_TERM_
 #include <iostream>
 #ifdef _WIN32
 
@@ -44,3 +46,4 @@ inline std::string setArrow(std::size_t pos){
     arrows += '^';
     return arrows;
 }
+#endif
