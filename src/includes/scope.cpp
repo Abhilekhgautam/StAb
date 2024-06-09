@@ -38,7 +38,8 @@ namespace STAB{
                    return found->second;
                  }
 	        prevScope = prevScope->prev;
-	        symTable = prevScope->SymbolTable;
+		if(prevScope)
+	            symTable = prevScope->SymbolTable;
             }
 	}
         return std::nullopt;
