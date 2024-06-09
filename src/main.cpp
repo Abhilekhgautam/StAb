@@ -33,7 +33,9 @@
 #include "./includes/scope.h"
 #endif
 
+#ifndef HIGHLIGHT_TERM_
 #include "includes/highlight-term.hpp"
+#endif
 
 std::unique_ptr<llvm::LLVMContext> TheContext;
 std::unique_ptr<llvm::IRBuilder<>> Builder;
@@ -46,7 +48,6 @@ std::vector<llvm::Function*> fnBlocks;
 STAB::FunctionAST* __start__fn;
 STAB::Scope* globalScope = new STAB::Scope(nullptr);
 STAB::Scope* currentScope = globalScope;
-
 namespace fs = std::filesystem;
 
 int main(int argc, char* argv[]){
@@ -60,8 +61,9 @@ int main(int argc, char* argv[]){
   }
 
   if (!fs::exists(argv[1])){
-     color("red", "No such file: ");
-     color("blue",std::string(argv[1])+ "exists", true);
+     color("red", "Error: ");
+     color("blue", "No such file: ");
+     color("blue",std::string(argv[1])+ " exists", true);
      return -1;
   }
 
