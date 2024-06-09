@@ -25,15 +25,26 @@ namespace STAB{
              return Builder->CreateCall(printlnFunc, ArgsV, "printlnCall");
 	}
 
-        if (!calleeFn){
-            std::cerr << "\nNo function" << Callee << "exist\n";
-            return nullptr;
+	if (!calleeFn){
+            color("red","Error: ");
+	    color("blue","No function ");
+	    std::cout << Callee;
+	    color("blue"," defined",true);
+	    std::exit(0);
         }
         // check the number of arguments passed
         if(calleeFn->arg_size() != Args.size()){
-            std::cerr << "\n Function " << Callee << " expects " << calleeFn->arg_size() << " but " << Args.size() << " were passed\n";
-            return nullptr;
+	    color("red", "Error: ");
+            color("blue","Function ");
+	    std::cout << Callee;
+	    color("blue"," expects ");
+	    std::cout << calleeFn->arg_size();
+	    color("blue"," arguments but ");
+	    std::cout << Args.size();
+	    color("blue"," were passed", true);
+	    std::exit(0);
         }
+
         std::vector<llvm::Value*> args;
         for(const auto expr: Args){
             args.emplace_back(expr->codegen(s));

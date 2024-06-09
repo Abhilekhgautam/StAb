@@ -36,6 +36,14 @@ namespace STAB{
         auto generatedVal = varDecl->codegen(s);
         auto var = s->getID(varDecl->getName());
         //auto var = NamedValues[varDecl->getName()];
+	if (val->getType() != varDecl->getType()){
+	  color("red", "Error: ");
+	  color("blue", "Expected value of ");
+	  std::cout << varDecl->getType();
+	  color("blue"," type but got a ");
+	  std::cout << val->getType() << '\n';
+	  std::exit(0);
+	}
         auto va = val->codegen(s);
 
 	if (auto allocaVar = std::get_if<llvm::AllocaInst*>(&var.value())) {

@@ -3,6 +3,7 @@
 //
 
 #include "./ast.h"
+#include <cstdlib>
 #include <llvm-18/llvm/IR/GlobalVariable.h>
 #include <llvm-18/llvm/IR/Instructions.h>
 #include <llvm-18/llvm/Support/Casting.h>
@@ -13,8 +14,11 @@ namespace STAB{
 	std::optional<valType> var = s->getID(Name);
         // todo: better error handling later
         if (!var.has_value()){
-            std::cout << "No such variable " << Name << " in the current scope\n";
-	    return nullptr;
+            color("red", "Error: ");
+	    color("blue", "No Such variable ");
+	    std::cout << Name;
+	    color("blue"," in the current scope", true);
+	    std::exit(0);
         }
 	if (auto val = std::get_if<llvm::AllocaInst*>(&var.value())){
 	  return Builder->CreateLoad((*val)->getAllocatedType(), *val, Name.c_str());

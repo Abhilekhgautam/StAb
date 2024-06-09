@@ -1,4 +1,5 @@
 #include "./ast.h"
+#include <cstdlib>
 #include <llvm-18/llvm/IR/BasicBlock.h>
 #include <llvm-18/llvm/IR/Instructions.h>
 #include <llvm-18/llvm/IR/Value.h>
@@ -19,8 +20,9 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
     llvm::Function* F = TheModule->getFunction(Proto->getName());
 
     if (F) {
-        std::cerr << "\nError: Cannot have 2 functions with the same name\n.Function " << Proto->getName() << " already defined\n";
-        return nullptr;
+        color("red","Error: ");
+	color("blue","Cannot have 2 functions with the same name. Function " + Proto->getName() + " already defined", true);
+	std::exit(0);
     }
     llvm::BasicBlock* fnBlock = nullptr;
     if(Proto->getName() == "__start__"){
@@ -40,10 +42,6 @@ llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {
           llvm::BasicBlock* fnBlock = llvm::BasicBlock::Create(*TheContext, Proto->getName(), F);
           Builder->SetInsertPoint(fnBlock);
 
-	  if(Proto->getName() == "main"){
-             auto startFunction = TheModule->getFunction("__start__");
-	     Builder->CreateCall(startFunction, {});	  
-	  }
 	}
 
     fnBlocks.emplace_back(F);
