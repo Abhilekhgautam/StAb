@@ -23,28 +23,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
+      - name: Verify lock file
+        run: |
+          if [ ! -f site/package-lock.json ] && [ ! -f site/npm-shrinkwrap.json ] && [ ! -f site/yarn.lock ]; then
+            echo "No lock file found in 'site' directory. Please ensure you have a lock file (package-lock.json, npm-shrinkwrap.json, or yarn.lock) committed to the 'site' directory."
+            exit 1
+          fi
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Verify lock file
-        working-directory: site
-        run: |
-          if [ ! -f package-lock.json ] && [ ! -f npm-shrinkwrap.json ] && [ ! -f yarn.lock ]; then
-            echo "No lock file found in 'site' directory. Please ensure you have a lock file (package-lock.json, npm-shrinkwrap.json, or yarn.lock) committed to the 'site' directory."
-            exit 1
-          fi
-
       - name: Install dependencies
-        working-directory: site
-        run: npm ci
-        
+        run: npm ci --prefix site
+
       - name: Build
-        working-directory: site
-        run: npm run build
+        run: npm run build --prefix site
 
       - name: Verify build output
         run: |
@@ -64,5 +61,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-
