@@ -3,6 +3,7 @@
 //
 
 #include "./ast.h"
+#include <llvm-18/llvm/IR/DerivedTypes.h>
 
 namespace STAB{
     llvm::Value* STAB::VariableDeclAssignExprAST::codegen(Scope* s){
@@ -35,8 +36,10 @@ namespace STAB{
          }
         auto generatedVal = varDecl->codegen(s);
         auto var = s->getID(varDecl->getName());
-        //auto var = NamedValues[varDecl->getName()];
-	if (val->getType() != varDecl->getType()){
+        
+
+	//auto var = NamedValues[varDecl->getName()];
+	if (val->getType() != "fn" && val->getType() != varDecl->getType()){
 	  color("red", "Error: ");
 	  color("blue", "Expected value of ");
 	  std::cout << varDecl->getType();
@@ -44,6 +47,7 @@ namespace STAB{
 	  std::cout << val->getType() << '\n';
 	  std::exit(0);
 	}
+
         auto va = val->codegen(s);
 
 	if (auto allocaVar = std::get_if<llvm::AllocaInst*>(&var.value())) {
