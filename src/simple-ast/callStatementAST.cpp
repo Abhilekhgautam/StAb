@@ -12,7 +12,7 @@ namespace STAB{
 	     std::vector<llvm::Value*> ArgsV;
              for (unsigned i = 0, e = Args.size(); i != e; ++i){
 		  if(i == 0 && Args[0]->getType() == "string"){
-	              STAB::StringExprAST* strVal = reinterpret_cast<STAB::StringExprAST*>(Args[0]);
+	              STAB::StringExprAST* strVal = dynamic_cast<STAB::StringExprAST*>(Args[0]);
 		      std::string val = strVal->getVal();
 		      val += '\n';
 		      Args[0] = new STAB::StringExprAST(val);
