@@ -42,7 +42,7 @@ fn main() -> void{
 - The following snippets prints numbers from 0 to 500
 ```
  for i in 0 to 500 {
-  println("%d", i);
+  println("{}", i);
  }
 ```
 ## If Statement
