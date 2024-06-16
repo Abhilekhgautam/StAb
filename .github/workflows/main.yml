@@ -24,12 +24,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify lock file
-        run: |
-          if [ ! -f site/package-lock.json ] && [ ! -f site/npm-shrinkwrap.json ] && [ ! -f site/yarn.lock ]; then
-            echo "No lock file found in 'site' directory. Please ensure you have a lock file (package-lock.json, npm-shrinkwrap.json, or yarn.lock) committed to the 'site' directory."
-            exit 1
-          fi
+      - name: List files after checkout
+        run: ls -al
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -37,8 +33,21 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      - name: List files after Node setup
+        run: ls -al
+
+      - name: Verify lock file
+        run: |
+          if [ ! -f site/package-lock.json ] && [ ! -f site/npm-shrinkwrap.json ] && [ ! -f site/yarn.lock ]; then
+            echo "No lock file found in 'site' directory. Please ensure you have a lock file (package-lock.json, npm-shrinkwrap.json, or yarn.lock) committed to the 'site' directory."
+            exit 1
+          fi
+
       - name: Install dependencies
         run: npm ci --prefix site
+
+      - name: List node_modules after dependency installation
+        run: ls -al site/node_modules
 
       - name: Build
         run: npm run build --prefix site
