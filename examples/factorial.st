@@ -13,6 +13,6 @@ fn factorial(int n)->int{
 
 fn main() -> void{
     int result = factorial(0);
-    println("The factorial of 0 is %d", result);
+    println("The factorial of 0 is {}", result);
 }
 
