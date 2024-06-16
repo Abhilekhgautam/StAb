@@ -3,6 +3,12 @@
 //
 
 #include "./ast.h"
+#include <regex>
+
+std::string replaceBracesWithPercentD(const std::string& input) {
+    std::regex braces("\\{\\}");
+    return std::regex_replace(input, braces, "%d");
+}
 
 namespace STAB{
     llvm::Value* STAB::CallStatementAST::codegen(Scope* s){
@@ -14,8 +20,9 @@ namespace STAB{
 		  if(i == 0 && Args[0]->getType() == "string"){
 	              STAB::StringExprAST* strVal = dynamic_cast<STAB::StringExprAST*>(Args[0]);
 		      std::string val = strVal->getVal();
-		      val += '\n';
-		      Args[0] = new STAB::StringExprAST(val);
+		      auto replaced_val = replaceBracesWithPercentD(val);
+		      replaced_val += '\n';
+		      Args[0] = new STAB::StringExprAST(replaced_val);
 		  }
 		  // add new line for println
                   auto temp = Args[i]->codegen(s);
