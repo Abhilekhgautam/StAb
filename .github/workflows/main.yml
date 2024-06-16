@@ -1,4 +1,19 @@
-on: push
+name: Deploy static content to Pages
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
 jobs:
   deploy:
     environment:
@@ -9,29 +24,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
-      # Adjust the path to the subdirectory where lock files are located
-      - name: Verify lock file
-        run: |
-          if [ ! -f site/package-lock.json ] && [ ! -f site/npm-shrinkwrap.json ] && [ ! -f site/yarn.lock ]; then
-            echo "No lock file found in 'site' directory. Please ensure you have a lock file (package-lock.json, npm-shrinkwrap.json, or yarn.lock) committed to the 'site' directory."
-            exit 1
-          fi
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      # Adjust path to install dependencies in the 'site' directory
-      - name: Install dependencies
-        run: npm ci --prefix site
-        
-      # Adjust path to build the project in the 'site' directory
-      - name: Build
-        run: npm run build --prefix site
+      - name: Verify lock file
+        working-directory: site
+        run: |
+          if [ ! -f package-lock.json ] && [ ! -f npm-shrinkwrap.json ] && [ ! -f yarn.lock ]; then
+            echo "No lock file found in 'site' directory. Please ensure you have a lock file (package-lock.json, npm-shrinkwrap.json, or yarn.lock) committed to the 'site' directory."
+            exit 1
+          fi
 
-      # Adjust path to verify the build output in the 'site' directory
+      - name: Install dependencies
+        working-directory: site
+        run: npm ci
+        
+      - name: Build
+        working-directory: site
+        run: npm run build
+
       - name: Verify build output
         run: |
           if [ ! -d site/dist ]; then
@@ -39,11 +53,9 @@ jobs:
             exit 1
           fi
 
-      # Adjust path to set up GitHub Pages in the 'site' directory
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      # Adjust path to upload the build output from 'site/dist'
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -52,4 +64,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
 
