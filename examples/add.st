@@ -7,5 +7,5 @@ fn main() -> void {
    int b = 6;
    int c = add(a, b);
 
-   println("%d + %d =  %d", a, b, c);
+   println("{} + {} =  {}", a, b, c);
 }

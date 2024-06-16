@@ -11,5 +11,5 @@ fn factorial(int n) -> int {
 fn main() -> void {
    int fact = factorial(5);
 
-   println("The factorial of 5 is %d", fact);
+   println("The factorial of 5 is {}", fact);
 }
