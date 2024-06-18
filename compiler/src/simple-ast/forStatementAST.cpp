@@ -28,7 +28,7 @@ namespace STAB {
         // Set the value for iteration variable
         iterationVariable->codegen(forScope);
 
-        auto var = s->getID(iterationVariable->getName());
+        auto var = forScope->getID(iterationVariable->getName());
 
 	if (!var){
 	    color("red", "Error: ");
