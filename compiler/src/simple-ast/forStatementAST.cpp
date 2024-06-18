@@ -26,14 +26,19 @@ namespace STAB {
         operation = "Add";
 	
         // Set the value for iteration variable
-        iterationVariable->codegen(s);
+        iterationVariable->codegen(forScope);
 
         auto var = s->getID(iterationVariable->getName());
 
-	if (!var){std::cerr << "\nnullptr cha bey\n";}
+	if (!var){
+	    color("red", "Error: ");
+	    color("blue", "No Such variable ");
+	    std::cout << iterationVariable->getName();
+	    color("blue"," in the current scope", true);
+	    std::exit(0);	
+	}
 
 	auto val = std::get_if<llvm::AllocaInst*>(&var.value());
-	if (!val){std::cerr << "\nval nullptr cha bey\n";}
         Builder->CreateStore(loopStart, *val);
 
         llvm::BasicBlock* loopBody = llvm::BasicBlock::Create(*TheContext,"loopBody", F);
