@@ -39,9 +39,7 @@ namespace STAB{
         llvm::AllocaInst* var = Builder->CreateAlloca(type,nullptr, Name);
         valType v = var;
 	s->installID(Name, v);
-        //NamedValues[Name] = var;
-        //NamedLLVMType[Name] = type;
 
-        return Builder->CreateLoad(type, var);
+        return var;
     }
 }
