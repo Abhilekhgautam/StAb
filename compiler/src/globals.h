@@ -68,6 +68,20 @@ inline void init_builtins(){
     );
     llvm::Function* printlnFunc = llvm::Function::Create(printlnType, llvm::Function::ExternalLinkage, "println", TheModule.get());
 
+    llvm::FunctionType* scanfType = llvm::FunctionType::get(
+        llvm::IntegerType::getInt32Ty(*TheContext),
+        {llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0)},
+        true
+    );
+    llvm::Function* scanfFunc = llvm::Function::Create(scanfType, llvm::Function::ExternalLinkage, "scanf", TheModule.get());
+
+    llvm::FunctionType* inputType = llvm::FunctionType::get(
+        llvm::IntegerType::getInt32Ty(*TheContext),
+        {llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0), llvm::PointerType::get(llvm::Type::getInt32Ty(*TheContext), 0)},
+        false
+    );
+    llvm::Function* inputFunc = llvm::Function::Create(inputType, llvm::Function::ExternalLinkage, "input", TheModule.get());
+
     llvm::BasicBlock* entryBlock = llvm::BasicBlock::Create(*TheContext, "entry", printlnFunc);
     Builder->SetInsertPoint(entryBlock);
 
@@ -79,6 +93,17 @@ inline void init_builtins(){
     Builder->CreateCall(printfFunc, {strArg});
     Builder->CreateRetVoid();
 
+   llvm::BasicBlock* inputEntryBlock = llvm::BasicBlock::Create(*TheContext, "inputentry", inputFunc);
+   Builder->SetInsertPoint(inputEntryBlock);
+
+    
+    // Get the function arguments
+    auto inputArgs = inputFunc->arg_begin();
+    llvm::Value* inputFormatArg = inputArgs++;
+    llvm::Value* inputIntPtrArg = inputArgs++;
+    // Call scanf inside input
+    Builder->CreateCall(scanfFunc, {inputFormatArg, inputIntPtrArg});
+    Builder->CreateRet(Builder->getInt32(0));
 
   // llvm::Type *i8Type = llvm::Type::getInt8Ty(*TheContext);
   //std::vector<llvm::Type*> argTypesInt8Ptr(1, llvm::PointerType::get(i8Type, 0));
@@ -90,7 +115,10 @@ inline void init_builtins(){
   //	  i->setName("String");
 
   printlnFunc->setCallingConv(llvm::CallingConv::C);
+  inputFunc->setCallingConv(llvm::CallingConv::C);
   fnBlocks.emplace_back(printfFunc);
   fnBlocks.emplace_back(printlnFunc);
+  fnBlocks.emplace_back(scanfFunc);
+  fnBlocks.emplace_back(inputFunc);
 }
 #endif 
