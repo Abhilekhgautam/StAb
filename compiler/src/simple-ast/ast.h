@@ -207,6 +207,7 @@ namespace STAB{
         VariableExprAST(const std::string &Name) : Name(Name) {}
 	llvm::Value* codegen(Scope* s) override;
 	// todo: look into sym table
+	std::string getName() {return Name;}
 	std::string getType() override {return "int";}
     };
 
