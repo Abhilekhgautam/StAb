@@ -31,6 +31,34 @@ namespace STAB{
 
              return Builder->CreateCall(printlnFunc, ArgsV, "printlnCall");
 	}
+	if (Callee == "input"){
+	   auto inputFunc = TheModule->getOrInsertFunction("input", llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext), llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0), true));
+	     std::vector<llvm::Value*> ArgsV;
+	     std::string stringFormat;
+             for (unsigned i = 0, e = Args.size(); i != e; ++i){
+		  if( Args[i]->getType() == "int"){
+                      STAB::VariableExprAST* variable = dynamic_cast<STAB::VariableExprAST*>(Args[i]);
+                      auto Name = variable->getName();
+		      std::optional<valType> var = s->getID(Name);
+                      if (!var.has_value()){
+                         color("red", "Error: ");
+	                 color("blue", "No Such variable ");
+	                 std::cout << Name;
+	                 color("blue"," in the current scope", true);
+	                 std::exit(0);
+                       }
+         	      if (auto val = std::get_if<llvm::AllocaInst*>(&var.value())){
+		          ArgsV.emplace_back(*val);
+	               }
+	
+		      stringFormat += "%d";
+		  }
+	     }
+
+             ArgsV.insert(ArgsV.begin(), Builder->CreateGlobalStringPtr(stringFormat));
+             return Builder->CreateCall(inputFunc, ArgsV, "inputCall");
+	
+	}
 
 	if (!calleeFn){
             color("red","Error: ");
