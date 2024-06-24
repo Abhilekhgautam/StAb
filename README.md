@@ -12,7 +12,7 @@ StAb - A General Purpose, Imperative, Static Typed Programming Language.
 # Basic Syntax
 
 ## Variable Declaration
- - Only supports `int`, `string` and `void` type as of now.
+ - Only supports `int` type as of now.
 ```
  int x;
 ```
@@ -62,16 +62,24 @@ fn factorial(int n) -> int {
 }
 ```
 
+## Reading input from the console
+
+```
+//Use the inbuilt input function
+int x;
+// Read the value into x
+intput(x);
+```
+
 # Current Implementation Status 
 
- - Function can take args now.
- - Scope is managed properly.
- - `int` , `string` and `void` as a type.
- - Support for `for` loop added.
- - No class or struct (struct will be implementd)
+ - `int`as a type.
+ - Support for `for`, `while` and `loop` construct.
+ - No class or struct (struct will be implemented)
  - Support for Array added.
  - Produces both Object and Executable.
  - Supports printing to standard output using `println`
+ - Supports reading input from the console using `input`
  - Checks for the existence of the `main` function
  - Support for `if else` statement
  - Improved Error Reporting
