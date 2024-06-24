@@ -2,10 +2,10 @@
 #include <iostream>
 #include "./lexer/lexer.hpp"
 #include "includes/scope.hpp"
-#include <llvm-18/llvm/ADT/ArrayRef.h>
-#include <llvm-18/llvm/ExecutionEngine/ExecutionEngine.h>
-#include <llvm-18/llvm/Support/CodeGen.h>
-#include <llvm-18/llvm/Target/TargetOptions.h>
+#include <llvm/ADT/ArrayRef.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/Support/CodeGen.h>
+#include <llvm/Target/TargetOptions.h>
 
 #include <map>
 #include <string>
