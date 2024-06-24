@@ -1,6 +1,6 @@
 #pragma once
 
-#include <llvm-18/llvm/IR/SymbolTableListTraits.h>
+#include <llvm/IR/SymbolTableListTraits.h>
 #include <variant>
 #include <optional>
 #ifndef STAB_SCOPE_HPP
