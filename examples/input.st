@@ -12,7 +12,7 @@ fn main () -> void {
     int x;
     println("Enter the number:");
     // Read input from the console
-    input(x)
+    input(x);
     
     println("The factorial of {} is {} ", x, factorial(x));
 
