@@ -68,7 +68,7 @@ fn factorial(int n) -> int {
 //Use the inbuilt input function
 int x;
 // Read the value into x
-intput(x);
+input(x);
 ```
 
 # Current Implementation Status 
