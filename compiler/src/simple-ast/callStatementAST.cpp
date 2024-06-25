@@ -31,6 +31,25 @@ namespace STAB{
 
              return Builder->CreateCall(printlnFunc, ArgsV, "printlnCall");
 	}
+        
+        if (Callee == "print"){
+	     auto printFunc = TheModule->getOrInsertFunction("print", llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext), llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0), true));
+	     std::vector<llvm::Value*> ArgsV;
+             for (unsigned i = 0, e = Args.size(); i != e; ++i){
+		  if(i == 0 && Args[0]->getType() == "string"){
+	              STAB::StringExprAST* strVal = dynamic_cast<STAB::StringExprAST*>(Args[0]);
+		      std::string val = strVal->getVal();
+		      auto replaced_val = replaceBracesWithPercentD(val);
+		      Args[0] = new STAB::StringExprAST(replaced_val);
+		  }
+                  auto temp = Args[i]->codegen(s);
+		  ArgsV.push_back(temp);
+	     }
+
+             return Builder->CreateCall(printFunc, ArgsV, "printCall");
+	}
+
+
 	if (Callee == "input"){
 	   auto inputFunc = TheModule->getOrInsertFunction("input", llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext), llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0), true));
 	     std::vector<llvm::Value*> ArgsV;
