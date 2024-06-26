@@ -1,11 +1,11 @@
 #pragma once
 
-#include <llvm/IR/SymbolTableListTraits.h>
-#include <variant>
-#include <optional>
 #ifndef STAB_SCOPE_HPP
 #define STAB_SCOPE_HPP
 
+#include <llvm/IR/SymbolTableListTraits.h>
+#include <variant>
+#include <optional>
 #include <map>
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Instructions.h"

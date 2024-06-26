@@ -1,6 +1,4 @@
 #include "./ast.h"
-#include <llvm-18/llvm/IR/Instructions.h>
-#include <llvm-18/llvm/IR/Type.h>
 
 namespace STAB {
     llvm::Value* ForStatementAST::codegen(Scope* s){

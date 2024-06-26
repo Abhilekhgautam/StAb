@@ -3,8 +3,6 @@
 //
 
 #include "./ast.h"
-#include <llvm-18/llvm/IR/DerivedTypes.h>
-#include <llvm-18/llvm/IR/GlobalVariable.h>
 
 namespace STAB{
     llvm::Value* STAB::VariableDeclExprAST::codegen(Scope* s){

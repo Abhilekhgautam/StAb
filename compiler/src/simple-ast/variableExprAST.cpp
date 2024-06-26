@@ -4,9 +4,8 @@
 
 #include "./ast.h"
 #include <cstdlib>
-#include <llvm-18/llvm/IR/GlobalVariable.h>
-#include <llvm-18/llvm/IR/Instructions.h>
-#include <llvm-18/llvm/Support/Casting.h>
+#include <llvm/IR/GlobalVariable.h>
+#include <llvm/Support/Casting.h>
 
 namespace STAB{
     llvm::Value* STAB::VariableExprAST::codegen(Scope* s){

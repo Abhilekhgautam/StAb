@@ -1,5 +1,4 @@
 #include "ast.h"
-#include "llvm/IR/DerivedTypes.h"
 
 namespace STAB{
   llvm::Value* ArrayAST::codegen(STAB::Scope* s){

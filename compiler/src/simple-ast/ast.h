@@ -27,8 +27,8 @@
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Metadata.h>
-#include <llvm-18/llvm/IR/GlobalValue.h>
-#include <llvm-18/llvm/IR/CallingConv.h>
+#include <llvm/IR/GlobalValue.h>
+#include <llvm/IR/CallingConv.h>
 
 #ifndef STAB_GLOBAL_H
 #include "../globals.h"

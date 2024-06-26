@@ -1,8 +1,5 @@
 #include "./ast.h"
 #include <cstdlib>
-#include <llvm-18/llvm/IR/BasicBlock.h>
-#include <llvm-18/llvm/IR/Instructions.h>
-#include <llvm-18/llvm/IR/Value.h>
 
 namespace STAB{
 llvm::Function* STAB::FunctionAST::codegen(class Scope* s) {

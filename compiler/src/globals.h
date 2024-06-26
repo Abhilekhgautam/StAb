@@ -1,6 +1,5 @@
 #pragma once
 
-#include <llvm-18/llvm/IR/DerivedTypes.h>
 #ifndef STAB_GLOBAL_H
 #define STAB_GLOBAL_H
 
@@ -18,6 +17,7 @@
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Function.h>
 #include "llvm/Support/DynamicLibrary.h"
+#include <llvm/IR/DerivedTypes.h>
 #include "./includes/scope.hpp"
 #include "./simple-ast/ast.h"
 #include "../src/lib/lib.h"
