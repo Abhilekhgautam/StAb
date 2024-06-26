@@ -100,6 +100,20 @@
 			currentScope = globalScope;
                     }
 
+                    | FN ID LBRACE paramList RBRACE LCURLY stmts RCURLY{               
+                        auto fnScope = new Scope(currentScope, $2);
+			currentScope = fnScope;
+                        std::vector<std::string> argTypes;
+			std::vector<STAB::VariableDeclExprAST*> declVars;
+                        for(const auto elt: $4){
+			  argTypes.emplace_back(elt->getType());
+			  declVars.emplace_back(elt);
+			}
+			auto proto = new STAB::PrototypeAST("void", $2, argTypes);
+			$$ = new STAB::FunctionAST(proto,declVars, $7, fnScope);
+			currentScope = globalScope;
+                     }
+
  functionPrototype: FN ID LBRACE paramListPrototype RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
                        std::vector<std::string> Args;
 		       for(const auto elt: $4){
