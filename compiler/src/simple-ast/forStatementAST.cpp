@@ -18,7 +18,7 @@ namespace STAB {
 
 	std::string operation;
 
-	if(loopStart == loopEnd){
+	if(loopStart >= loopEnd){
 	  return F;	
 	}
         operation = "Add";
@@ -47,7 +47,16 @@ namespace STAB {
         Builder->SetInsertPoint(loopBody);
 
 	llvm::Value* currentVal = Builder->CreateLoad(llvm::Type::getInt32Ty(*TheContext),*val);
-	
+
+	// Create condition for loop execution
+        llvm::Value* cond = Builder->CreateICmpSLT(currentVal, loopEnd);
+
+        // Create conditional branch based on loop condition
+        Builder->CreateCondBr(cond, loopBody, afterLoop);
+
+        // Setup loop body
+        Builder->SetInsertPoint(loopBody);
+
         // generate code for loop body
         for(const auto elt: body){
             elt->codegen(forScope);
@@ -61,7 +70,7 @@ namespace STAB {
         Builder->CreateStore(nextVal, *val);
 
         // compare the expr with 0
-	llvm::Value* cond = Builder->CreateICmpSLE(nextVal, loopEnd);
+        cond = Builder->CreateICmpSLE(nextVal, loopEnd);
 
         Builder->CreateCondBr(cond, loopBody, afterLoop);
         Builder->SetInsertPoint(afterLoop);
