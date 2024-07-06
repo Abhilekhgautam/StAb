@@ -51,8 +51,6 @@ namespace STAB {
 	// Create condition for loop execution
         llvm::Value* cond = Builder->CreateICmpSLT(currentVal, loopEnd);
 
-        // Create conditional branch based on loop condition
-        Builder->CreateCondBr(cond, loopBody, afterLoop);
 
         // Setup loop body
         Builder->SetInsertPoint(loopBody);
