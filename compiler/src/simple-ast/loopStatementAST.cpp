@@ -4,38 +4,40 @@
 
 #include "./ast.h"
 
-namespace STAB{
-    llvm::Value* STAB::LoopStatementAST::codegen(Scope* s){
-        llvm::Function* F = s->getFnBlock();
-	
-        // block to insert the code for loop body
-        llvm::BasicBlock* loopBody = llvm::BasicBlock::Create(*TheContext, "loopBody", F);
-        // block to insert the code after the loop ends;
-        llvm::BasicBlock* afterLoop = llvm::BasicBlock::Create(*TheContext, "afterLoop", F);
+namespace STAB {
+llvm::Value *STAB::LoopStatementAST::codegen(Scope *s) {
+  llvm::Function *F = s->getFnBlock();
 
-        // get into loop body
-        Builder->CreateBr(loopBody);
-        Builder->SetInsertPoint(loopBody);
+  // block to insert the code for loop body
+  llvm::BasicBlock *loopBody =
+      llvm::BasicBlock::Create(*TheContext, "loopBody", F);
+  // block to insert the code after the loop ends;
+  llvm::BasicBlock *afterLoop =
+      llvm::BasicBlock::Create(*TheContext, "afterLoop", F);
 
-        auto loopScope = new Scope(s);
+  // get into loop body
+  Builder->CreateBr(loopBody);
+  Builder->SetInsertPoint(loopBody);
 
-	loopScope->setFnBlock(F);
+  auto loopScope = new Scope(s);
 
-        for (const auto elt: body){
-            elt->codegen(loopScope);
-        }
+  loopScope->setFnBlock(F);
 
-	auto dummyNum = new NumberExprAST(0);
-	auto cond = dummyNum->codegen(loopScope);
+  for (const auto elt : body) {
+    elt->codegen(loopScope);
+  }
 
-	cond = Builder->CreateICmpEQ(cond, llvm::ConstantInt::get(*TheContext, llvm::APInt(32, 0, true)));
+  auto dummyNum = new NumberExprAST(0);
+  auto cond = dummyNum->codegen(loopScope);
 
-        // this is an infinte loop
-        // again enter the loop body
-        Builder->CreateCondBr(cond,loopBody, afterLoop);
-        Builder->SetInsertPoint(afterLoop);
+  cond = Builder->CreateICmpEQ(
+      cond, llvm::ConstantInt::get(*TheContext, llvm::APInt(32, 0, true)));
 
-        return F;
-    }
+  // this is an infinte loop
+  // again enter the loop body
+  Builder->CreateCondBr(cond, loopBody, afterLoop);
+  Builder->SetInsertPoint(afterLoop);
+
+  return F;
 }
-
+} // namespace STAB

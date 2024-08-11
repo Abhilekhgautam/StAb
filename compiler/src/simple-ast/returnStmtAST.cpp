@@ -4,10 +4,9 @@
 
 #include "./ast.h"
 
-namespace STAB{
-    llvm::Value* STAB::ReturnStmtAST::codegen(Scope* s){
-        auto retVal = expr->codegen(s);
-        return Builder->CreateRet(retVal);
-    }
+namespace STAB {
+llvm::Value *STAB::ReturnStmtAST::codegen(Scope *s) {
+  auto retVal = expr->codegen(s);
+  return Builder->CreateRet(retVal);
 }
-
+} // namespace STAB

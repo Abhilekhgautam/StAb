@@ -4,8 +4,8 @@
 
 #include "./ast.h"
 
-namespace STAB{
-    llvm::Value* STAB::NumberExprAST::codegen(Scope* s){
-        return llvm::ConstantInt::get(*TheContext, llvm::APInt(32, val, true));
-    }
+namespace STAB {
+llvm::Value *STAB::NumberExprAST::codegen(Scope *s) {
+  return llvm::ConstantInt::get(*TheContext, llvm::APInt(32, val, true));
 }
+} // namespace STAB
