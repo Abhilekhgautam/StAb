@@ -3,6 +3,7 @@
 //
 
 #include "./ast.h"
+#include <cstdlib>
 
 namespace STAB {
 llvm::Value *STAB::VariableDeclExprAST::codegen(Scope *s) {
@@ -30,7 +31,14 @@ llvm::Value *STAB::VariableDeclExprAST::codegen(Scope *s) {
 
   llvm::AllocaInst *var = Builder->CreateAlloca(type, nullptr, Name);
   valType v = var;
-  s->installID(Name, v);
+  if (!s->getIdCurrentScope(Name)) {
+    s->installID(Name, v);
+  } else {
+    color("red", "Error:");
+    color("blue", "Variable " + Name + " already declared", true);
+
+    std::exit(0);
+  }
 
   return var;
 }

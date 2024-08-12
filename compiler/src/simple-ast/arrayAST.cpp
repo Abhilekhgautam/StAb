@@ -30,7 +30,15 @@ llvm::Value *ArrayAST::codegen(STAB::Scope *s) {
   llvm::AllocaInst *allocArray =
       Builder->CreateAlloca(array, nullptr, "myArray");
 
-  s->installID(name, allocArray);
+  if (!s->getIdCurrentScope(name)) {
+    s->installID(name, allocArray);
+  } else {
+    color("red", "Error:");
+    color("white", name);
+    color("blue", " already declared in the current scope", true);
+    color("white", "Try changing your variable name to something else", true);
+    std::exit(0);
+  }
 
   return allocArray;
 }
