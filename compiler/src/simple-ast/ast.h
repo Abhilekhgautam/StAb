@@ -53,6 +53,16 @@ public:
   virtual llvm::Value *codegen(STAB::Scope *s) = 0;
 };
 
+class BreakStatementAST : public StatementAST {
+    public:
+       virtual llvm::Value *codegen(STAB::Scope *s) override;
+};
+
+class SkipStatementAST : public StatementAST {
+    public:
+       virtual llvm::Value* codegen(STAB::Scope* s) override;
+};
+
 class NumberExprAST : public ExprAST {
   int val;
 
@@ -208,7 +218,6 @@ class ForStatementAST : public StatementAST {
   VariableDeclExprAST *iterationVariable;
   RangeStatementAST *range;
   std::vector<StatementAST *> body;
-
 public:
   ForStatementAST(VariableDeclExprAST *var, RangeStatementAST *range,
                   std::vector<StatementAST *> body)
