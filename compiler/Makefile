@@ -29,7 +29,9 @@ SRCS = src/lib/lib.cpp \
        src/simple-ast/forStatementAST.cpp \
        src/simple-ast/arrayAST.cpp \
        src/simple-ast/arrayRefAST.cpp \
-       src/simple-ast/arrayAssignAST.cpp
+       src/simple-ast/arrayAssignAST.cpp \
+       src/simple-ast/breakstmtast.cpp \
+       src/simple-ast/skipstmtast.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
