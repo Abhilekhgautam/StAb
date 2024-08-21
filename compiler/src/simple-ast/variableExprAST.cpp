@@ -15,7 +15,7 @@ llvm::Value *STAB::VariableExprAST::codegen(Scope *s) {
   if (!var.has_value()) {
     color("red", "Error: ");
     color("blue", "No Such variable ");
-    std::cout << Name;
+    color("white", Name);
     color("blue", " in the current scope", true);
     std::exit(0);
   }
