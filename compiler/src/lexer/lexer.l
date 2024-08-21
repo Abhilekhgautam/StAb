@@ -9,7 +9,7 @@
   #define YY_USER_ACTION copyLocation();
 %}
 
-%option c++ noyywrap debug 
+%option c++ noyywrap debug
 
 %option yyclass = "Lexer"
 %option prefix = "yy_stab_"
@@ -17,7 +17,7 @@
 id    [a-zA-Z][a-zA-Z_0-9]*
 digit   [0-9]+
 blank [ \t\r]
-str [^\"\\]*\\.[^\"\\]** 
+str [^\"\\]*\\.[^\"\\]**
 %{
   using Token = STAB::Parser::token;
   using location = STAB::location;
@@ -92,9 +92,9 @@ str [^\"\\]*\\.[^\"\\]**
 
 "xor" { step(3);return Token::token_kind_type::XOR;}
 
-"break" return Token::token_kind_type::CONTROL_FLOW;
+"break" { step(5); return Token::token_kind_type::BREAK;}
 
-"continue" return Token::token_kind_type::CONTROL_FLOW;
+"skip" { step(5); return Token::token_kind_type::SKIP;}
 
 "return" { step(6); return Token::token_kind_type::RETURN;}
 
@@ -118,7 +118,7 @@ str [^\"\\]*\\.[^\"\\]**
         return Token::token_kind_type::STRING;
      }
 
-{id} {  
+{id} {
        yylval->emplace<std::string>(yytext);
        step(strlen(yytext));
        return Token::token_kind_type::ID;
