@@ -63,7 +63,7 @@ llvm::Function *STAB::FunctionAST::codegen(class Scope *s) {
   // Store each function argument
   unsigned idx = 0;
   for (auto &Arg : F->args()) {
-    auto test = Scope->getID(names[idx]);
+    auto test = Scope->getIdCurrentScope(names[idx]);
     auto val = std::get_if<llvm::AllocaInst *>(&test.value());
     Builder->CreateStore(&Arg, *val);
     ++idx;

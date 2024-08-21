@@ -13,8 +13,16 @@ llvm::Value *STAB::ElseStatementAST::codegen(Scope *s) {
   }
 
   // generate code for else-if body
-  for (const auto elt : elseBody)
-    elt->codegen(s);
+  for (const auto elt : elseBody){
+    if(s->break_found()) {
+        Builder->SetInsertPoint(s->getExitBlock());
+        return F;
+    } else if (s->skip_found()){
+        return F;
+    } else {
+        elt->codegen(s);
+    }
+  }
 
   return F;
 }

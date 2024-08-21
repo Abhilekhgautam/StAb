@@ -36,25 +36,40 @@ llvm::Value *STAB::IfStatementAST::codegen(Scope *s) {
 
     Builder->SetInsertPoint(if_Body);
 
-    auto ifScope = new Scope(s);
+    Scope* ifScope = new Scope(s, "cond");
 
     ifScope->setFnBlock(F);
     // generate code for if body
     ifStmt->codegen(ifScope);
 
-    Builder->CreateBr(afterIfelse);
+    if(!ifScope->break_found() and !ifScope->skip_found()) Builder->CreateBr(afterIfelse);
 
     // Codegen of 'ifBody' can change the current block, update ifBody for the
     // PHI.
     if_Body = Builder->GetInsertBlock();
-
+    /*
+    if(ifScope->break_found()){
+        Builder->SetInsertPoint(afterIfelse);
+        return F;
+    } else if(ifScope->skip_found()){
+        Builder->SetInsertPoint(afterIfelse);
+        return F;
+    }
+    */
     Builder->SetInsertPoint(else_Body);
 
-    auto elseScope = new Scope(s);
+    Scope* elseScope = new Scope(s, "cond");
     elseScope->setFnBlock(F);
     // generate code for else body
     elseStmt->codegen(elseScope);
 
+    if(elseScope->break_found()){
+        Builder->SetInsertPoint(afterIfelse);
+        return F;
+    } else if(elseScope->skip_found()){
+        Builder->SetInsertPoint(afterIfelse);
+        return F;
+    }
     Builder->CreateBr(afterIfelse);
 
     Builder->SetInsertPoint(afterIfelse);
@@ -71,13 +86,20 @@ llvm::Value *STAB::IfStatementAST::codegen(Scope *s) {
 
     Builder->SetInsertPoint(if_Body);
 
-    auto ifScope = new Scope(s);
+    Scope* ifScope = new Scope(s, "cond");
 
     ifScope->setFnBlock(F);
+    ifScope->setExitBlock(afterIf);
 
     // generate code for if body
     ifStmt->codegen(ifScope);
-
+    if(ifScope->break_found()){
+        Builder->SetInsertPoint(afterIf);
+        return F;
+    } else if(ifScope->skip_found()){
+        Builder->SetInsertPoint(afterIf);
+        return F;
+    }
     Builder->CreateBr(afterIf);
 
     // Codegen of 'ifBody' can change the current block, update ifBody for the
