@@ -19,12 +19,24 @@ llvm::Value *STAB::LoopStatementAST::codegen(Scope *s) {
   Builder->CreateBr(loopBody);
   Builder->SetInsertPoint(loopBody);
 
-  auto loopScope = new Scope(s);
+  auto loopScope = new Scope(s, "loop");
+
+  loopScope->setEntryBlock(loopBody);
+  loopScope->setExitBlock(afterLoop);
 
   loopScope->setFnBlock(F);
 
   for (const auto elt : body) {
+    if(loopScope->break_found()){
+        Builder->SetInsertPoint(afterLoop);
+        return F;
+    }
     elt->codegen(loopScope);
+  }
+  // todo: repetitive block of code fix this..
+  if(loopScope->break_found()){
+      Builder->SetInsertPoint(afterLoop);
+      return F;
   }
 
   auto dummyNum = new NumberExprAST(0);

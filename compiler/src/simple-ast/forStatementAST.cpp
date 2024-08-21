@@ -1,4 +1,5 @@
 #include "./ast.h"
+#include <llvm-18/llvm/IR/BasicBlock.h>
 
 namespace STAB {
 llvm::Value *ForStatementAST::codegen(Scope *s) {
@@ -8,7 +9,7 @@ llvm::Value *ForStatementAST::codegen(Scope *s) {
     return nullptr;
   }
 
-  auto forScope = new Scope(s);
+  Scope* forScope = new Scope(s, "loop");
 
   forScope->setFnBlock(F);
 
@@ -43,6 +44,11 @@ llvm::Value *ForStatementAST::codegen(Scope *s) {
       llvm::BasicBlock::Create(*TheContext, "loopBody", F);
   llvm::BasicBlock *afterLoop =
       llvm::BasicBlock::Create(*TheContext, "afterLoop", F);
+  llvm::BasicBlock* updateLoopVar =
+      llvm::BasicBlock::Create(*TheContext, "updateLoop", F);
+
+  forScope->setEntryBlock(updateLoopVar);
+  forScope->setExitBlock(afterLoop);
 
   // go inside loop body
   Builder->CreateBr(loopBody);
@@ -59,8 +65,23 @@ llvm::Value *ForStatementAST::codegen(Scope *s) {
 
   // generate code for loop body
   for (const auto elt : body) {
-    elt->codegen(forScope);
+      if(forScope->break_found()) {
+          Builder->SetInsertPoint(afterLoop);
+          return F;
+      } else if(forScope->skip_found()){
+          Builder->SetInsertPoint(loopBody);
+      } else {
+          elt->codegen(forScope);
+      }
   }
+  if(forScope->break_found()) {
+      Builder->SetInsertPoint(afterLoop);
+      return F;
+  } else if (forScope->skip_found()){
+      Builder->SetInsertPoint(loopBody);
+  }
+  Builder->CreateBr(updateLoopVar);
+  Builder->SetInsertPoint(updateLoopVar);
   llvm::Value *nextVal;
   if (operation == "Add") {
     nextVal = Builder->CreateAdd(currentVal, loopStep, "nextvar");

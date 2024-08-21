@@ -12,7 +12,7 @@ llvm::Value *STAB::WhileStatementAST::codegen(Scope *s) {
     return nullptr;
   }
 
-  auto whileScope = new Scope(s);
+  auto whileScope = new Scope(s, "loop");
   whileScope->setFnBlock(F);
 
   llvm::BasicBlock *loopBody =
@@ -26,6 +26,8 @@ llvm::Value *STAB::WhileStatementAST::codegen(Scope *s) {
   Builder->CreateBr(checkCond);
   Builder->SetInsertPoint(checkCond);
 
+  whileScope->setEntryBlock(loopBody);
+  whileScope->setExitBlock(afterLoop);
   // Generate code for condition expression
   llvm::Value *cond = expr->codegen(s);
 
@@ -39,9 +41,18 @@ llvm::Value *STAB::WhileStatementAST::codegen(Scope *s) {
   // Generate code for loop body
   Builder->SetInsertPoint(loopBody);
   for (const auto &elt : body) {
+    if(whileScope->break_found()){
+        Builder->SetInsertPoint(afterLoop);
+        return F;
+    }
     elt->codegen(whileScope);
   }
 
+  // todo: repetive block fix this:
+  if(whileScope->break_found()){
+      Builder->SetInsertPoint(afterLoop);
+      return F;
+  }
   // After loop body, jump back to condition check
   Builder->CreateBr(checkCond);
 
