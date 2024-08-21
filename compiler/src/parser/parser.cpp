@@ -226,6 +226,8 @@ namespace STAB {
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_breakStmt: // breakStmt
+      case symbol_kind::S_skipStmt: // skipStmt
       case symbol_kind::S_ifLadder: // ifLadder
       case symbol_kind::S_fnCallStmt: // fnCallStmt
         value.copy< StatementAST* > (YY_MOVE (that.value));
@@ -346,6 +348,8 @@ namespace STAB {
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_breakStmt: // breakStmt
+      case symbol_kind::S_skipStmt: // skipStmt
       case symbol_kind::S_ifLadder: // ifLadder
       case symbol_kind::S_fnCallStmt: // fnCallStmt
         value.move< StatementAST* > (YY_MOVE (s.value));
@@ -536,6 +540,8 @@ namespace STAB {
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_breakStmt: // breakStmt
+      case symbol_kind::S_skipStmt: // skipStmt
       case symbol_kind::S_ifLadder: // ifLadder
       case symbol_kind::S_fnCallStmt: // fnCallStmt
         value.YY_MOVE_OR_COPY< StatementAST* > (YY_MOVE (that.value));
@@ -640,6 +646,8 @@ namespace STAB {
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_breakStmt: // breakStmt
+      case symbol_kind::S_skipStmt: // skipStmt
       case symbol_kind::S_ifLadder: // ifLadder
       case symbol_kind::S_fnCallStmt: // fnCallStmt
         value.move< StatementAST* > (YY_MOVE (that.value));
@@ -744,6 +752,8 @@ namespace STAB {
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_breakStmt: // breakStmt
+      case symbol_kind::S_skipStmt: // skipStmt
       case symbol_kind::S_ifLadder: // ifLadder
       case symbol_kind::S_fnCallStmt: // fnCallStmt
         value.copy< StatementAST* > (that.value);
@@ -847,6 +857,8 @@ namespace STAB {
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_breakStmt: // breakStmt
+      case symbol_kind::S_skipStmt: // skipStmt
       case symbol_kind::S_ifLadder: // ifLadder
       case symbol_kind::S_fnCallStmt: // fnCallStmt
         value.move< StatementAST* > (that.value);
@@ -1040,12 +1052,12 @@ namespace STAB {
     // User initialization code.
 #line 33 "src/parser/parser.yy"
 {
-  #if YYDEBUG != 0 
+  #if YYDEBUG != 0
     set_debug_level(debug);
   #endif
 }
 
-#line 1049 "src/parser/parser.cpp"
+#line 1061 "src/parser/parser.cpp"
 
 
     /* Initialize the stack.  The initial state will be set in
@@ -1205,6 +1217,8 @@ namespace STAB {
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_assignExpr: // assignExpr
       case symbol_kind::S_returnStmt: // returnStmt
+      case symbol_kind::S_breakStmt: // breakStmt
+      case symbol_kind::S_skipStmt: // skipStmt
       case symbol_kind::S_ifLadder: // ifLadder
       case symbol_kind::S_fnCallStmt: // fnCallStmt
         yylhs.value.emplace< StatementAST* > ();
@@ -1271,7 +1285,7 @@ namespace STAB {
   case 2: // functionDefinition: FN "identifier" LBRACE paramList RBRACE FN_ARROW "type" LCURLY stmts RCURLY
 #line 89 "src/parser/parser.yy"
                                                                                          {
-			auto fnScope = new Scope(currentScope, yystack_[8].value.as < std::string > ());
+			auto fnScope = new Scope(currentScope, "fn");
 			currentScope = fnScope;
                         std::vector<std::string> argTypes;
 			std::vector<STAB::VariableDeclExprAST*> declVars;
@@ -1283,13 +1297,13 @@ namespace STAB {
 			yylhs.value.as < StatementAST* > () = new STAB::FunctionAST(proto,declVars, yystack_[1].value.as < std::vector<StatementAST*> > (), fnScope);
 			currentScope = globalScope;
                     }
-#line 1287 "src/parser/parser.cpp"
+#line 1301 "src/parser/parser.cpp"
     break;
 
   case 3: // functionDefinition: FN "identifier" LBRACE paramList RBRACE LCURLY stmts RCURLY
 #line 103 "src/parser/parser.yy"
-                                                                       {               
-                        auto fnScope = new Scope(currentScope, yystack_[6].value.as < std::string > ());
+                                                                       {
+                        auto fnScope = new Scope(currentScope, "fn");
 			currentScope = fnScope;
                         std::vector<std::string> argTypes;
 			std::vector<STAB::VariableDeclExprAST*> declVars;
@@ -1301,7 +1315,7 @@ namespace STAB {
 			yylhs.value.as < StatementAST* > () = new STAB::FunctionAST(proto,declVars, yystack_[1].value.as < std::vector<StatementAST*> > (), fnScope);
 			currentScope = globalScope;
                      }
-#line 1305 "src/parser/parser.cpp"
+#line 1319 "src/parser/parser.cpp"
     break;
 
   case 4: // functionPrototype: FN "identifier" LBRACE paramListPrototype RBRACE FN_ARROW "type" SEMI_COLON
@@ -1313,7 +1327,7 @@ namespace STAB {
 		       }
                        yylhs.value.as < StatementAST* > () = new STAB::PrototypeAST(yystack_[1].value.as < std::string > (), yystack_[6].value.as < std::string > (), Args);
                    }
-#line 1317 "src/parser/parser.cpp"
+#line 1331 "src/parser/parser.cpp"
     break;
 
   case 5: // varDeclaration: "type" "identifier" SEMI_COLON
@@ -1321,7 +1335,7 @@ namespace STAB {
                                          {
                   yylhs.value.as < StatementAST* > () = new STAB::VariableDeclExprAST(yystack_[2].value.as < std::string > (), yystack_[1].value.as < std::string > ());
                 }
-#line 1325 "src/parser/parser.cpp"
+#line 1339 "src/parser/parser.cpp"
     break;
 
   case 6: // varInitialization: "type" "identifier" ASSIGN expr SEMI_COLON
@@ -1333,7 +1347,7 @@ namespace STAB {
 		     auto varDecl = new VariableDeclExprAST(type, name);
 		     yylhs.value.as < STAB::VariableDeclAssignExprAST* > () = new VariableDeclAssignExprAST(varDecl, val);
 		  }
-#line 1337 "src/parser/parser.cpp"
+#line 1351 "src/parser/parser.cpp"
     break;
 
   case 7: // arrayDecl: "type" "identifier" LBIG expr RBIG SEMI_COLON
@@ -1341,7 +1355,7 @@ namespace STAB {
                                                   {
               yylhs.value.as < STAB::ArrayAST* > () = new ArrayAST(yystack_[5].value.as < std::string > (), yystack_[4].value.as < std::string > (), yystack_[2].value.as < ExprAST* > ());
           }
-#line 1345 "src/parser/parser.cpp"
+#line 1359 "src/parser/parser.cpp"
     break;
 
   case 8: // arrayAssign: "identifier" LBIG expr RBIG ASSIGN expr SEMI_COLON
@@ -1349,7 +1363,7 @@ namespace STAB {
                                                       {
               yylhs.value.as < STAB::ArrayAssignAST* > () = new ArrayAssignAST(yystack_[6].value.as < std::string > (), yystack_[4].value.as < ExprAST* > (), yystack_[1].value.as < ExprAST* > ());
             }
-#line 1353 "src/parser/parser.cpp"
+#line 1367 "src/parser/parser.cpp"
     break;
 
   case 9: // arrayRef: "identifier" LBIG expr RBIG
@@ -1357,7 +1371,7 @@ namespace STAB {
                              {
            yylhs.value.as < STAB::ArrayRefAST* > () = new ArrayRefAST(yystack_[3].value.as < std::string > (), yystack_[1].value.as < ExprAST* > ());
          }
-#line 1361 "src/parser/parser.cpp"
+#line 1375 "src/parser/parser.cpp"
     break;
 
   case 10: // loop: LOOP LCURLY stmts RCURLY
@@ -1366,15 +1380,15 @@ namespace STAB {
        yylhs.value.as < StatementAST* > () = new LoopStatementAST(yystack_[1].value.as < std::vector<StatementAST*> > ());
 
      }
-#line 1370 "src/parser/parser.cpp"
+#line 1384 "src/parser/parser.cpp"
     break;
 
   case 11: // range: expr TO expr
 #line 159 "src/parser/parser.yy"
                     {
-        yylhs.value.as < STAB::RangeStatementAST* > () = new RangeStatementAST(yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ()); 
+        yylhs.value.as < STAB::RangeStatementAST* > () = new RangeStatementAST(yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
       }
-#line 1378 "src/parser/parser.cpp"
+#line 1392 "src/parser/parser.cpp"
     break;
 
   case 12: // for: FOR "identifier" IN range LCURLY stmts RCURLY
@@ -1384,7 +1398,7 @@ namespace STAB {
 	auto varDecl = new VariableDeclExprAST(type, yystack_[5].value.as < std::string > ());
         yylhs.value.as < StatementAST* > () = new ForStatementAST(varDecl, yystack_[3].value.as < STAB::RangeStatementAST* > (), yystack_[1].value.as < std::vector<StatementAST*> > ());
      }
-#line 1388 "src/parser/parser.cpp"
+#line 1402 "src/parser/parser.cpp"
     break;
 
   case 13: // while: WHILE expr LCURLY stmts RCURLY
@@ -1393,7 +1407,7 @@ namespace STAB {
        yylhs.value.as < StatementAST* > () = new WhileStatementAST(yystack_[3].value.as < ExprAST* > (), yystack_[1].value.as < std::vector<StatementAST*> > ());
 
       }
-#line 1397 "src/parser/parser.cpp"
+#line 1411 "src/parser/parser.cpp"
     break;
 
   case 14: // program: stmts
@@ -1413,7 +1427,7 @@ namespace STAB {
        for (const auto stmt: yystack_[0].value.as < std::vector<StatementAST*> > ())
            __start__fn->getBody().emplace_back(stmt);
        }
-#line 1417 "src/parser/parser.cpp"
+#line 1431 "src/parser/parser.cpp"
     break;
 
   case 15: // stmts: stmts stmt
@@ -1422,7 +1436,7 @@ namespace STAB {
        yystack_[1].value.as < std::vector<StatementAST*> > ().emplace_back(yystack_[0].value.as < StatementAST* > ());
        yylhs.value.as < std::vector<StatementAST*> > () = yystack_[1].value.as < std::vector<StatementAST*> > ();
      }
-#line 1426 "src/parser/parser.cpp"
+#line 1440 "src/parser/parser.cpp"
     break;
 
   case 16: // stmts: %empty
@@ -1430,7 +1444,7 @@ namespace STAB {
               {
        yylhs.value.as < std::vector<StatementAST*> > () = std::vector<STAB::StatementAST*>();
      }
-#line 1434 "src/parser/parser.cpp"
+#line 1448 "src/parser/parser.cpp"
     break;
 
   case 17: // stmt: functionDefinition
@@ -1438,7 +1452,7 @@ namespace STAB {
                         {
         yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > ();
       }
-#line 1442 "src/parser/parser.cpp"
+#line 1456 "src/parser/parser.cpp"
     break;
 
   case 18: // stmt: loop
@@ -1446,7 +1460,7 @@ namespace STAB {
             {
         yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > ();
       }
-#line 1450 "src/parser/parser.cpp"
+#line 1464 "src/parser/parser.cpp"
     break;
 
   case 19: // stmt: for
@@ -1454,7 +1468,7 @@ namespace STAB {
            {
         yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > ();
       }
-#line 1458 "src/parser/parser.cpp"
+#line 1472 "src/parser/parser.cpp"
     break;
 
   case 20: // stmt: while
@@ -1462,7 +1476,7 @@ namespace STAB {
               {
          yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > ();
       }
-#line 1466 "src/parser/parser.cpp"
+#line 1480 "src/parser/parser.cpp"
     break;
 
   case 21: // stmt: varDeclaration
@@ -1470,7 +1484,7 @@ namespace STAB {
                       {
         yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > ();
       }
-#line 1474 "src/parser/parser.cpp"
+#line 1488 "src/parser/parser.cpp"
     break;
 
   case 22: // stmt: varInitialization
@@ -1478,7 +1492,7 @@ namespace STAB {
                          {
          yylhs.value.as < StatementAST* > () = yystack_[0].value.as < STAB::VariableDeclAssignExprAST* > ();
       }
-#line 1482 "src/parser/parser.cpp"
+#line 1496 "src/parser/parser.cpp"
     break;
 
   case 23: // stmt: assignExpr
@@ -1486,15 +1500,27 @@ namespace STAB {
                   {
          yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > ();
       }
-#line 1490 "src/parser/parser.cpp"
+#line 1504 "src/parser/parser.cpp"
+    break;
+
+  case 24: // stmt: breakStmt
+#line 222 "src/parser/parser.yy"
+        { yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > (); }
+#line 1510 "src/parser/parser.cpp"
+    break;
+
+  case 25: // stmt: skipStmt
+#line 223 "src/parser/parser.yy"
+        { yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > (); }
+#line 1516 "src/parser/parser.cpp"
     break;
 
   case 26: // stmt: returnStmt
 #line 224 "src/parser/parser.yy"
                   {
-          yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > (); 
+          yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > ();
       }
-#line 1498 "src/parser/parser.cpp"
+#line 1524 "src/parser/parser.cpp"
     break;
 
   case 27: // stmt: functionPrototype
@@ -1502,15 +1528,15 @@ namespace STAB {
                           {
         yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > ();
       }
-#line 1506 "src/parser/parser.cpp"
+#line 1532 "src/parser/parser.cpp"
     break;
 
   case 28: // stmt: fnCallStmt
 #line 230 "src/parser/parser.yy"
                    {
-         yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > (); 
+         yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > ();
       }
-#line 1514 "src/parser/parser.cpp"
+#line 1540 "src/parser/parser.cpp"
     break;
 
   case 29: // stmt: ifLadder
@@ -1518,7 +1544,7 @@ namespace STAB {
                 {
          yylhs.value.as < StatementAST* > () = yystack_[0].value.as < StatementAST* > ();
       }
-#line 1522 "src/parser/parser.cpp"
+#line 1548 "src/parser/parser.cpp"
     break;
 
   case 30: // stmt: arrayDecl
@@ -1526,7 +1552,7 @@ namespace STAB {
                   {
          yylhs.value.as < StatementAST* > () = yystack_[0].value.as < STAB::ArrayAST* > ();
       }
-#line 1530 "src/parser/parser.cpp"
+#line 1556 "src/parser/parser.cpp"
     break;
 
   case 31: // stmt: arrayAssign
@@ -1534,7 +1560,7 @@ namespace STAB {
                     {
          yylhs.value.as < StatementAST* > () = yystack_[0].value.as < STAB::ArrayAssignAST* > ();
       }
-#line 1538 "src/parser/parser.cpp"
+#line 1564 "src/parser/parser.cpp"
     break;
 
   case 32: // expr: expr PLUS expr
@@ -1542,7 +1568,7 @@ namespace STAB {
                       {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
       }
-#line 1546 "src/parser/parser.cpp"
+#line 1572 "src/parser/parser.cpp"
     break;
 
   case 33: // expr: expr MINUS expr
@@ -1550,7 +1576,7 @@ namespace STAB {
                        {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1554 "src/parser/parser.cpp"
+#line 1580 "src/parser/parser.cpp"
     break;
 
   case 34: // expr: expr TIMES expr
@@ -1558,7 +1584,7 @@ namespace STAB {
                        {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1562 "src/parser/parser.cpp"
+#line 1588 "src/parser/parser.cpp"
     break;
 
   case 35: // expr: expr DIV expr
@@ -1566,7 +1592,7 @@ namespace STAB {
                      {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1570 "src/parser/parser.cpp"
+#line 1596 "src/parser/parser.cpp"
     break;
 
   case 36: // expr: expr MOD expr
@@ -1574,15 +1600,15 @@ namespace STAB {
                      {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1578 "src/parser/parser.cpp"
+#line 1604 "src/parser/parser.cpp"
     break;
 
   case 37: // expr: LBRACE expr RBRACE
 #line 259 "src/parser/parser.yy"
                           {
-        yylhs.value.as < ExprAST* > () = yystack_[1].value.as < ExprAST* > (); 
+        yylhs.value.as < ExprAST* > () = yystack_[1].value.as < ExprAST* > ();
      }
-#line 1586 "src/parser/parser.cpp"
+#line 1612 "src/parser/parser.cpp"
     break;
 
   case 38: // expr: expr GT expr
@@ -1590,7 +1616,7 @@ namespace STAB {
                     {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1594 "src/parser/parser.cpp"
+#line 1620 "src/parser/parser.cpp"
     break;
 
   case 39: // expr: expr LT expr
@@ -1598,7 +1624,7 @@ namespace STAB {
                     {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1602 "src/parser/parser.cpp"
+#line 1628 "src/parser/parser.cpp"
     break;
 
   case 40: // expr: expr LE expr
@@ -1606,7 +1632,7 @@ namespace STAB {
                     {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1610 "src/parser/parser.cpp"
+#line 1636 "src/parser/parser.cpp"
     break;
 
   case 41: // expr: expr GE expr
@@ -1614,7 +1640,7 @@ namespace STAB {
                    {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1618 "src/parser/parser.cpp"
+#line 1644 "src/parser/parser.cpp"
     break;
 
   case 42: // expr: expr "op" expr
@@ -1622,7 +1648,7 @@ namespace STAB {
                    {
        yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1626 "src/parser/parser.cpp"
+#line 1652 "src/parser/parser.cpp"
     break;
 
   case 43: // expr: expr NE expr
@@ -1630,7 +1656,7 @@ namespace STAB {
                    {
         yylhs.value.as < ExprAST* > () = new BinaryExprAST(yystack_[1].value.as < std::string > (), yystack_[2].value.as < ExprAST* > (), yystack_[0].value.as < ExprAST* > ());
      }
-#line 1634 "src/parser/parser.cpp"
+#line 1660 "src/parser/parser.cpp"
     break;
 
   case 44: // expr: "str"
@@ -1644,7 +1670,7 @@ namespace STAB {
 	}
 	yylhs.value.as < ExprAST* > () = new StringExprAST(without_quotation);
      }
-#line 1648 "src/parser/parser.cpp"
+#line 1674 "src/parser/parser.cpp"
     break;
 
   case 45: // expr: "identifier"
@@ -1652,7 +1678,7 @@ namespace STAB {
           {
        yylhs.value.as < ExprAST* > () = new VariableExprAST(yystack_[0].value.as < std::string > ());
      }
-#line 1656 "src/parser/parser.cpp"
+#line 1682 "src/parser/parser.cpp"
     break;
 
   case 46: // expr: "num"
@@ -1661,7 +1687,7 @@ namespace STAB {
         auto val = std::stoi(yystack_[0].value.as < std::string > ());
         yylhs.value.as < ExprAST* > () = new NumberExprAST(val);
      }
-#line 1665 "src/parser/parser.cpp"
+#line 1691 "src/parser/parser.cpp"
     break;
 
   case 47: // expr: fnCall
@@ -1669,7 +1695,7 @@ namespace STAB {
               {
         yylhs.value.as < ExprAST* > () = new CallExprAST(yystack_[0].value.as < CallExprAST* > ()->getFnName(), yystack_[0].value.as < CallExprAST* > ()->getArgs());
      }
-#line 1673 "src/parser/parser.cpp"
+#line 1699 "src/parser/parser.cpp"
     break;
 
   case 48: // expr: arrayRef
@@ -1677,7 +1703,7 @@ namespace STAB {
                 {
         yylhs.value.as < ExprAST* > () = yystack_[0].value.as < STAB::ArrayRefAST* > ();
      }
-#line 1681 "src/parser/parser.cpp"
+#line 1707 "src/parser/parser.cpp"
     break;
 
   case 49: // assignExpr: "identifier" ASSIGN expr SEMI_COLON
@@ -1685,7 +1711,7 @@ namespace STAB {
                                                    {
              yylhs.value.as < StatementAST* > () = new VariableAssignExprAST(yystack_[3].value.as < std::string > (), yystack_[1].value.as < ExprAST* > ());
            }
-#line 1689 "src/parser/parser.cpp"
+#line 1715 "src/parser/parser.cpp"
     break;
 
   case 50: // returnStmt: RETURN expr SEMI_COLON
@@ -1693,149 +1719,165 @@ namespace STAB {
                                    {
               yylhs.value.as < StatementAST* > () = new ReturnStmtAST(yystack_[1].value.as < ExprAST* > ());
            }
-#line 1697 "src/parser/parser.cpp"
+#line 1723 "src/parser/parser.cpp"
+    break;
+
+  case 51: // breakStmt: BREAK SEMI_COLON
+#line 314 "src/parser/parser.yy"
+                             {
+         yylhs.value.as < StatementAST* > () = new BreakStatementAST();
+       }
+#line 1731 "src/parser/parser.cpp"
+    break;
+
+  case 52: // skipStmt: SKIP SEMI_COLON
+#line 318 "src/parser/parser.yy"
+                           {
+          yylhs.value.as < StatementAST* > () = new SkipStatementAST();
+       }
+#line 1739 "src/parser/parser.cpp"
     break;
 
   case 53: // elseStmt: %empty
-#line 318 "src/parser/parser.yy"
+#line 322 "src/parser/parser.yy"
                  {
           yylhs.value.as < STAB::ElseStatementAST* > () = nullptr;
          }
-#line 1705 "src/parser/parser.cpp"
+#line 1747 "src/parser/parser.cpp"
     break;
 
   case 54: // elseStmt: ELSE LCURLY stmts RCURLY
-#line 321 "src/parser/parser.yy"
+#line 325 "src/parser/parser.yy"
                                    {
 	    yylhs.value.as < STAB::ElseStatementAST* > () = new ElseStatementAST(yystack_[1].value.as < std::vector<StatementAST*> > ());
 	 }
-#line 1713 "src/parser/parser.cpp"
+#line 1755 "src/parser/parser.cpp"
     break;
 
   case 56: // elseifStmt: ELSE_IF expr LCURLY stmts RCURLY elseifStmt
-#line 328 "src/parser/parser.yy"
+#line 332 "src/parser/parser.yy"
            {
 	     yylhs.value.as < STAB::CondStatementAST* > () = nullptr;
 	   }
-#line 1721 "src/parser/parser.cpp"
+#line 1763 "src/parser/parser.cpp"
     break;
 
   case 57: // ifStmt: IF expr LCURLY stmts RCURLY
-#line 332 "src/parser/parser.yy"
+#line 336 "src/parser/parser.yy"
                                      {
 	   yylhs.value.as < STAB::CondStatementAST* > () = new CondStatementAST(yystack_[3].value.as < ExprAST* > (), yystack_[1].value.as < std::vector<StatementAST*> > ());
 	 }
-#line 1729 "src/parser/parser.cpp"
+#line 1771 "src/parser/parser.cpp"
     break;
 
   case 58: // ifLadder: ifStmt elseifStmt elseStmt
-#line 336 "src/parser/parser.yy"
+#line 340 "src/parser/parser.yy"
                                      {
             yylhs.value.as < StatementAST* > () = new IfStatementAST(yystack_[2].value.as < STAB::CondStatementAST* > (), nullptr, yystack_[0].value.as < STAB::ElseStatementAST* > ());
          }
-#line 1737 "src/parser/parser.cpp"
+#line 1779 "src/parser/parser.cpp"
     break;
 
   case 59: // argList: %empty
-#line 341 "src/parser/parser.yy"
+#line 345 "src/parser/parser.yy"
                  {
         }
-#line 1744 "src/parser/parser.cpp"
+#line 1786 "src/parser/parser.cpp"
     break;
 
   case 60: // argList: args
-#line 343 "src/parser/parser.yy"
+#line 347 "src/parser/parser.yy"
                {
 	 for(const auto elt: yystack_[0].value.as < std::vector<ExprAST*> > ()){
 	   yylhs.value.as < std::vector<ExprAST*> > ().emplace_back(elt);
 	 }
 	}
-#line 1754 "src/parser/parser.cpp"
+#line 1796 "src/parser/parser.cpp"
     break;
 
   case 61: // args: args COMMA expr
-#line 350 "src/parser/parser.yy"
+#line 354 "src/parser/parser.yy"
                        {
        for(const auto elt: yystack_[2].value.as < std::vector<ExprAST*> > ())
            yylhs.value.as < std::vector<ExprAST*> > ().emplace_back(elt);
        yylhs.value.as < std::vector<ExprAST*> > ().emplace_back(yystack_[0].value.as < ExprAST* > ());
      }
-#line 1764 "src/parser/parser.cpp"
+#line 1806 "src/parser/parser.cpp"
     break;
 
   case 62: // args: expr
-#line 355 "src/parser/parser.yy"
+#line 359 "src/parser/parser.yy"
             {
        yylhs.value.as < std::vector<ExprAST*> > ().emplace_back(yystack_[0].value.as < ExprAST* > ());
      }
-#line 1772 "src/parser/parser.cpp"
+#line 1814 "src/parser/parser.cpp"
     break;
 
   case 63: // paramListPrototype: params
-#line 360 "src/parser/parser.yy"
+#line 364 "src/parser/parser.yy"
                   {
 	     for (const auto elt: yystack_[0].value.as < std::vector<std::string> > ())
 	         yylhs.value.as < std::vector<std::string> > ().emplace_back(elt);
 	  }
-#line 1781 "src/parser/parser.cpp"
+#line 1823 "src/parser/parser.cpp"
     break;
 
   case 64: // params: params COMMA "type"
-#line 366 "src/parser/parser.yy"
+#line 370 "src/parser/parser.yy"
                                {
 	 for(const auto elt: yystack_[2].value.as < std::vector<std::string> > ())
 	    yylhs.value.as < std::vector<std::string> > ().emplace_back(elt);
 	 yylhs.value.as < std::vector<std::string> > ().emplace_back(yystack_[0].value.as < std::string > ());
        }
-#line 1791 "src/parser/parser.cpp"
+#line 1833 "src/parser/parser.cpp"
     break;
 
   case 65: // params: "type"
-#line 371 "src/parser/parser.yy"
+#line 375 "src/parser/parser.yy"
                    {
        yylhs.value.as < std::vector<std::string> > ().emplace_back(yystack_[0].value.as < std::string > ());
        }
-#line 1799 "src/parser/parser.cpp"
+#line 1841 "src/parser/parser.cpp"
     break;
 
   case 66: // paramList: %empty
-#line 376 "src/parser/parser.yy"
+#line 380 "src/parser/parser.yy"
                  {
 	 }
-#line 1806 "src/parser/parser.cpp"
+#line 1848 "src/parser/parser.cpp"
     break;
 
   case 67: // paramList: parameters
-#line 378 "src/parser/parser.yy"
+#line 382 "src/parser/parser.yy"
                       {
 	   for(const auto elt: yystack_[0].value.as < std::vector<STAB::VariableDeclExprAST*> > ())
 	     yylhs.value.as < std::vector<STAB::VariableDeclExprAST*> > ().emplace_back(elt);
 	 }
-#line 1815 "src/parser/parser.cpp"
+#line 1857 "src/parser/parser.cpp"
     break;
 
   case 68: // parameters: parameters COMMA "type" "identifier"
-#line 384 "src/parser/parser.yy"
+#line 388 "src/parser/parser.yy"
                                           {
 	      for(const auto elt: yystack_[3].value.as < std::vector<STAB::VariableDeclExprAST*> > ())
 	         yylhs.value.as < std::vector<STAB::VariableDeclExprAST*> > ().emplace_back(elt);
               auto decl = new VariableDeclExprAST(yystack_[1].value.as < std::string > (), yystack_[0].value.as < std::string > ());
 	      yylhs.value.as < std::vector<STAB::VariableDeclExprAST*> > ().emplace_back(decl);
 	  }
-#line 1826 "src/parser/parser.cpp"
+#line 1868 "src/parser/parser.cpp"
     break;
 
   case 69: // parameters: "type" "identifier"
-#line 390 "src/parser/parser.yy"
+#line 394 "src/parser/parser.yy"
                          {
 	     auto decl = new VariableDeclExprAST(yystack_[1].value.as < std::string > (), yystack_[0].value.as < std::string > ());
 	     yylhs.value.as < std::vector<STAB::VariableDeclExprAST*> > ().emplace_back(decl);
 	  }
-#line 1835 "src/parser/parser.cpp"
+#line 1877 "src/parser/parser.cpp"
     break;
 
   case 70: // fnCallStmt: "identifier" LBRACE argList RBRACE SEMI_COLON
-#line 395 "src/parser/parser.yy"
+#line 399 "src/parser/parser.yy"
                                                 {
      std::vector<STAB::ExprAST*> Args;
      for (const auto elt: yystack_[2].value.as < std::vector<ExprAST*> > ()){
@@ -1843,11 +1885,11 @@ namespace STAB {
        }
       yylhs.value.as < StatementAST* > () = new CallStatementAST(yystack_[4].value.as < std::string > (), Args);
     }
-#line 1847 "src/parser/parser.cpp"
+#line 1889 "src/parser/parser.cpp"
     break;
 
   case 71: // fnCall: "identifier" LBRACE argList RBRACE
-#line 403 "src/parser/parser.yy"
+#line 407 "src/parser/parser.yy"
                                  {
    std::vector<STAB::ExprAST*> Args;
    for (const auto elt: yystack_[1].value.as < std::vector<ExprAST*> > ()){
@@ -1855,11 +1897,11 @@ namespace STAB {
    }
    yylhs.value.as < CallExprAST* > () = new CallExprAST(yystack_[3].value.as < std::string > (), Args);
  }
-#line 1859 "src/parser/parser.cpp"
+#line 1901 "src/parser/parser.cpp"
     break;
 
 
-#line 1863 "src/parser/parser.cpp"
+#line 1905 "src/parser/parser.cpp"
 
             default:
               break;
@@ -2045,10 +2087,10 @@ namespace STAB {
     "end of file", "error", "invalid token", "LBRACE", "RBRACE", "LCURLY",
   "RCURLY", "LBIG", "RBIG", "ASSIGN", "IF", "ELSE", "ELSE_IF", "LOOP",
   "FOR", "WHILE", "AND", "OR", "XOR", "MATCH", "IMPORT", "IN", "TO",
-  "CONTROL_FLOW", "COMMA", "FN_ARROW", "MATCH_ARROW", "RETURN", "BREAK",
-  "SKIP", "SEMI_COLON", "PLUS", "MOD", "MINUS", "TIMES", "DIV", "GT", "LT",
-  "GE", "LE", "NE", "op", "identifier", "type", "num", "str", "FN",
-  "$accept", "functionDefinition", "functionPrototype", "varDeclaration",
+  "COMMA", "FN_ARROW", "MATCH_ARROW", "RETURN", "BREAK", "SKIP",
+  "SEMI_COLON", "PLUS", "MOD", "MINUS", "TIMES", "DIV", "GT", "LT", "GE",
+  "LE", "NE", "op", "identifier", "type", "num", "str", "FN", "$accept",
+  "functionDefinition", "functionPrototype", "varDeclaration",
   "varInitialization", "arrayDecl", "arrayAssign", "arrayRef", "loop",
   "range", "for", "while", "program", "stmts", "stmt", "expr",
   "assignExpr", "returnStmt", "breakStmt", "skipStmt", "elseStmt",
@@ -2187,29 +2229,29 @@ namespace STAB {
   }
 
 
-  const signed char Parser::yypact_ninf_ = -41;
+  const signed char Parser::yypact_ninf_ = -38;
 
   const signed char Parser::yytable_ninf_ = -1;
 
   const short
   Parser::yypact_[] =
   {
-     -41,     9,    -3,   -41,     2,    30,   -40,     2,     2,     0,
-       6,    25,    -5,    20,   -41,   -41,   -41,   -41,   -41,   -41,
-     -41,   -41,   -41,   -41,   -41,   -41,   -41,   -41,    26,   -41,
-     -41,     2,    92,   -41,   -41,   -41,   217,   -41,   -41,    27,
-     228,   328,   -41,   -41,     2,     2,     2,    -1,    47,     2,
-      62,   204,     2,     2,   -41,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,    64,     2,   -41,   -41,
-     375,    78,    70,   262,   340,     2,     2,   -41,    53,   241,
-      95,   -41,   -41,    93,   275,    98,    49,    28,    49,   -18,
-     -18,   -25,   -25,   -25,   -25,   -41,   -41,   -41,    97,   316,
-     118,    73,     2,    96,   -41,   296,   352,    67,   112,    99,
-     113,   105,   -41,   -41,   -41,   -41,   -41,   -41,     2,   -41,
-     -41,   375,     2,    89,   -41,   -41,   110,    77,     8,    79,
-     124,   144,   168,   375,   364,   -41,   100,   -41,   -41,   106,
-      94,    26,   -41,   -41,   -41,    91,   178,   137,   -41,   -41,
-     -41,   -41,   -41,   188,   -41
+     -38,    14,    -5,   -38,     3,    -3,   -21,     3,     3,    -1,
+       0,     9,   -11,    -9,   -38,   -38,   -38,   -38,   -38,   -38,
+     -38,   -38,   -38,   -38,   -38,   -38,   -38,   -38,    22,   -38,
+     -38,     3,    12,   -38,   -38,   -38,   223,   -38,   -38,    17,
+     234,   247,   -38,   -38,     3,     3,     3,     4,    32,     3,
+      28,   212,     3,     3,   -38,     3,     3,     3,     3,     3,
+       3,     3,     3,     3,     3,     3,    64,     3,   -38,   -38,
+     391,    39,    25,   281,   356,     3,     3,   -38,     8,   270,
+      57,   -38,   -38,    69,   314,    97,   257,    29,   257,   194,
+     194,   -15,   -15,   -15,   -15,   -38,   -38,   -38,    76,   344,
+     107,    53,     3,    74,   -38,   325,   368,    43,    81,    63,
+      83,    65,   -38,   -38,   -38,   -38,   -38,   -38,     3,   -38,
+     -38,   391,     3,    60,   -38,   -38,    70,    51,     2,    54,
+     130,   140,   163,   391,   380,   -38,    55,   -38,   -38,    58,
+      61,    22,   -38,   -38,   -38,    66,   173,    94,   -38,   -38,
+     -38,   -38,   -38,   196,   -38
   };
 
   const signed char
@@ -2236,10 +2278,10 @@ namespace STAB {
   const signed char
   Parser::yypgoto_[] =
   {
-     -41,   -41,   -41,   -41,   -41,   -41,   -41,   -41,   -41,   -41,
-     -41,   -41,   -41,   -37,   -41,    -4,   -41,   -41,   -41,   -41,
-     -41,     7,   -41,   -41,   103,   -41,   -41,   -41,   -41,   -41,
-     -41,   -41
+     -38,   -38,   -38,   -38,   -38,   -38,   -38,   -38,   -38,   -38,
+     -38,   -38,   -38,   -37,   -38,    -4,   -38,   -38,   -38,   -38,
+     -38,   -33,   -38,   -38,    52,   -38,   -38,   -38,   -38,   -38,
+     -38,   -38
   };
 
   const signed char
@@ -2254,129 +2296,133 @@ namespace STAB {
   const unsigned char
   Parser::yytable_[] =
   {
-      36,    66,    39,    40,    41,    31,    75,     4,    76,     3,
-       5,     6,     7,   138,    56,    64,    65,    85,    60,    61,
-      62,    63,    64,    65,     8,     9,    10,    51,    44,    77,
-      42,   100,    45,   139,    46,    38,    43,    47,    49,    11,
-      12,    73,    74,    13,    32,    79,    33,    34,    67,    84,
-      78,    86,    87,    88,    89,    90,    91,    92,    93,    94,
-      95,    96,    48,    99,    60,    61,    62,    63,    64,    65,
-      97,   105,   106,    80,     4,   130,   131,     5,     6,     7,
-     132,    56,   101,    58,    59,    60,    61,    62,    63,    64,
-      65,     8,     9,    10,   102,    52,   107,   114,   121,    53,
-     113,   146,   117,   120,   116,   122,    11,    12,     4,   125,
-      13,     5,     6,     7,   133,   153,   126,   128,   134,   135,
-     137,   150,   140,   127,   119,     8,     9,    10,     4,   129,
-     141,     5,     6,     7,     4,   136,   148,     5,     6,     7,
-      11,    12,   152,   145,    13,     8,     9,    10,   149,   147,
-     142,     8,     9,    10,     4,    83,     0,     5,     6,     7,
-      11,    12,     0,     0,    13,     0,    11,    12,     0,     0,
-      13,     8,     9,    10,   143,     0,     0,     0,     4,     0,
-       0,     5,     6,     7,   151,     0,    11,    12,     4,     0,
-      13,     5,     6,     7,   154,     8,     9,    10,     4,     0,
-       0,     5,     6,     7,     0,     8,     9,    10,    82,     0,
-      11,    12,     0,     0,    13,     8,     9,    10,     0,     0,
-      11,    12,    54,     0,    13,     0,     0,     0,     0,     0,
-      11,    12,     0,    68,    13,    55,    56,    57,    58,    59,
-      60,    61,    62,    63,    64,    65,   112,     0,    55,    56,
-      57,    58,    59,    60,    61,    62,    63,    64,    65,    55,
-      56,    57,    58,    59,    60,    61,    62,    63,    64,    65,
-     103,     0,    55,    56,    57,    58,    59,    60,    61,    62,
-      63,    64,    65,   115,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    55,    56,    57,    58,    59,    60,    61,
-      62,    63,    64,    65,   123,     0,    55,    56,    57,    58,
-      59,    60,    61,    62,    63,    64,    65,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,    55,    56,    57,
-      58,    59,    60,    61,    62,    63,    64,    65,   118,     0,
-       0,     0,     0,     0,     0,     0,     0,    55,    56,    57,
-      58,    59,    60,    61,    62,    63,    64,    65,    69,    55,
-      56,    57,    58,    59,    60,    61,    62,    63,    64,    65,
-     104,    55,    56,    57,    58,    59,    60,    61,    62,    63,
-      64,    65,   124,    55,    56,    57,    58,    59,    60,    61,
-      62,    63,    64,    65,   144,    55,    56,    57,    58,    59,
-      60,    61,    62,    63,    64,    65,    55,    56,    57,    58,
-      59,    60,    61,    62,    63,    64,    65
+      36,    66,    38,    40,    41,     4,    31,   138,     5,     6,
+       7,    75,    44,    76,     3,    52,    45,    85,    46,    53,
+      39,     8,     9,    10,    64,    65,   139,    51,    42,    43,
+      47,   100,    48,    77,    49,    78,    11,    12,    67,    80,
+      13,    73,    74,   101,    32,    79,    33,    34,   102,    84,
+     107,    86,    87,    88,    89,    90,    91,    92,    93,    94,
+      95,    96,   113,    99,    60,    61,    62,    63,    64,    65,
+      97,   105,   106,   114,     4,   130,   131,     5,     6,     7,
+     132,   117,   120,   122,   125,   126,   127,   128,   129,   135,
+       8,     9,    10,   137,   136,   150,   140,   145,   121,   152,
+     147,   146,   148,   116,    83,    11,    12,     4,   149,    13,
+       5,     6,     7,   119,   133,   153,     0,     4,   134,     0,
+       5,     6,     7,     8,     9,    10,     0,     0,     0,     0,
+       0,     0,     0,     8,     9,    10,   141,     0,    11,    12,
+       4,     0,    13,     5,     6,     7,   142,     0,    11,    12,
+       4,     0,    13,     5,     6,     7,     8,     9,    10,     0,
+       0,     0,     0,     0,     0,     0,     8,     9,    10,   143,
+       0,    11,    12,     4,     0,    13,     5,     6,     7,   151,
+       0,    11,    12,     4,     0,    13,     5,     6,     7,     8,
+       9,    10,     0,     0,     0,     0,     0,     0,     0,     8,
+       9,    10,   154,     0,    11,    12,     4,     0,    13,     5,
+       6,     7,     0,     0,    11,    12,    82,     0,    13,     0,
+       0,     0,     8,     9,    10,    56,     0,     0,    54,    60,
+      61,    62,    63,    64,    65,     0,     0,    11,    12,    68,
+       0,    13,    55,    56,    57,    58,    59,    60,    61,    62,
+      63,    64,    65,    55,    56,    57,    58,    59,    60,    61,
+      62,    63,    64,    65,    55,    56,    57,    58,    59,    60,
+      61,    62,    63,    64,    65,   112,    69,    55,    56,    57,
+      58,    59,    60,    61,    62,    63,    64,    65,    56,   103,
+      58,    59,    60,    61,    62,    63,    64,    65,     0,     0,
+      55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
+      65,    55,    56,    57,    58,    59,    60,    61,    62,    63,
+      64,    65,   115,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,   123,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,    55,    56,    57,    58,    59,    60,
+      61,    62,    63,    64,    65,    55,    56,    57,    58,    59,
+      60,    61,    62,    63,    64,    65,   118,     0,     0,     0,
+       0,     0,     0,     0,    55,    56,    57,    58,    59,    60,
+      61,    62,    63,    64,    65,   104,    55,    56,    57,    58,
+      59,    60,    61,    62,    63,    64,    65,   124,    55,    56,
+      57,    58,    59,    60,    61,    62,    63,    64,    65,   144,
+      55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
+      65,    55,    56,    57,    58,    59,    60,    61,    62,    63,
+      64,    65
   };
 
   const short
   Parser::yycheck_[] =
   {
-       4,    38,    42,     7,     8,     3,     7,    10,     9,     0,
-      13,    14,    15,     5,    32,    40,    41,    54,    36,    37,
-      38,    39,    40,    41,    27,    28,    29,    31,     3,    30,
-      30,    68,     7,    25,     9,     5,    30,    42,    12,    42,
-      43,    45,    46,    46,    42,    49,    44,    45,    21,    53,
-       3,    55,    56,    57,    58,    59,    60,    61,    62,    63,
-      64,    65,    42,    67,    36,    37,    38,    39,    40,    41,
-       6,    75,    76,    11,    10,   112,   113,    13,    14,    15,
-     117,    32,     4,    34,    35,    36,    37,    38,    39,    40,
-      41,    27,    28,    29,    24,     3,    43,     4,   102,     7,
-       5,   138,     5,    30,     6,     9,    42,    43,    10,    42,
-      46,    13,    14,    15,   118,   152,     4,     4,   122,    30,
-      43,    30,    43,    24,     6,    27,    28,    29,    10,    24,
-       6,    13,    14,    15,    10,    25,    42,    13,    14,    15,
-      42,    43,     5,    43,    46,    27,    28,    29,   141,    43,
-       6,    27,    28,    29,    10,    52,    -1,    13,    14,    15,
-      42,    43,    -1,    -1,    46,    -1,    42,    43,    -1,    -1,
-      46,    27,    28,    29,     6,    -1,    -1,    -1,    10,    -1,
-      -1,    13,    14,    15,     6,    -1,    42,    43,    10,    -1,
-      46,    13,    14,    15,     6,    27,    28,    29,    10,    -1,
-      -1,    13,    14,    15,    -1,    27,    28,    29,     4,    -1,
-      42,    43,    -1,    -1,    46,    27,    28,    29,    -1,    -1,
-      42,    43,     5,    -1,    46,    -1,    -1,    -1,    -1,    -1,
-      42,    43,    -1,     5,    46,    31,    32,    33,    34,    35,
-      36,    37,    38,    39,    40,    41,     5,    -1,    31,    32,
-      33,    34,    35,    36,    37,    38,    39,    40,    41,    31,
-      32,    33,    34,    35,    36,    37,    38,    39,    40,    41,
-       8,    -1,    31,    32,    33,    34,    35,    36,    37,    38,
-      39,    40,    41,     8,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    31,    32,    33,    34,    35,    36,    37,
-      38,    39,    40,    41,     8,    -1,    31,    32,    33,    34,
-      35,    36,    37,    38,    39,    40,    41,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    31,    32,    33,
-      34,    35,    36,    37,    38,    39,    40,    41,    22,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    31,    32,    33,
-      34,    35,    36,    37,    38,    39,    40,    41,    30,    31,
-      32,    33,    34,    35,    36,    37,    38,    39,    40,    41,
+       4,    38,     5,     7,     8,    10,     3,     5,    13,    14,
+      15,     7,     3,     9,     0,     3,     7,    54,     9,     7,
+      41,    26,    27,    28,    39,    40,    24,    31,    29,    29,
+      41,    68,    41,    29,    12,     3,    41,    42,    21,    11,
+      45,    45,    46,     4,    41,    49,    43,    44,    23,    53,
+      42,    55,    56,    57,    58,    59,    60,    61,    62,    63,
+      64,    65,     5,    67,    35,    36,    37,    38,    39,    40,
+       6,    75,    76,     4,    10,   112,   113,    13,    14,    15,
+     117,     5,    29,     9,    41,     4,    23,     4,    23,    29,
+      26,    27,    28,    42,    24,    29,    42,    42,   102,     5,
+      42,   138,    41,     6,    52,    41,    42,    10,   141,    45,
+      13,    14,    15,     6,   118,   152,    -1,    10,   122,    -1,
+      13,    14,    15,    26,    27,    28,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    26,    27,    28,     6,    -1,    41,    42,
+      10,    -1,    45,    13,    14,    15,     6,    -1,    41,    42,
+      10,    -1,    45,    13,    14,    15,    26,    27,    28,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    26,    27,    28,     6,
+      -1,    41,    42,    10,    -1,    45,    13,    14,    15,     6,
+      -1,    41,    42,    10,    -1,    45,    13,    14,    15,    26,
+      27,    28,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    26,
+      27,    28,     6,    -1,    41,    42,    10,    -1,    45,    13,
+      14,    15,    -1,    -1,    41,    42,     4,    -1,    45,    -1,
+      -1,    -1,    26,    27,    28,    31,    -1,    -1,     5,    35,
+      36,    37,    38,    39,    40,    -1,    -1,    41,    42,     5,
+      -1,    45,    30,    31,    32,    33,    34,    35,    36,    37,
+      38,    39,    40,    30,    31,    32,    33,    34,    35,    36,
+      37,    38,    39,    40,    30,    31,    32,    33,    34,    35,
+      36,    37,    38,    39,    40,     5,    29,    30,    31,    32,
+      33,    34,    35,    36,    37,    38,    39,    40,    31,     8,
+      33,    34,    35,    36,    37,    38,    39,    40,    -1,    -1,
       30,    31,    32,    33,    34,    35,    36,    37,    38,    39,
-      40,    41,    30,    31,    32,    33,    34,    35,    36,    37,
-      38,    39,    40,    41,    30,    31,    32,    33,    34,    35,
-      36,    37,    38,    39,    40,    41,    31,    32,    33,    34,
-      35,    36,    37,    38,    39,    40,    41
+      40,    30,    31,    32,    33,    34,    35,    36,    37,    38,
+      39,    40,     8,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,     8,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    30,    31,    32,    33,    34,    35,
+      36,    37,    38,    39,    40,    30,    31,    32,    33,    34,
+      35,    36,    37,    38,    39,    40,    22,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    30,    31,    32,    33,    34,    35,
+      36,    37,    38,    39,    40,    29,    30,    31,    32,    33,
+      34,    35,    36,    37,    38,    39,    40,    29,    30,    31,
+      32,    33,    34,    35,    36,    37,    38,    39,    40,    29,
+      30,    31,    32,    33,    34,    35,    36,    37,    38,    39,
+      40,    30,    31,    32,    33,    34,    35,    36,    37,    38,
+      39,    40
   };
 
   const signed char
   Parser::yystos_[] =
   {
-       0,    59,    60,     0,    10,    13,    14,    15,    27,    28,
-      29,    42,    43,    46,    48,    49,    50,    51,    52,    53,
-      55,    57,    58,    61,    63,    64,    65,    66,    69,    70,
-      77,     3,    42,    44,    45,    54,    62,    78,     5,    42,
-      62,    62,    30,    30,     3,     7,     9,    42,    42,    12,
-      68,    62,     3,     7,     5,    31,    32,    33,    34,    35,
-      36,    37,    38,    39,    40,    41,    60,    21,     5,    30,
-      62,    71,    72,    62,    62,     7,     9,    30,     3,    62,
-      11,    67,     4,    71,    62,    60,    62,    62,    62,    62,
-      62,    62,    62,    62,    62,    62,    62,     6,    56,    62,
-      60,     4,    24,     8,    30,    62,    62,    43,    73,    74,
-      75,    76,     5,     5,     4,     8,     6,     5,    22,     6,
-      30,    62,     9,     8,    30,    42,     4,    24,     4,    24,
-      60,    60,    60,    62,    62,    30,    25,    43,     5,    25,
-      43,     6,     6,     6,    30,    43,    60,    43,    42,    68,
-      30,     6,     5,    60,     6
+       0,    58,    59,     0,    10,    13,    14,    15,    26,    27,
+      28,    41,    42,    45,    47,    48,    49,    50,    51,    52,
+      54,    56,    57,    60,    62,    63,    64,    65,    68,    69,
+      76,     3,    41,    43,    44,    53,    61,    77,     5,    41,
+      61,    61,    29,    29,     3,     7,     9,    41,    41,    12,
+      67,    61,     3,     7,     5,    30,    31,    32,    33,    34,
+      35,    36,    37,    38,    39,    40,    59,    21,     5,    29,
+      61,    70,    71,    61,    61,     7,     9,    29,     3,    61,
+      11,    66,     4,    70,    61,    59,    61,    61,    61,    61,
+      61,    61,    61,    61,    61,    61,    61,     6,    55,    61,
+      59,     4,    23,     8,    29,    61,    61,    42,    72,    73,
+      74,    75,     5,     5,     4,     8,     6,     5,    22,     6,
+      29,    61,     9,     8,    29,    41,     4,    23,     4,    23,
+      59,    59,    59,    61,    61,    29,    24,    42,     5,    24,
+      42,     6,     6,     6,    29,    42,    59,    42,    41,    67,
+      29,     6,     5,    59,     6
   };
 
   const signed char
   Parser::yyr1_[] =
   {
-       0,    47,    48,    48,    49,    50,    51,    52,    53,    54,
-      55,    56,    57,    58,    59,    60,    60,    61,    61,    61,
-      61,    61,    61,    61,    61,    61,    61,    61,    61,    61,
-      61,    61,    62,    62,    62,    62,    62,    62,    62,    62,
-      62,    62,    62,    62,    62,    62,    62,    62,    62,    63,
-      64,    65,    66,    67,    67,    68,    68,    69,    70,    71,
-      71,    72,    72,    73,    74,    74,    75,    75,    76,    76,
-      77,    78
+       0,    46,    47,    47,    48,    49,    50,    51,    52,    53,
+      54,    55,    56,    57,    58,    59,    59,    60,    60,    60,
+      60,    60,    60,    60,    60,    60,    60,    60,    60,    60,
+      60,    60,    61,    61,    61,    61,    61,    61,    61,    61,
+      61,    61,    61,    61,    61,    61,    61,    61,    61,    62,
+      63,    64,    65,    66,    66,    67,    67,    68,    69,    70,
+      70,    71,    71,    72,    73,    73,    74,    74,    75,    75,
+      76,    77
   };
 
   const signed char
@@ -2404,9 +2450,9 @@ namespace STAB {
      210,   213,   216,   219,   222,   223,   224,   227,   230,   233,
      236,   239,   244,   247,   250,   253,   256,   259,   262,   265,
      268,   271,   274,   277,   280,   289,   292,   296,   299,   304,
-     309,   314,   316,   318,   321,   326,   327,   332,   336,   341,
-     343,   350,   355,   360,   366,   371,   376,   378,   384,   390,
-     395,   403
+     309,   314,   318,   322,   325,   330,   331,   336,   340,   345,
+     347,   354,   359,   364,   370,   375,   380,   382,   388,   394,
+     399,   407
   };
 
   void
@@ -2444,9 +2490,9 @@ namespace STAB {
 
 #line 17 "src/parser/parser.yy"
 } // STAB
-#line 2448 "src/parser/parser.cpp"
+#line 2494 "src/parser/parser.cpp"
 
-#line 411 "src/parser/parser.yy"
+#line 415 "src/parser/parser.yy"
 
 
 namespace STAB {
@@ -2509,7 +2555,7 @@ namespace STAB {
    current = location(YYRHSLOC(rhs, 1).first, YYRHSLOC(rhs, n).second);
  }
 //void Parser::report_syntax_error(const context& ctx) const {
- // std::cerr << ctx.location() << ": Syntax Error Something went wrong"; 
+ // std::cerr << ctx.location() << ": Syntax Error Something went wrong";
  //}
  void Parser::error(const location &loc,const std::string& message){
    std::string improved_message = improveErrMessage(message);

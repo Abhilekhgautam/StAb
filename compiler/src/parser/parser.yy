@@ -16,22 +16,22 @@
 
 %define api.namespace {STAB}
 %define api.parser.class {Parser}
-%define api.value.type variant 
+%define api.value.type variant
 %define api.token.raw
 %define api.location.type {location}
 
 %locations
 %define parse.error detailed
-%define parse.trace 
+%define parse.trace
 
 %header
-%verbose 
+%verbose
 
 %parse-param {Lexer& lexer}
 %parse-param {const bool debug}
 
 %initial-action{
-  #if YYDEBUG != 0 
+  #if YYDEBUG != 0
     set_debug_level(debug);
   #endif
 };
@@ -50,7 +50,7 @@
 
 %token LBRACE RBRACE LCURLY RCURLY LBIG RBIG ASSIGN
 %token IF ELSE ELSE_IF LOOP FOR WHILE AND OR XOR MATCH
-%token IMPORT IN TO CONTROL_FLOW COMMA FN_ARROW MATCH_ARROW
+%token IMPORT IN TO COMMA FN_ARROW MATCH_ARROW
 %token RETURN BREAK SKIP
 %token SEMI_COLON
 %token<std::string> PLUS MOD MINUS TIMES DIV GT LT GE LE NE EQ "op"
@@ -59,11 +59,11 @@
 %token<std::string> NUMBER "num"
 %token<std::string> STRING "str"
 %type<std::vector<StatementAST*>> program stmts;
-%type<StatementAST*> stmt ifLadder functionPrototype functionDefinition varDeclaration assignExpr while for loop returnStmt fnCallStmt 
+%type<StatementAST*> stmt ifLadder functionPrototype functionDefinition varDeclaration assignExpr while for loop returnStmt breakStmt skipStmt fnCallStmt
 %type<STAB::VariableDeclAssignExprAST*> varInitialization
-%type<ExprAST*> expr 
+%type<ExprAST*> expr
 %type<CallExprAST*> fnCall
-%type<std::vector<ExprAST*>> argList args 
+%type<std::vector<ExprAST*>> argList args
 %type<std::vector<STAB::VariableDeclExprAST*>> paramList parameters
 %type<std::vector<std::string>> paramListPrototype params
 
@@ -81,13 +81,13 @@
 %left MOD
 %left GT LT GE LE
 %left EQ NE
-%nonassoc FN DATA_TYPE 
+%nonassoc FN DATA_TYPE
 
 %start program
 %%
- 
+
  functionDefinition: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE LCURLY stmts RCURLY{
-			auto fnScope = new Scope(currentScope, $2);
+			auto fnScope = new Scope(currentScope, "fn");
 			currentScope = fnScope;
                         std::vector<std::string> argTypes;
 			std::vector<STAB::VariableDeclExprAST*> declVars;
@@ -100,8 +100,8 @@
 			currentScope = globalScope;
                     }
 
-                    | FN ID LBRACE paramList RBRACE LCURLY stmts RCURLY{               
-                        auto fnScope = new Scope(currentScope, $2);
+                    | FN ID LBRACE paramList RBRACE LCURLY stmts RCURLY{
+                        auto fnScope = new Scope(currentScope, "fn");
 			currentScope = fnScope;
                         std::vector<std::string> argTypes;
 			std::vector<STAB::VariableDeclExprAST*> declVars;
@@ -125,7 +125,7 @@
 
  varDeclaration: DATA_TYPE ID SEMI_COLON {
                   $$ = new STAB::VariableDeclExprAST($1, $2);
-                } 
+                }
 
  varInitialization: DATA_TYPE ID ASSIGN expr SEMI_COLON {
                      auto type = $1;
@@ -157,7 +157,7 @@
      }
      ;
  range: expr TO expr{
-        $$ = new RangeStatementAST($1, $3); 
+        $$ = new RangeStatementAST($1, $3);
       }
       ;
 
@@ -167,11 +167,11 @@
         $$ = new ForStatementAST(varDecl, $4, $6);
      }
      ;
- 
+
  while: WHILE expr LCURLY stmts RCURLY{
        $$ = new WhileStatementAST($2, $4);
 
-      } 
+      }
 
 program: stmts{
        std::vector<std::string> Args;
@@ -206,7 +206,7 @@ stmts: stmts stmt{
       }
       | for{
         $$ = $1;
-      } 
+      }
       | while {
          $$ = $1;
       }
@@ -222,13 +222,13 @@ stmts: stmts stmt{
       | breakStmt
       | skipStmt
       | returnStmt{
-          $$ = $1; 
+          $$ = $1;
       }
       | functionPrototype {
         $$ = $1;
       }
       | fnCallStmt {
-         $$ = $1; 
+         $$ = $1;
       }
       | ifLadder{
          $$ = $1;
@@ -257,7 +257,7 @@ stmts: stmts stmt{
         $$ = new BinaryExprAST($2, $1, $3);
      }
      | LBRACE expr RBRACE {
-        $$ = $2; 
+        $$ = $2;
      }
      | expr GT expr {
         $$ = new BinaryExprAST($2, $1, $3);
@@ -305,16 +305,20 @@ stmts: stmts stmt{
              $$ = new VariableAssignExprAST($1, $3);
            }
 	   ;
-  
+
  returnStmt: RETURN expr SEMI_COLON{
               $$ = new ReturnStmtAST($2);
            }
 	   ;
 
- breakStmt: BREAK SEMI_COLON
- 
- skipStmt: SKIP SEMI_COLON
- 
+ breakStmt: BREAK SEMI_COLON {
+         $$ = new BreakStatementAST();
+       }
+
+ skipStmt: SKIP SEMI_COLON {
+          $$ = new SkipStatementAST();
+       }
+
  elseStmt: %empty{
           $$ = nullptr;
          }
@@ -339,12 +343,12 @@ stmts: stmts stmt{
          ;
 
  argList: %empty {
-        } 
+        }
         | args {
 	 for(const auto elt: $1){
 	   $$.emplace_back(elt);
 	 }
-	} 
+	}
         ;
 
  args: args COMMA expr {
@@ -362,7 +366,7 @@ paramListPrototype:
 	         $$.emplace_back(elt);
 	  }
 	  ;
- 
+
  params: params COMMA DATA_TYPE{
 	 for(const auto elt: $1)
 	    $$.emplace_back(elt);
@@ -470,7 +474,7 @@ namespace STAB {
    current = location(YYRHSLOC(rhs, 1).first, YYRHSLOC(rhs, n).second);
  }
 //void Parser::report_syntax_error(const context& ctx) const {
- // std::cerr << ctx.location() << ": Syntax Error Something went wrong"; 
+ // std::cerr << ctx.location() << ": Syntax Error Something went wrong";
  //}
  void Parser::error(const location &loc,const std::string& message){
    std::string improved_message = improveErrMessage(message);
