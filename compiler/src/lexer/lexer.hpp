@@ -1,6 +1,8 @@
 #pragma once
-
+#ifndef STAB_LEXER_H
+#define STAB_LEXER_H
 #include <string>
+#include <vector>
 #if ! defined(yyFlexLexerOnce)
 #define yyFlexLexer yy_stab_FlexLexer
 #include <FlexLexer.h>
@@ -8,7 +10,10 @@
 #endif
 
 #include "../includes/location.hpp"
+#ifndef YY_YY_SRC_PARSER_PARSER_HPP_INCLUDED
 #include "../parser/parser.hpp"
+#endif
+
 
 namespace STAB {
  class Lexer: public yy_stab_FlexLexer{
@@ -25,7 +30,7 @@ namespace STAB {
 
 
     void copyLocation(){
-	*yyloc = location(currentLine, currentColumn);    
+	    *yyloc = location(currentLine, currentColumn);
     }
 
     public:
@@ -33,23 +38,23 @@ namespace STAB {
           yy_stab_FlexLexer::set_debug(debug);
        }
 
-       const std::string getSource(std::size_t index){
-	   return sourceLines[index - 1];
+        const std::string getSource(std::size_t index){
+	      return Lexer::sourceLines[index - 1];
        }
 
-       void initSourceLine(){
-	  std::string line;
-	  while(std::getline(in, line)){
-	     sourceLines.emplace_back(line);	
-	  }    
-	  // Reset stream state
+        void initSourceLine(){
+	      std::string line;
+	      while(std::getline(in, line)){
+	        Lexer::sourceLines.emplace_back(line);
+	      }
+	     // Reset stream state
          in.clear();
          in.seekg(0, std::ios::beg);
        }
 
        //int yylex(std::string *const lval, location *const lloc);
        int yylex(Parser::value_type* lval, location* const lloc);
- };	
+ };
 /* inline void Lexer::copyValue(const std::size_t leftTrim, const std::size_t rightTrim, const bool trimCr){
    std::size_t endPos = yyleng - rightTrim;
    if(trimCr && endPos != 0 && yytext[endPos - 1] == '\r') --endPos;
@@ -59,3 +64,4 @@ namespace STAB {
   *yylval = std::string(yytext + leftTrim, yytext + endPos);
   }*/
 }
+#endif

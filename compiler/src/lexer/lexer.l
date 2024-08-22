@@ -10,7 +10,7 @@
 %}
 
 %option c++ noyywrap debug
-
+%option yylineno
 %option yyclass = "Lexer"
 %option prefix = "yy_stab_"
 

@@ -2,10 +2,15 @@
 %language "c++"
 
 %code requires {
+  #ifndef STAB_LOCATION_H
   #include "../includes/location.hpp"
-  #include "../parser/parser.hpp"
+  #endif
+  #ifndef STAB_SCOPE_HPP
   #include "../includes/scope.hpp"
+  #endif
+  #ifndef STAB_GLOBAL_H
   #include "../globals.h"
+  #endif
   #ifndef STAB_AST_H
   #include "../simple-ast/ast.h"
   #endif
@@ -37,8 +42,14 @@
 };
 
 %code {
+  #ifndef STAB_PARSER_H
+  #define STAB_PARSER_H
+  #ifndef STAB_LEXER_H
   #include "../lexer/lexer.hpp"
+  #endif
+  #ifndef STAB_GLOBAL_H
   #include "../globals.h"
+  #endif
   #include "../includes/highlight-term.hpp"
   namespace STAB {
     template <typename RHS>
@@ -46,6 +57,7 @@
   }
   #define YYLLOC_DEFAULT(Cur, Rhs, N) calcLocation(Cur, Rhs, N)
   #define yylex lexer.yylex
+  #endif
 }
 
 %token LBRACE RBRACE LCURLY RCURLY LBIG RBIG ASSIGN
@@ -89,87 +101,87 @@
  functionDefinition: FN ID LBRACE paramList RBRACE FN_ARROW DATA_TYPE LCURLY stmts RCURLY{
 			auto fnScope = new Scope(currentScope, "fn");
 			currentScope = fnScope;
-                        std::vector<std::string> argTypes;
+            std::vector<std::string> argTypes;
 			std::vector<STAB::VariableDeclExprAST*> declVars;
-                        for(const auto elt: $4){
+            for(const auto elt: $4){
 			  argTypes.emplace_back(elt->getType());
 			  declVars.emplace_back(elt);
 			}
-			auto proto = new STAB::PrototypeAST($7, $2, argTypes);
-			$$ = new STAB::FunctionAST(proto,declVars, $9, fnScope);
+			auto proto = new STAB::PrototypeAST($7, $2, argTypes, {@1.first, @10.second});
+			$$ = new STAB::FunctionAST(proto,declVars, $9, fnScope, {@1.first, @10.second});
 			currentScope = globalScope;
-                    }
+}
 
-                    | FN ID LBRACE paramList RBRACE LCURLY stmts RCURLY{
-                        auto fnScope = new Scope(currentScope, "fn");
-			currentScope = fnScope;
-                        std::vector<std::string> argTypes;
-			std::vector<STAB::VariableDeclExprAST*> declVars;
-                        for(const auto elt: $4){
-			  argTypes.emplace_back(elt->getType());
-			  declVars.emplace_back(elt);
-			}
-			auto proto = new STAB::PrototypeAST("void", $2, argTypes);
-			$$ = new STAB::FunctionAST(proto,declVars, $7, fnScope);
-			currentScope = globalScope;
-                     }
+            | FN ID LBRACE paramList RBRACE LCURLY stmts RCURLY{
+                auto fnScope = new Scope(currentScope, "fn");
+			    currentScope = fnScope;
+                std::vector<std::string> argTypes;
+			    std::vector<STAB::VariableDeclExprAST*> declVars;
+                for(const auto elt: $4){
+			        argTypes.emplace_back(elt->getType());
+			        declVars.emplace_back(elt);
+			    }
+			    auto proto = new STAB::PrototypeAST("void", $2, argTypes, {@1.first, @8.first});
+			    $$ = new STAB::FunctionAST(proto,declVars, $7, fnScope, {@1.first, @8.first});
+			    currentScope = globalScope;
+}
 
  functionPrototype: FN ID LBRACE paramListPrototype RBRACE FN_ARROW DATA_TYPE SEMI_COLON {
-                       std::vector<std::string> Args;
-		       for(const auto elt: $4){
-		         Args.emplace_back(elt);
-		       }
-                       $$ = new STAB::PrototypeAST($7, $2, Args);
+                        std::vector<std::string> Args;
+		                for(const auto elt: $4){
+		                Args.emplace_back(elt);
+		           }
+                       $$ = new STAB::PrototypeAST($7, $2, Args, {@1.first, @8.first});
                    }
 
 
  varDeclaration: DATA_TYPE ID SEMI_COLON {
-                  $$ = new STAB::VariableDeclExprAST($1, $2);
+                  $$ = new STAB::VariableDeclExprAST($1, $2, {@1.first, @3.first});
                 }
 
  varInitialization: DATA_TYPE ID ASSIGN expr SEMI_COLON {
                      auto type = $1;
-		     auto name = $2;
-		     auto val = $4;
-		     auto varDecl = new VariableDeclExprAST(type, name);
-		     $$ = new VariableDeclAssignExprAST(varDecl, val);
-		  }
+		             auto name = $2;
+		             auto val = $4;
+		             auto varDecl = new VariableDeclExprAST(type, name, {@1.first, @5.first});
+		             $$ = new VariableDeclAssignExprAST(varDecl, val, {@1.first, @5.first});
+		           }
                   ;
 
  arrayDecl: DATA_TYPE ID LBIG expr RBIG SEMI_COLON{
-              $$ = new ArrayAST($1, $2, $4);
+              $$ = new ArrayAST($1, $2, $4, {@1.first,@6.first});
           }
-	  ;
+	      ;
 
  arrayAssign: ID LBIG expr RBIG ASSIGN expr SEMI_COLON{
-              $$ = new ArrayAssignAST($1, $3, $6);
+              $$ = new ArrayAssignAST($1, $3, $6, {@1.first, @7.first});
             }
 	    ;
 
  arrayRef: ID LBIG expr RBIG {
-           $$ = new ArrayRefAST($1, $3);
+           $$ = new ArrayRefAST($1, $3, {@1.first, @4.first});
          }
          ;
 
  loop: LOOP LCURLY stmts RCURLY{
-       $$ = new LoopStatementAST($3);
+       $$ = new LoopStatementAST($3, {@1.first, @2.first});
 
      }
      ;
  range: expr TO expr{
-        $$ = new RangeStatementAST($1, $3);
+        $$ = new RangeStatementAST($1, $3, nullptr, {@1.first, @3.first});
       }
       ;
 
  for : FOR ID IN range LCURLY stmts RCURLY{
         std::string type = "int";
-	auto varDecl = new VariableDeclExprAST(type, $2);
-        $$ = new ForStatementAST(varDecl, $4, $6);
+	    auto varDecl = new VariableDeclExprAST(type, $2, {@1.first, @5.first});
+        $$ = new ForStatementAST(varDecl, $4, $6, {@1.first, @5.first});
      }
      ;
 
  while: WHILE expr LCURLY stmts RCURLY{
-       $$ = new WhileStatementAST($2, $4);
+       $$ = new WhileStatementAST($2, $4, {@1.first, @3.first});
 
       }
 
@@ -179,11 +191,11 @@ program: stmts{
 
        std::vector<STAB::StatementAST*> stmts;
 
-       auto proto = new PrototypeAST("void", "__start__", Args);
+       auto proto = new PrototypeAST("void", "__start__", Args, {0, 0});
 
        $$ = $1;
 
-       __start__fn = new FunctionAST(proto, declVars, stmts, globalScope);
+       __start__fn = new FunctionAST(proto, declVars, stmts, globalScope, {0,0});
 
        for (const auto stmt: $1)
            __start__fn->getBody().emplace_back(stmt);
@@ -242,59 +254,58 @@ stmts: stmts stmt{
       ;
 
  expr: expr PLUS expr {
-        $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
       }
      | expr MINUS expr {
-        $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
      }
      | expr TIMES expr {
-        $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
      }
      | expr DIV expr {
-        $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
      }
      | expr MOD expr {
-        $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
      }
      | LBRACE expr RBRACE {
         $$ = $2;
      }
      | expr GT expr {
-        $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
      }
      | expr LT expr {
-        $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
      }
      | expr LE expr {
-        $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
      }
      | expr GE expr{
-        $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
      }
      | expr EQ expr{
-       $$ = new BinaryExprAST($2, $1, $3);
+       $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
      }
      | expr NE expr{
-        $$ = new BinaryExprAST($2, $1, $3);
+        $$ = new BinaryExprAST($2, $1, $3, {@1.first, @3.first});
      }
      | STRING {
         std::string val = $1;
-	auto length = val.length();
-	std::string without_quotation;
-	for(int i = 1; i < length - 1 ; ++i){
-	 without_quotation += val[i];
-	}
-	$$ = new StringExprAST(without_quotation);
+	    auto length = val.length();
+	    std::string without_quotation;
+	    for(int i = 1; i < length - 1 ; ++i){
+	        without_quotation += val[i];
+	    }
+	    $$ = new StringExprAST(without_quotation, {@1.first, 0});
      }
      | ID {
-       $$ = new VariableExprAST($1);
+       $$ = new VariableExprAST($1, {@1.first, 0});
      }
      | NUMBER {
-        auto val = std::stoi($1);
-        $$ = new NumberExprAST(val);
+        $$ = new NumberExprAST($1, {@1.first, 0});
      }
      | fnCall {
-        $$ = new CallExprAST($1->getFnName(), $1->getArgs());
+        $$ = new CallExprAST($1->getFnName(), $1->getArgs(), {@1.first, 0});
      }
      | arrayRef {
         $$ = $1;
@@ -302,28 +313,28 @@ stmts: stmts stmt{
      ;
 
  assignExpr: ID ASSIGN expr SEMI_COLON %prec ASSIGN{
-             $$ = new VariableAssignExprAST($1, $3);
+             $$ = new VariableAssignExprAST($1, $3, {@1.first, @4.first});
            }
 	   ;
 
  returnStmt: RETURN expr SEMI_COLON{
-              $$ = new ReturnStmtAST($2);
+              $$ = new ReturnStmtAST($2, {@1.first, @2.first});
            }
 	   ;
 
  breakStmt: BREAK SEMI_COLON {
-         $$ = new BreakStatementAST();
+         $$ = new BreakStatementAST({@1.first, 0});
        }
 
  skipStmt: SKIP SEMI_COLON {
-          $$ = new SkipStatementAST();
+          $$ = new SkipStatementAST({@1.first, 0});
        }
 
  elseStmt: %empty{
           $$ = nullptr;
          }
          | ELSE LCURLY stmts RCURLY{
-	    $$ = new ElseStatementAST($3);
+	    $$ = new ElseStatementAST($3, {@1.first, @2.first});
 	 }
 	 ;
 
@@ -334,19 +345,19 @@ stmts: stmts stmt{
 	   };
 
  ifStmt: IF expr LCURLY stmts RCURLY {
-	   $$ = new CondStatementAST($2, $4);
+	   $$ = new CondStatementAST($2, $4, {@1.first, @3.first});
 	 }
 	 ;
  ifLadder: ifStmt elseifStmt elseStmt{
-            $$ = new IfStatementAST($1, nullptr, $3);
+            $$ = new IfStatementAST($1, nullptr, $3, {@1.first, @3.first});
          }
          ;
 
  argList: %empty {
         }
         | args {
-	 for(const auto elt: $1){
-	   $$.emplace_back(elt);
+	    for(const auto elt: $1){
+	       $$.emplace_back(elt);
 	 }
 	}
         ;
@@ -386,13 +397,14 @@ paramList: %empty{
 	 ;
 
 parameters: parameters COMMA DATA_TYPE ID {
-	      for(const auto elt: $1)
+	      for(const auto elt: $1){
 	         $$.emplace_back(elt);
-              auto decl = new VariableDeclExprAST($3, $4);
+		  }
+          auto decl = new VariableDeclExprAST($3, $4, {@3.first, @4.first});
 	      $$.emplace_back(decl);
 	  }
 	  | DATA_TYPE ID {
-	     auto decl = new VariableDeclExprAST($1, $2);
+	     auto decl = new VariableDeclExprAST($1, $2, {@1.first, @2.first});
 	     $$.emplace_back(decl);
 	  }
 
@@ -401,7 +413,7 @@ parameters: parameters COMMA DATA_TYPE ID {
      for (const auto elt: $3){
          Args.emplace_back(elt);
        }
-      $$ = new CallStatementAST($1, Args);
+      $$ = new CallStatementAST($1, Args, {@1.first, @5.first});
     }
 
  fnCall: ID LBRACE argList RBRACE{
@@ -409,7 +421,7 @@ parameters: parameters COMMA DATA_TYPE ID {
    for (const auto elt: $3){
       Args.emplace_back(elt);
    }
-   $$ = new CallExprAST($1, Args);
+   $$ = new CallExprAST($1, Args, {@1.first, @4.first});
  }
 
 %%

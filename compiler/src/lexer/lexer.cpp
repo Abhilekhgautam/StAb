@@ -18,6 +18,7 @@
 /* M4_MODE_FIND_ACTION_COMPRESSED */
 /* M4_MODE_NO_FULLSPD */
 /* M4_MODE_NO_BOL_NEEDED */
+/* M4_MODE_YYLINENO */
 /* M4_MODE_USEECS */
 /* M4_MODE_GENTABLES */
 /* M4_MODE_INTERACTIVE */
@@ -203,8 +204,31 @@ extern int yyleng;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
     
-    #define YY_LESS_LINENO(n)
-    #define YY_LINENO_REWIND_TO(ptr)
+    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+     *       access to the local variable yy_act. Since yyless() is a macro, it would break
+     *       existing scanners that call yyless() from OUTSIDE yylex.
+     *       One obvious solution it to make yy_act a global. I tried that, and saw
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+     *       normally declared as a register variable-- so it is not worth it.
+     */
+    #define  YY_LESS_LINENO(n) \
+            do { \
+                int yyl;\
+                for ( yyl = n; yyl < yyleng; ++yyl ) { \
+			if ( yytext[yyl] == '\n' ) { \
+                        	--yylineno;\
+			} \
+		} \
+            }while(0)
+    #define YY_LINENO_REWIND_TO(dst) \
+            do {\
+                const char *p;\
+                for ( p = yy_cp-1; p >= (dst); --p) { \
+			if ( *p == '\n' ) { \
+                		--yylineno;\
+			} \
+		} \
+            }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -423,6 +447,12 @@ struct yy_trans_info
 /* M4_MODE_NEED_YY_CP */
 /* m4 controls end */
 
+/* Table of booleans, true if rule could match eol. */
+static const flex_int16_t yy_rule_can_match_eol[50] = { 0,
+0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
+
 static const flex_int16_t yy_accept[112] = { 0,
          0,    0,   50,   49,    1,    4,   49,   49,   35,   36,
         37,   33,   31,    7,   32,   34,    2,    5,   42,   47,
@@ -589,12 +619,12 @@ static const flex_int16_t yy_rule_linenum[49] = { 0,
   #define YY_DECL int Lexer::yylex(STAB::Parser::value_type* lval, location* const lloc)
   #define YY_USER_INIT yylval = lval; yyloc = lloc;
   #define YY_USER_ACTION copyLocation();
-#line 593 "src/lexer/lexer.cpp"
+#line 623 "src/lexer/lexer.cpp"
 #line 22 "src/lexer/lexer.l"
   using Token = STAB::Parser::token;
   using location = STAB::location;
-#line 597 "src/lexer/lexer.cpp"
-#line 598 "src/lexer/lexer.cpp"
+#line 627 "src/lexer/lexer.cpp"
+#line 628 "src/lexer/lexer.cpp"
 
 #define INITIAL 0
 
@@ -760,7 +790,7 @@ YY_DECL {
 /* %% [4.0] user's declarations go here */
 #line 26 "src/lexer/lexer.l"
 
-#line 764 "src/lexer/lexer.cpp"
+#line 794 "src/lexer/lexer.cpp"
 
 		while ( /*CONSTCOND*/1 ) {		/* loops until end-of-file is reached */
 
@@ -834,6 +864,18 @@ YY_DECL {
 			}
 
 			YY_DO_BEFORE_ACTION;
+
+			if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] ) {
+				int yyl;
+				for ( yyl = 0; yyl < yyleng; ++yyl ) {
+					if ( yytext[yyl] == '\n' ) {
+						
+    yylineno++;
+;
+
+					}
+				}
+			}
 
 		do_action:	/* This label is used only to access EOF actions. */
 
@@ -1270,8 +1312,8 @@ YY_RULE_SETUP
 #line 200 "src/lexer/lexer.l"
 yyecho();
 	/*LINTED*/break;
-#line 1274 "src/lexer/lexer.cpp"
-#line 1275 "src/lexer/lexer.cpp"
+#line 1316 "src/lexer/lexer.cpp"
+#line 1317 "src/lexer/lexer.cpp"
 	case YY_STATE_EOF(INITIAL):
 		/* FALLTHROUGH */
 		yyterminate();
@@ -1792,6 +1834,10 @@ void yyFlexLexer::yyunput_r( int c, char* yy_bp)
 
 	*--yy_cp = (char) c;
 
+	if ( c == '\n' ){
+	--yylineno;
+	}
+
 	(yytext_ptr) = yy_bp;
 	(yy_hold_char) = *yy_cp;
 	(yy_c_buf_p) = yy_cp;
@@ -1854,6 +1900,12 @@ int yyFlexLexer::yyinput()
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
 
+	if ( c == '\n' ) {
+		
+    yylineno++;
+;
+	}
+	
 	return c;
 }
 

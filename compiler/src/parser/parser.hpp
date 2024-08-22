@@ -47,10 +47,15 @@
 // "%code requires" blocks.
 #line 4 "src/parser/parser.yy"
 
+  #ifndef STAB_LOCATION_H
   #include "../includes/location.hpp"
-  #include "../parser/parser.hpp"
+  #endif
+  #ifndef STAB_SCOPE_HPP
   #include "../includes/scope.hpp"
+  #endif
+  #ifndef STAB_GLOBAL_H
   #include "../globals.h"
+  #endif
   #ifndef STAB_AST_H
   #include "../simple-ast/ast.h"
   #endif
@@ -58,7 +63,7 @@
     class Lexer;
   }
 
-#line 62 "src/parser/parser.hpp"
+#line 67 "src/parser/parser.hpp"
 
 
 # include <cstdlib> // std::abort
@@ -192,9 +197,9 @@
 # define YYDEBUG 1
 #endif
 
-#line 17 "src/parser/parser.yy"
+#line 22 "src/parser/parser.yy"
 namespace STAB {
-#line 198 "src/parser/parser.hpp"
+#line 203 "src/parser/parser.hpp"
 
 
 
@@ -2308,9 +2313,9 @@ switch (yykind)
   };
 
 
-#line 17 "src/parser/parser.yy"
+#line 22 "src/parser/parser.yy"
 } // STAB
-#line 2314 "src/parser/parser.hpp"
+#line 2319 "src/parser/parser.hpp"
 
 
 
