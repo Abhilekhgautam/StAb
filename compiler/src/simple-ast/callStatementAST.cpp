@@ -28,7 +28,7 @@ llvm::Value *STAB::CallStatementAST::codegen(Scope *s) {
         std::string val = strVal->getVal();
         auto replaced_val = replaceBracesWithPercentD(val);
         replaced_val += '\n';
-        Args[0] = new STAB::StringExprAST(replaced_val);
+        Args[0] = new STAB::StringExprAST(replaced_val, loc);
       }
       // add new line for println
       auto temp = Args[i]->codegen(s);
@@ -52,7 +52,7 @@ llvm::Value *STAB::CallStatementAST::codegen(Scope *s) {
             dynamic_cast<STAB::StringExprAST *>(Args[0]);
         std::string val = strVal->getVal();
         auto replaced_val = replaceBracesWithPercentD(val);
-        Args[0] = new STAB::StringExprAST(replaced_val);
+        Args[0] = new STAB::StringExprAST(replaced_val, loc);
       }
       auto temp = Args[i]->codegen(s);
       ArgsV.push_back(temp);

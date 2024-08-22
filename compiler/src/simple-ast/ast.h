@@ -3,7 +3,11 @@
 //
 #pragma once
 
+#include <cstddef>
+#include <cstdlib>
 #include <fstream>
+#include <llvm-18/llvm/Support/Casting.h>
+#include <stdexcept>
 #ifndef STAB_AST_H
 #define STAB_AST_H
 
@@ -35,10 +39,13 @@
 #endif
 
 #include "../includes/scope.hpp"
-
 #ifndef HIGHLIGHT_TERM_
 #include "../includes/highlight-term.hpp"
 #endif
+#ifndef STAB_LOCATION_H
+#include "../includes/location.hpp"
+#endif
+
 namespace STAB {
 class ExprAST {
 public:
@@ -55,34 +62,55 @@ public:
 
 class BreakStatementAST : public StatementAST {
     public:
+       BreakStatementAST(STAB::location loc):loc(loc){}
        virtual llvm::Value *codegen(STAB::Scope *s) override;
+    private:
+       STAB::location loc;
 };
 
 class SkipStatementAST : public StatementAST {
     public:
+       SkipStatementAST(STAB::location loc):loc(loc){};
        virtual llvm::Value* codegen(STAB::Scope* s) override;
+    private:
+       STAB::location loc;
 };
 
 class NumberExprAST : public ExprAST {
-  int val;
-
 public:
-  NumberExprAST(int val) : val(val) {}
+  NumberExprAST(std::string val, STAB::location loc) : str_val(val), loc(loc) {
+      try{
+          val = std::stoi(str_val);
+      } catch(std::out_of_range& exp){
+          color("red", "Error ");
+          color("blue", "Number ");
+          color("white", str_val);
+          color("blue", " not within 32-bit integer range", true);
+          std::exit(0);
+      }
+  }
   llvm::Value *codegen(STAB::Scope *s) override;
   // just for now
   std::string getType() override { return "int"; }
   int getVal() { return val; }
+ private:
+  std::string str_val;
+  int val;
+  STAB::location loc;
 };
 
 class StringExprAST : public ExprAST {
   std::string val;
 
 public:
-  StringExprAST(std::string val) : val(val) {}
+  StringExprAST(std::string val, STAB::location loc) : val(val), loc(loc) {}
   llvm::Value *codegen(STAB::Scope *s) override;
   // just for now
   std::string getType() override { return "string"; }
   std::string getVal() { return val; }
+
+  private:
+    STAB::location loc;
 };
 
 class ArrayAST : public StatementAST {
@@ -91,11 +119,13 @@ class ArrayAST : public StatementAST {
   ExprAST *size;
 
 public:
-  ArrayAST(std::string type, std::string name, ExprAST *size)
-      : type(type), name(name), size(size) {}
+  ArrayAST(std::string type, std::string name, ExprAST *size, STAB::location loc)
+      : type(type), name(name), size(size), loc(loc) {}
   std::string getType() const { return type; }
   std::string getName() const { return name; }
   llvm::Value *codegen(STAB::Scope *s) override;
+  private:
+    STAB::location loc;
 };
 
 class ArrayAssignAST : public StatementAST {
@@ -104,9 +134,11 @@ class ArrayAssignAST : public StatementAST {
   ExprAST *val;
 
 public:
-  ArrayAssignAST(std::string name, ExprAST *index, ExprAST *val)
-      : name(name), index(index), val(val) {}
+  ArrayAssignAST(std::string name, ExprAST *index, ExprAST *val, STAB::location loc)
+      : name(name), index(index), val(val), loc(loc) {}
   llvm::Value *codegen(Scope *s) override;
+  private:
+   STAB::location loc;
 };
 
 class ArrayRefAST : public ExprAST {
@@ -114,22 +146,26 @@ class ArrayRefAST : public ExprAST {
   ExprAST *expr;
 
 public:
-  ArrayRefAST(std::string name, ExprAST *expr) : name(name), expr(expr) {}
+  ArrayRefAST(std::string name, ExprAST *expr, STAB::location loc) : name(name), expr(expr), loc(loc) {}
   llvm::Value *codegen(Scope *s) override;
   // only int for now.
   std::string getType() override { return "int"; }
+  private:
+    STAB::location loc;
 };
 // int x;
 class VariableDeclExprAST : public StatementAST {
-  std::string Type;
-  std::string Name;
 
 public:
-  VariableDeclExprAST(std::string &Type, std::string &Name)
-      : Type(Type), Name(Name) {}
+  VariableDeclExprAST(std::string &Type, std::string &Name, STAB::location loc)
+      : Type(Type), Name(Name), loc(loc) {}
   std::string getType() const { return Type; }
   std::string getName() const { return Name; }
   llvm::Value *codegen(STAB::Scope *s) override;
+  private:
+    std::string Type;
+    std::string Name;
+    STAB::location loc;
 };
 
 // int x = 5;
@@ -137,10 +173,10 @@ class VariableDeclAssignExprAST : public StatementAST {
   VariableDeclExprAST *varDecl;
   // type is int for now
   ExprAST *val;
-
+  STAB::location loc;
 public:
-  VariableDeclAssignExprAST(VariableDeclExprAST *varDecl, ExprAST *val)
-      : varDecl(varDecl), val(val) {}
+  VariableDeclAssignExprAST(VariableDeclExprAST *varDecl, ExprAST *val, STAB::location loc)
+      : varDecl(varDecl), val(val), loc(loc) {}
   llvm::Value *codegen(STAB::Scope *s) override;
 };
 // while loop
@@ -151,9 +187,10 @@ class WhileStatementAST : public StatementAST {
   ExprAST *expr;
   std::vector<StatementAST *> body;
 
+  STAB::location loc;
 public:
-  WhileStatementAST(ExprAST *expr, std::vector<StatementAST *> body)
-      : expr(expr), body(std::move(body)) {}
+  WhileStatementAST(ExprAST *expr, std::vector<StatementAST *> body, STAB::location loc)
+      : expr(expr), body(std::move(body)), loc(loc) {}
   llvm::Value *codegen(STAB::Scope *s) override;
 };
 
@@ -161,9 +198,10 @@ public:
 /// loop {}
 class LoopStatementAST : public StatementAST {
   std::vector<StatementAST *> body;
-
+  STAB::location loc;
 public:
-  LoopStatementAST(std::vector<StatementAST *> body) : body(std::move(body)) {}
+  LoopStatementAST(std::vector<StatementAST *> body, STAB::location loc)
+    : body(std::move(body)),loc(loc) {}
   llvm::Value *codegen(STAB::Scope *s) override;
 };
 
@@ -171,9 +209,10 @@ class CondStatementAST : public StatementAST {
   ExprAST *condExpr;
   std::vector<StatementAST *> body;
 
+  STAB::location loc;
 public:
-  CondStatementAST(ExprAST *cond, std::vector<StatementAST *> body)
-      : condExpr(cond), body(std::move(body)) {}
+  CondStatementAST(ExprAST *cond, std::vector<StatementAST *> body, STAB::location loc)
+      : condExpr(cond), body(std::move(body)), loc(loc) {}
   ExprAST *getCond() { return condExpr; };
   llvm::Value *codegen(Scope *s) override;
 };
@@ -181,9 +220,10 @@ public:
 class ElseStatementAST : public StatementAST {
   std::vector<StatementAST *> elseBody;
 
+  STAB::location loc;
 public:
-  ElseStatementAST(std::vector<StatementAST *> body)
-      : elseBody(std::move(body)) {}
+  ElseStatementAST(std::vector<StatementAST *> body, STAB::location loc)
+      : elseBody(std::move(body)), loc(loc) {}
   llvm::Value *codegen(Scope *s) override;
 };
 
@@ -193,10 +233,11 @@ class IfStatementAST : public StatementAST {
   CondStatementAST *elseifStmt;
   ElseStatementAST *elseStmt;
 
+  STAB::location loc;
 public:
   IfStatementAST(CondStatementAST *ifStmt, CondStatementAST *elseifStmt,
-                 ElseStatementAST *elseStmt)
-      : ifStmt(ifStmt), elseifStmt(elseifStmt), elseStmt(elseStmt) {}
+                 ElseStatementAST *elseStmt, STAB::location loc)
+      : ifStmt(ifStmt), elseifStmt(elseifStmt), elseStmt(elseStmt), loc(loc) {}
   llvm::Value *codegen(Scope *s) override;
 };
 
@@ -205,10 +246,14 @@ class RangeStatementAST {
   ExprAST *end;
   ExprAST *step;
 
+  STAB::location loc;
 public:
   RangeStatementAST(ExprAST *start, ExprAST *end,
-                    ExprAST *step = new NumberExprAST(1))
-      : start(start), end(end), step(step) {}
+                    ExprAST *step = nullptr, STAB::location loc ={0, 0})
+      : start(start), end(end), step(step), loc(loc) {
+          step = new NumberExprAST("1", loc);
+
+      }
   ExprAST *getStart() { return start; }
   ExprAST *getEnd() { return end; }
   ExprAST *getStep() { return step; }
@@ -218,10 +263,11 @@ class ForStatementAST : public StatementAST {
   VariableDeclExprAST *iterationVariable;
   RangeStatementAST *range;
   std::vector<StatementAST *> body;
+  STAB::location loc;
 public:
   ForStatementAST(VariableDeclExprAST *var, RangeStatementAST *range,
-                  std::vector<StatementAST *> body)
-      : iterationVariable(var), range(range), body(body) {}
+                  std::vector<StatementAST *> body, STAB::location loc)
+      : iterationVariable(var), range(range), body(body), loc(loc) {}
   llvm::Value *codegen(Scope *s) override;
 };
 
@@ -229,8 +275,9 @@ public:
 class VariableExprAST : public ExprAST {
   std::string Name;
 
+  STAB::location loc;
 public:
-  VariableExprAST(const std::string &Name) : Name(Name) {}
+  VariableExprAST(const std::string &Name, STAB::location loc) : Name(Name), loc(loc) {}
   llvm::Value *codegen(Scope *s) override;
   // todo: look into sym table
   std::string getName() { return Name; }
@@ -243,9 +290,10 @@ class VariableAssignExprAST : public StatementAST {
   // just int for now.
   ExprAST *RHS;
 
+  STAB::location loc;
 public:
-  VariableAssignExprAST(std::string Name, ExprAST *val)
-      : Name(Name), RHS(val) {}
+  VariableAssignExprAST(std::string Name, ExprAST *val, STAB::location loc)
+      : Name(Name), RHS(val), loc(loc) {}
   llvm::Value *codegen(STAB::Scope *s) override;
 };
 // BinaryExprAST - Expression class for a binary operator.
@@ -256,9 +304,10 @@ class BinaryExprAST : public ExprAST {
   ExprAST *LHS;
   ExprAST *RHS;
 
+  STAB::location loc;
 public:
-  BinaryExprAST(std::string Op, ExprAST *LHS, ExprAST *RHS)
-      : Op(Op), LHS(LHS), RHS(RHS) {}
+  BinaryExprAST(std::string Op, ExprAST *LHS, ExprAST *RHS, STAB::location loc)
+      : Op(Op), LHS(LHS), RHS(RHS), loc(loc) {}
   ~BinaryExprAST() {
     delete LHS;
     delete RHS;
@@ -271,8 +320,9 @@ public:
 class ReturnStmtAST : public StatementAST {
   ExprAST *expr;
 
+  STAB::location loc;
 public:
-  ReturnStmtAST(ExprAST *expr) : expr(expr) {}
+  ReturnStmtAST(ExprAST *expr, STAB::location loc) : expr(expr), loc(loc) {}
   llvm::Value *codegen(Scope *s) override;
 };
 
@@ -281,9 +331,10 @@ class CallExprAST : public ExprAST {
   std::string Callee;
   std::vector<ExprAST *> Args;
 
+  STAB::location loc;
 public:
-  CallExprAST(const std::string &Callee, std::vector<ExprAST *> Args)
-      : Callee(Callee), Args(std::move(Args)) {}
+  CallExprAST(const std::string &Callee, std::vector<ExprAST *> Args, STAB::location loc)
+      : Callee(Callee), Args(std::move(Args)), loc(loc) {}
   std::string getFnName() const { return Callee; }
   std::vector<ExprAST *> getArgs() { return Args; }
   llvm::Value *codegen(Scope *s) override;
@@ -294,9 +345,10 @@ class CallStatementAST : public StatementAST {
   std::string Callee;
   std::vector<ExprAST *> Args;
 
+  STAB::location loc;
 public:
-  CallStatementAST(const std::string &Callee, std::vector<ExprAST *> Args)
-      : Callee(Callee), Args(std::move(Args)) {}
+  CallStatementAST(const std::string &Callee, std::vector<ExprAST *> Args, STAB::location loc)
+      : Callee(Callee), Args(std::move(Args)), loc(loc) {}
   std::string getFnName() const { return Callee; }
   std::vector<ExprAST *> getArgs() { return Args; }
   llvm::Value *codegen(Scope *s) override;
@@ -310,10 +362,11 @@ class PrototypeAST : public StatementAST {
   std::string Name;
   std::vector<std::string> Args;
 
+  STAB::location loc;
 public:
   PrototypeAST(const std::string &RetType, const std::string &Name,
-               std::vector<std::string> Args)
-      : RetType(RetType), Name(Name), Args(std::move(Args)) {}
+               std::vector<std::string> Args, STAB::location loc)
+      : RetType(RetType), Name(Name), Args(std::move(Args)), loc(loc) {}
 
   const std::string getName() const { return Name; }
   const std::string getReturnType() const { return RetType; }
@@ -327,13 +380,14 @@ class FunctionAST : public StatementAST {
   std::vector<StatementAST *> Body;
   STAB::Scope *Scope;
 
+  STAB::location loc;
 public:
   PrototypeAST *Proto;
   FunctionAST(PrototypeAST *Proto,
               std::vector<STAB::VariableDeclExprAST *> declVars,
-              std::vector<StatementAST *> Body, STAB::Scope *s)
+              std::vector<StatementAST *> Body, STAB::Scope *s, STAB::location loc)
       : declVars(std::move(declVars)), Body(std::move(Body)), Scope(s),
-        Proto(Proto) {}
+        loc(loc), Proto(Proto){}
   std::vector<StatementAST *> &getBody() { return Body; }
 
   llvm::Function *codegen(class Scope *s) override;
