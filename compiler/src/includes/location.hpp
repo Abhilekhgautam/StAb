@@ -1,7 +1,8 @@
-// enables location tracking of tokens in STAB 
+// enables location tracking of tokens in STAB
 
 #pragma once
-
+#ifndef STAB_LOCATION_H
+#define STAB_LOCARION_H
 #include <cstddef>
 #include <ostream>
 #include <utility>
@@ -12,5 +13,6 @@ namespace STAB {
 }
 
 inline std::ostream& operator << (std::ostream& os, const STAB::location& loc) {
-   return os << "[" << loc.first << "-" << loc.second << "]";	
+   return os << "[" << loc.first << "-" << loc.second << "]";
 }
+#endif

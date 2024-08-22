@@ -36,6 +36,7 @@ extern STAB::Scope *globalScope;
 extern STAB::Scope *currentScope;
 extern std::vector<llvm::Function *> fnBlocks;
 extern STAB::FunctionAST *__start__fn;
+
 /*
 void addNewScope(Scope* s){
    scopes.emplace_back(s);
