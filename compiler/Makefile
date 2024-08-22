@@ -1,7 +1,7 @@
 .RECIPEPREFIX = >
 
 LLVM_CONFIG = llvm-config
-LLVM_CXXFLAGS = `$(LLVM_CONFIG) --cxxflags`
+LLVM_CXXFLAGS = `$(LLVM_CONFIG) --cxxflags` -fexceptions
 LLVM_LDFLAGS = `$(LLVM_CONFIG) --ldflags --system-libs --libs all`
 
 SRCS = src/lib/lib.cpp \
@@ -44,7 +44,7 @@ prog: $(OBJS)
 > clang++ -g -c $< -o $@ $(LLVM_CXXFLAGS)
 
 src/parser/parser.cpp src/parser/parser.hpp parser.output: src/parser/parser.yy
-> bison -o src/parser/parser.cpp $<
+> bison --language=c++ -o src/parser/parser.cpp $<
 
 src/lexer/lexer.cpp: src/lexer/lexer.l
 > flex -o src/lexer/lexer.cpp $<
