@@ -1,3 +1,10 @@
+/*
+
+TODO: Yuck.. I always believe main function should
+act as an entry point and I hope to refactor this
+soon
+
+*/
 #include "./lexer/lexer.hpp"
 #include "includes/scope.hpp"
 #include <cstring>

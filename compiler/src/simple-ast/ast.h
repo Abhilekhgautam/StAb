@@ -78,27 +78,15 @@ class SkipStatementAST : public StatementAST {
 
 class NumberExprAST : public ExprAST {
 public:
-  NumberExprAST(std::string val, STAB::location loc) : str_val(val), loc(loc) {
-      try{
-          val = std::stoi(str_val);
-      } catch(std::out_of_range& exp){
-          color("red", "Error ");
-          color("blue", "Number ");
-          color("white", str_val);
-          color("blue", " not within 32-bit integer range", true);
-          std::exit(0);
-      }
-  }
+  NumberExprAST(int val, STAB::location loc) : val(val), loc(loc) {}
   llvm::Value *codegen(STAB::Scope *s) override;
   // just for now
   std::string getType() override { return "int"; }
   int getVal() { return val; }
  private:
-  std::string str_val;
   int val;
   STAB::location loc;
 };
-
 class StringExprAST : public ExprAST {
   std::string val;
 
@@ -112,7 +100,6 @@ public:
   private:
     STAB::location loc;
 };
-
 class ArrayAST : public StatementAST {
   std::string type;
   std::string name;
@@ -250,10 +237,7 @@ class RangeStatementAST {
 public:
   RangeStatementAST(ExprAST *start, ExprAST *end,
                     ExprAST *step = nullptr, STAB::location loc ={0, 0})
-      : start(start), end(end), step(step), loc(loc) {
-          step = new NumberExprAST("1", loc);
-
-      }
+      :start(start), end(end), step(step), loc(loc) {}
   ExprAST *getStart() { return start; }
   ExprAST *getEnd() { return end; }
   ExprAST *getStep() { return step; }

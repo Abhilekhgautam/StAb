@@ -169,7 +169,8 @@
      }
      ;
  range: expr TO expr{
-        $$ = new RangeStatementAST($1, $3, nullptr, {@1.first, @3.first});
+          auto step = new NumberExprAST(1, {0, 0});
+          $$ = new RangeStatementAST($1, $3, step, {@1.first, @3.first});
       }
       ;
 
@@ -302,7 +303,8 @@ stmts: stmts stmt{
        $$ = new VariableExprAST($1, {@1.first, 0});
      }
      | NUMBER {
-        $$ = new NumberExprAST($1, {@1.first, 0});
+        auto num = std::stoi($1);
+        $$ = new NumberExprAST(num, {@1.first, 0});
      }
      | fnCall {
         $$ = new CallExprAST($1->getFnName(), $1->getArgs(), {@1.first, 0});

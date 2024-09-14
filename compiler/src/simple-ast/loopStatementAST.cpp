@@ -39,7 +39,8 @@ llvm::Value *STAB::LoopStatementAST::codegen(Scope *s) {
       return F;
   }
 
-  auto dummyNum = new NumberExprAST("0", {0, 0});
+  auto dummyNum = new NumberExprAST(0, {0, 0});
+
   auto cond = dummyNum->codegen(loopScope);
 
   cond = Builder->CreateICmpEQ(
