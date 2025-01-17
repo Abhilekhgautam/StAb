@@ -3,8 +3,7 @@ StAb - A General Purpose, Imperative, Static Typed Programming Language.
 # Hello World
 
 ```
- fn main() -> void {
-    // println adds a new line automatically
+ fn main() {
     println("Hello, World")
  }
 ```
@@ -75,11 +74,8 @@ input(x);
 
  - `int`as a type.
  - Support for `for`, `while` and `loop` construct.
- - No class or struct (struct will be implemented)
- - Support for Array added.
- - Produces both Object and Executable.
+ - Support for Array.
  - Supports printing to standard output using `println`
  - Supports reading input from the console using `input`
- - Checks for the existence of the `main` function
  - Support for `if else` statement
- - Improved Error Reporting
+
