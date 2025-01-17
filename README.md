@@ -19,7 +19,7 @@ StAb - A General Purpose, Imperative, Static Typed Programming Language.
 ## While Loop
 
 ```
-fn main() -> void{
+fn main() {
   int x = 5;
   while x {
     x = x - 1;
@@ -30,7 +30,7 @@ fn main() -> void{
 ## loop : Infinite looping construct 
 
 ```
-fn main() -> void{ 
+fn main() { 
  // infinite loop
  loop {
     println("Hello,World");
