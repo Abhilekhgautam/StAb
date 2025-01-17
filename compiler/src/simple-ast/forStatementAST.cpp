@@ -1,5 +1,5 @@
 #include "./ast.h"
-#include <llvm-18/llvm/IR/BasicBlock.h>
+#include <llvm/IR/BasicBlock.h>
 
 namespace STAB {
 llvm::Value *ForStatementAST::codegen(Scope *s) {

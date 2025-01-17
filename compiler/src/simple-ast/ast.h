@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <fstream>
-#include <llvm-18/llvm/Support/Casting.h>
+#include <llvm/Support/Casting.h>
 #include <stdexcept>
 #ifndef STAB_AST_H
 #define STAB_AST_H

@@ -4,7 +4,7 @@
 
 #include "scope.hpp"
 #include "../globals.h"
-#include <llvm-18/llvm/IR/BasicBlock.h>
+#include <llvm/IR/BasicBlock.h>
 #include <optional>
 
 namespace STAB {
