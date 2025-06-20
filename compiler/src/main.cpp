@@ -28,7 +28,7 @@ soon
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetOptions.h"
+#include "llvm/TargetParser/Triple.h"
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Value.h>
 #include <vector>
@@ -98,6 +98,7 @@ int main(int argc, char *argv[]) {
             true);
       return -1;
     }
+    TheModule->print(llvm::errs(), nullptr);
     LLVMInitializeAllTargetInfos();
     LLVMInitializeAllTargets();
     LLVMInitializeAllTargetMCs();
@@ -120,7 +121,7 @@ int main(int argc, char *argv[]) {
         TargetTriple, CPU, Features, opt, llvm::Reloc::PIC_);
 
     TheModule->setDataLayout(TargetMachine->createDataLayout());
-    TheModule->setTargetTriple(TargetTriple);
+    TheModule->setTargetTriple(llvm::Triple(TargetTriple));
 
     auto Filename = "output.o";
     std::error_code EC;
