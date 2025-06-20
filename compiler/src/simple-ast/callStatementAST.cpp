@@ -16,10 +16,8 @@ llvm::Value *STAB::CallStatementAST::codegen(Scope *s) {
   if (Callee == "println") {
     auto printlnFunc = TheModule->getOrInsertFunction(
         "println",
-        llvm::FunctionType::get(
-            llvm::IntegerType::getInt32Ty(*TheContext),
-            llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0),
-            true));
+        llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext),
+                                llvm::PointerType::get(*TheContext, 0), true));
     std::vector<llvm::Value *> ArgsV;
     for (unsigned i = 0, e = Args.size(); i != e; ++i) {
       if (i == 0 && Args[0]->getType() == "string") {
@@ -41,10 +39,8 @@ llvm::Value *STAB::CallStatementAST::codegen(Scope *s) {
   if (Callee == "print") {
     auto printFunc = TheModule->getOrInsertFunction(
         "print",
-        llvm::FunctionType::get(
-            llvm::IntegerType::getInt32Ty(*TheContext),
-            llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0),
-            true));
+        llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext),
+                                llvm::PointerType::get(*TheContext, 0), true));
     std::vector<llvm::Value *> ArgsV;
     for (unsigned i = 0, e = Args.size(); i != e; ++i) {
       if (i == 0 && Args[0]->getType() == "string") {
@@ -64,10 +60,8 @@ llvm::Value *STAB::CallStatementAST::codegen(Scope *s) {
   if (Callee == "input") {
     auto inputFunc = TheModule->getOrInsertFunction(
         "input",
-        llvm::FunctionType::get(
-            llvm::IntegerType::getInt32Ty(*TheContext),
-            llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0),
-            true));
+        llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext),
+                                llvm::PointerType::get(*TheContext, 0), true));
     std::vector<llvm::Value *> ArgsV;
     std::string stringFormat;
     for (unsigned i = 0, e = Args.size(); i != e; ++i) {
@@ -91,7 +85,7 @@ llvm::Value *STAB::CallStatementAST::codegen(Scope *s) {
       }
     }
 
-    ArgsV.insert(ArgsV.begin(), Builder->CreateGlobalStringPtr(stringFormat));
+    ArgsV.insert(ArgsV.begin(), Builder->CreateGlobalString(stringFormat));
     return Builder->CreateCall(inputFunc, ArgsV, "inputCall");
   }
 

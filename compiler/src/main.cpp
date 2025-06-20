@@ -98,7 +98,6 @@ int main(int argc, char *argv[]) {
             true);
       return -1;
     }
-    TheModule->print(llvm::errs(), nullptr);
     LLVMInitializeAllTargetInfos();
     LLVMInitializeAllTargets();
     LLVMInitializeAllTargetMCs();
@@ -118,7 +117,7 @@ int main(int argc, char *argv[]) {
     llvm::TargetOptions opt;
 
     auto TargetMachine = Target->createTargetMachine(
-        TargetTriple, CPU, Features, opt, llvm::Reloc::PIC_);
+        llvm::Triple(TargetTriple), CPU, Features, opt, llvm::Reloc::PIC_);
 
     TheModule->setDataLayout(TargetMachine->createDataLayout());
     TheModule->setTargetTriple(llvm::Triple(TargetTriple));

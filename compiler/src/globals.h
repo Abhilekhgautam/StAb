@@ -54,33 +54,33 @@ inline void initializeModule() {
 
 inline void init_builtins() {
   // Declare the printf function
-  llvm::FunctionType *printfType = llvm::FunctionType::get(
-      llvm::IntegerType::getInt32Ty(*TheContext),
-      {llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0)}, true);
+  llvm::FunctionType *printfType =
+      llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext),
+                              {llvm::PointerType::get(*TheContext, 0)}, true);
   llvm::Function *printfFunc = llvm::Function::Create(
       printfType, llvm::Function::ExternalLinkage, "printf", TheModule.get());
 
   // Declare and define the println function
-  llvm::FunctionType *printlnType = llvm::FunctionType::get(
-      llvm::Type::getVoidTy(*TheContext),
-      {llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0)}, true);
+  llvm::FunctionType *printlnType =
+      llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext),
+                              {llvm::PointerType::get(*TheContext, 0)}, true);
   llvm::Function *printlnFunc = llvm::Function::Create(
       printlnType, llvm::Function::ExternalLinkage, "println", TheModule.get());
 
   llvm::Function *printFunc = llvm::Function::Create(
       printlnType, llvm::Function::ExternalLinkage, "print", TheModule.get());
 
-  llvm::FunctionType *scanfType = llvm::FunctionType::get(
-      llvm::IntegerType::getInt32Ty(*TheContext),
-      {llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0)}, true);
+  llvm::FunctionType *scanfType =
+      llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext),
+                              {llvm::PointerType::get(*TheContext, 0)}, true);
   llvm::Function *scanfFunc = llvm::Function::Create(
       scanfType, llvm::Function::ExternalLinkage, "scanf", TheModule.get());
 
-  llvm::FunctionType *inputType = llvm::FunctionType::get(
-      llvm::IntegerType::getInt32Ty(*TheContext),
-      {llvm::PointerType::get(llvm::Type::getInt8Ty(*TheContext), 0),
-       llvm::PointerType::get(llvm::Type::getInt32Ty(*TheContext), 0)},
-      false);
+  llvm::FunctionType *inputType =
+      llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext),
+                              {llvm::PointerType::get(*TheContext, 0),
+                               llvm::PointerType::get(*TheContext, 0)},
+                              false);
   llvm::Function *inputFunc = llvm::Function::Create(
       inputType, llvm::Function::ExternalLinkage, "input", TheModule.get());
 
