@@ -113,6 +113,11 @@ llvm::Value *STAB::CallStatementAST::codegen(Scope *s) {
   for (const auto expr : Args) {
     args.emplace_back(expr->codegen(s));
   }
-  return Builder->CreateCall(calleeFn, args, "calltmp");
+  // if return type of the calleeFn is void:
+  llvm::Function *fn = TheModule->getFunction(Callee);
+  if (fn->getReturnType() == llvm::FunctionType::getVoidTy(*TheContext))
+    return Builder->CreateCall(calleeFn, args);
+  else
+    return Builder->CreateCall(calleeFn, args, "calltmp");
 }
 } // namespace STAB
