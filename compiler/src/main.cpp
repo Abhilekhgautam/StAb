@@ -5,6 +5,7 @@ act as an entry point and I hope to refactor this
 soon
 
 */
+
 #include "./lexer/lexer.hpp"
 #include "includes/scope.hpp"
 #include <cstring>
@@ -59,21 +60,40 @@ namespace fs = std::filesystem;
 int main(int argc, char *argv[]) {
   const bool debug = argc > 1 && std::strcmp(argv[1], "--debug") == 0;
 
-  if (argc != 2) {
-    color("red", "Invalid Command Usage", true);
-    color("green", "Usage: ");
-    color("blue", std::string(argv[0]) + " <file name>", true);
-    return -1;
+  bool shouldEmitIR = false;
+  // Default output filename
+  std::string outputFileName = "a.out";
+  std::string sourceFileName;
+
+  for (int i = 1; i < argc; ++i) {
+    std::string arg = argv[i];
+
+    if (arg == "-emit-llvm-ir")
+      shouldEmitIR = true;
+    else if (arg == "-o") {
+      if (i + 1 > argc) {
+        color("red", "Missing output filename after -o", true);
+        return 0;
+      } else {
+        outputFileName = argv[++i];
+      }
+    } else if (sourceFileName.empty()) {
+      sourceFileName = arg;
+    } else {
+      color("red", "Invalid argument", false);
+      color("blue", arg, true);
+      return 0;
+    }
   }
 
-  if (!fs::exists(argv[1])) {
+  if (!fs::exists(sourceFileName)) {
     color("red", "Error: ");
     color("blue", "No such file: ");
-    color("blue", std::string(argv[1]) + " exists", true);
+    color("blue", sourceFileName + " exists", true);
     return -1;
   }
 
-  std::fstream source_file(argv[1]);
+  std::fstream source_file(sourceFileName);
 
   initializeModule();
   STAB::Lexer lexer(source_file, debug);
@@ -98,17 +118,28 @@ int main(int argc, char *argv[]) {
             true);
       return -1;
     }
+    std::filesystem::path p(outputFileName);
+
+    if (shouldEmitIR) {
+      std::error_code EC;
+      std::string llPath = p.stem().string();
+      // Write IR to .ll file
+      llvm::raw_fd_ostream dest(llPath + ".ll", EC, llvm::sys::fs::OF_None);
+      TheModule->print(dest, nullptr);
+    }
+
     LLVMInitializeAllTargetInfos();
     LLVMInitializeAllTargets();
     LLVMInitializeAllTargetMCs();
     LLVMInitializeAllAsmParsers();
     LLVMInitializeAllAsmPrinters();
+
     auto TargetTriple = LLVMGetDefaultTargetTriple();
     std::string Error;
     auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, Error);
 
     if (!Target) {
-      llvm::errs() << Error;
+      llvm::errs() << "IDK" << Error;
       return 1;
     }
 
@@ -122,7 +153,7 @@ int main(int argc, char *argv[]) {
     TheModule->setDataLayout(TargetMachine->createDataLayout());
     TheModule->setTargetTriple(llvm::Triple(TargetTriple));
 
-    auto Filename = "output.o";
+    auto Filename = p.stem().string() + ".o";
     std::error_code EC;
     llvm::raw_fd_ostream dest(Filename, EC, llvm::sys::fs::OF_None);
 
@@ -140,8 +171,9 @@ int main(int argc, char *argv[]) {
     }
     pass.run(*TheModule);
     dest.flush();
-    const char *command = "clang output.o -o output";
+    std::string command = "clang " + Filename + " -o " + outputFileName;
 
-    std::system(command);
+    int val = std::system(command.c_str());
+    std::filesystem::remove(Filename);
   }
 }
