@@ -35,9 +35,9 @@ SRCS = src/lib/lib.cpp \
 
 OBJS = $(SRCS:.cpp=.o)
 
-all: prog
+all: stab
 
-prog: $(OBJS)
+stab: $(OBJS)
 > clang++ -g $(OBJS) -o $@ $(LLVM_LDFLAGS)
 
 %.o: %.cpp
