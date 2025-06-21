@@ -76,6 +76,10 @@ llvm::Value *ForStatementAST::codegen(Scope *s) {
   Builder->CreateBr(updateLoopVar);
   Builder->SetInsertPoint(updateLoopVar);
   llvm::Value *nextVal;
+
+  // This is because the iteration variable may change inside the loop body.
+  currentVal = Builder->CreateLoad(llvm::Type::getInt32Ty(*TheContext), *val);
+
   if (operation == "Add") {
     nextVal = Builder->CreateAdd(currentVal, loopStep, "nextvar");
   } else {
