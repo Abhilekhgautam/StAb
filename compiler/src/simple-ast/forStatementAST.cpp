@@ -9,7 +9,7 @@ llvm::Value *ForStatementAST::codegen(Scope *s) {
     return nullptr;
   }
 
-  Scope* forScope = new Scope(s, "loop");
+  Scope *forScope = new Scope(s, "loop");
 
   forScope->setFnBlock(F);
 
@@ -19,9 +19,6 @@ llvm::Value *ForStatementAST::codegen(Scope *s) {
 
   std::string operation;
 
-  if (loopStart >= loopEnd) {
-    return F;
-  }
   operation = "Add";
 
   // Set the value for iteration variable
@@ -29,23 +26,17 @@ llvm::Value *ForStatementAST::codegen(Scope *s) {
 
   auto var = forScope->getID(iterationVariable->getName());
 
-  if (!var) {
-    color("red", "Error: ");
-    color("blue", "No Such variable ");
-    std::cout << iterationVariable->getName();
-    color("blue", " in the current scope", true);
-    std::exit(0);
-  }
-
   auto val = std::get_if<llvm::AllocaInst *>(&var.value());
   Builder->CreateStore(loopStart, *val);
 
   llvm::BasicBlock *loopBody =
       llvm::BasicBlock::Create(*TheContext, "loopBody", F);
+
+  llvm::BasicBlock *updateLoopVar =
+      llvm::BasicBlock::Create(*TheContext, "updateLoopVar", F);
+
   llvm::BasicBlock *afterLoop =
       llvm::BasicBlock::Create(*TheContext, "afterLoop", F);
-  llvm::BasicBlock* updateLoopVar =
-      llvm::BasicBlock::Create(*TheContext, "updateLoop", F);
 
   forScope->setEntryBlock(updateLoopVar);
   forScope->setExitBlock(afterLoop);
@@ -65,21 +56,23 @@ llvm::Value *ForStatementAST::codegen(Scope *s) {
 
   // generate code for loop body
   for (const auto elt : body) {
-      if(forScope->break_found()) {
-          Builder->SetInsertPoint(afterLoop);
-          return F;
-      } else if(forScope->skip_found()){
-          Builder->SetInsertPoint(loopBody);
-      } else {
-          elt->codegen(forScope);
-      }
-  }
-  if(forScope->break_found()) {
+    if (forScope->break_found()) {
       Builder->SetInsertPoint(afterLoop);
       return F;
-  } else if (forScope->skip_found()){
+    } else if (forScope->skip_found()) {
       Builder->SetInsertPoint(loopBody);
+    } else {
+      elt->codegen(forScope);
+    }
   }
+
+  if (forScope->break_found()) {
+    Builder->SetInsertPoint(afterLoop);
+    return F;
+  } else if (forScope->skip_found()) {
+    Builder->SetInsertPoint(loopBody);
+  }
+
   Builder->CreateBr(updateLoopVar);
   Builder->SetInsertPoint(updateLoopVar);
   llvm::Value *nextVal;
@@ -88,6 +81,7 @@ llvm::Value *ForStatementAST::codegen(Scope *s) {
   } else {
     nextVal = Builder->CreateSub(currentVal, loopStep);
   }
+
   Builder->CreateStore(nextVal, *val);
 
   // compare the expr with 0
