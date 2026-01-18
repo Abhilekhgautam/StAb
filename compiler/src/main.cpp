@@ -11,6 +11,8 @@ soon
 #include <cstring>
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/IR/PassManager.h>
+#include <llvm/Passes/OptimizationLevel.h>
 #include <llvm/Support/CodeGen.h>
 #include <llvm/Target/TargetOptions.h>
 
@@ -32,7 +34,9 @@ soon
 #include "llvm/TargetParser/Triple.h"
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Value.h>
+#include <llvm/Passes/PassBuilder.h>
 #include <vector>
+
 #ifndef STAB_GLOBAL_H
 #include "globals.h"
 #endif
@@ -43,6 +47,7 @@ soon
 #ifndef HIGHLIGHT_TERM_
 #include "includes/highlight-term.hpp"
 #endif
+
 
 std::unique_ptr<llvm::LLVMContext> TheContext;
 std::unique_ptr<llvm::IRBuilder<>> Builder;
@@ -150,7 +155,8 @@ int main(int argc, char *argv[]) {
 
     auto TargetTriple = LLVMGetDefaultTargetTriple();
     std::string Error;
-    auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, Error);
+    auto triple = llvm::Triple();
+    auto Target = llvm::TargetRegistry::lookupTarget(triple, Error);
 
     if (!Target) {
       llvm::errs() << "IDK" << Error;
@@ -176,6 +182,14 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
+    llvm::ModuleAnalysisManager MAM;
+    llvm::PassBuilder PB;
+    
+    PB.registerModuleAnalyses(MAM);
+
+    llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(llvm::OptimizationLevel::O2);
+
+    MPM.run(*TheModule, MAM);
     llvm::legacy::PassManager pass;
     auto FileType = llvm::CodeGenFileType::ObjectFile;
 
