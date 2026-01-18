@@ -57,6 +57,14 @@ STAB::Scope *globalScope = new STAB::Scope(nullptr);
 STAB::Scope *currentScope = globalScope;
 namespace fs = std::filesystem;
 
+void displayHelp(){
+   std::cout << "Missing Source filename." << '\n';
+   std::cout << "Usage: stab [options] <filename>" << '\n';
+   std::cout << "Options:\n";
+   std::cout << "-emit-llvm-ir: view the generated llvm IR code\n";
+   std::cout << "-o <output_file_name>: provide the output file name\n";
+}
+
 int main(int argc, char *argv[]) {
   const bool debug = argc > 1 && std::strcmp(argv[1], "--debug") == 0;
 
@@ -65,6 +73,10 @@ int main(int argc, char *argv[]) {
   std::string outputFileName = "a.out";
   std::string sourceFileName;
 
+  if (argc <= 1) {
+    displayHelp();
+    return 0;
+  }
   for (int i = 1; i < argc; ++i) {
     std::string arg = argv[i];
 
@@ -73,6 +85,7 @@ int main(int argc, char *argv[]) {
     else if (arg == "-o") {
       if (i + 1 > argc) {
         color("red", "Missing output filename after -o", true);
+        displayHelp();
         return 0;
       } else {
         outputFileName = argv[++i];
@@ -82,6 +95,7 @@ int main(int argc, char *argv[]) {
     } else {
       color("red", "Invalid argument", false);
       color("blue", arg, true);
+      displayHelp();
       return 0;
     }
   }
