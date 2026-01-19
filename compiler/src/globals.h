@@ -53,13 +53,6 @@ inline void initializeModule() {
 }
 
 inline void init_builtins() {
-  // Declare the printf function
-  llvm::FunctionType *printfType =
-      llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext),
-                              {llvm::PointerType::get(*TheContext, 0)}, true);
-  llvm::Function *printfFunc = llvm::Function::Create(
-      printfType, llvm::Function::ExternalLinkage, "printf", TheModule.get());
-
   // Declare and define the println function
   llvm::FunctionType *printlnType =
       llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext),
@@ -73,8 +66,6 @@ inline void init_builtins() {
   llvm::FunctionType *scanfType =
       llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext),
                               {llvm::PointerType::get(*TheContext, 0)}, true);
-  llvm::Function *scanfFunc = llvm::Function::Create(
-      scanfType, llvm::Function::ExternalLinkage, "scanf", TheModule.get());
 
   llvm::FunctionType *inputType =
       llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext),
@@ -83,7 +74,7 @@ inline void init_builtins() {
                               false);
   llvm::Function *inputFunc = llvm::Function::Create(
       inputType, llvm::Function::ExternalLinkage, "input", TheModule.get());
-
+ /*
   llvm::BasicBlock *entryBlock =
       llvm::BasicBlock::Create(*TheContext, "entry", printlnFunc);
   Builder->SetInsertPoint(entryBlock);
@@ -119,7 +110,7 @@ inline void init_builtins() {
   // Call scanf inside input
   Builder->CreateCall(scanfFunc, {inputFormatArg, inputIntPtrArg});
   Builder->CreateRet(Builder->getInt32(0));
-
+*/
   // llvm::Type *i8Type = llvm::Type::getInt8Ty(*TheContext);
   // std::vector<llvm::Type*> argTypesInt8Ptr(1, llvm::PointerType::get(i8Type,
   // 0)); llvm::FunctionType* ft =
@@ -130,14 +121,13 @@ inline void init_builtins() {
   // auto i = f->arg_begin();
   // if (i != f->arg_end())
   //	  i->setName("String");
-
   printlnFunc->setCallingConv(llvm::CallingConv::C);
   printFunc->setCallingConv(llvm::CallingConv::C);
   inputFunc->setCallingConv(llvm::CallingConv::C);
-  fnBlocks.emplace_back(printfFunc);
+  //fnBlocks.emplace_back(printfFunc);
   fnBlocks.emplace_back(printlnFunc);
   fnBlocks.emplace_back(printFunc);
-  fnBlocks.emplace_back(scanfFunc);
+  //fnBlocks.emplace_back(scanfFunc);
   fnBlocks.emplace_back(inputFunc);
 }
 #endif
