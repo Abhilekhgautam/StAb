@@ -15,7 +15,7 @@ soon
 #include <llvm/Passes/OptimizationLevel.h>
 #include <llvm/Support/CodeGen.h>
 #include <llvm/Target/TargetOptions.h>
-
+#include <format>
 #include <filesystem>
 #include <fstream>
 #include <map>
@@ -36,6 +36,7 @@ soon
 #include <llvm/IR/Value.h>
 #include <llvm/Passes/PassBuilder.h>
 #include <vector>
+#include <cstdlib>
 
 #ifndef STAB_GLOBAL_H
 #include "globals.h"
@@ -61,6 +62,8 @@ STAB::FunctionAST *__start__fn;
 STAB::Scope *globalScope = new STAB::Scope(nullptr);
 STAB::Scope *currentScope = globalScope;
 namespace fs = std::filesystem;
+
+const std::string LIB_PATH = std::getenv("STAB_IO_LIB");
 
 void displayHelp(){
    std::cout << "Missing Source filename." << '\n';
@@ -139,13 +142,6 @@ int main(int argc, char *argv[]) {
     }
     std::filesystem::path p(outputFileName);
 
-    if (shouldEmitIR) {
-      std::error_code EC;
-      std::string llPath = p.stem().string();
-      // Write IR to .ll file
-      llvm::raw_fd_ostream dest(llPath + ".ll", EC, llvm::sys::fs::OF_None);
-      TheModule->print(dest, nullptr);
-    }
 
     LLVMInitializeAllTargetInfos();
     LLVMInitializeAllTargets();
@@ -155,7 +151,9 @@ int main(int argc, char *argv[]) {
 
     auto TargetTriple = LLVMGetDefaultTargetTriple();
     std::string Error;
-    auto triple = llvm::Triple();
+
+    auto triple = llvm::Triple(TargetTriple);
+
     auto Target = llvm::TargetRegistry::lookupTarget(triple, Error);
 
     if (!Target) {
@@ -166,9 +164,10 @@ int main(int argc, char *argv[]) {
     auto CPU = "generic";
     auto Features = "";
     llvm::TargetOptions opt;
-
+    
+    
     auto TargetMachine = Target->createTargetMachine(
-        llvm::Triple(TargetTriple), CPU, Features, opt, llvm::Reloc::PIC_);
+        triple, CPU, Features, opt, llvm::Reloc::PIC_);
 
     TheModule->setDataLayout(TargetMachine->createDataLayout());
     TheModule->setTargetTriple(llvm::Triple(TargetTriple));
@@ -182,14 +181,38 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
+    llvm::LoopAnalysisManager LAM;
+    llvm::FunctionAnalysisManager FAM;
+    llvm::CGSCCAnalysisManager CGAM;
     llvm::ModuleAnalysisManager MAM;
+
+     // Create the new pass manager builder.
+     // Take a look at the PassBuilder constructor parameters for more
+    // customization, e.g. specifying a TargetMachine or various debugging
+    // options.
     llvm::PassBuilder PB;
-    
+
+    // Register all the basic analyses with the managers.
     PB.registerModuleAnalyses(MAM);
+    PB.registerCGSCCAnalyses(CGAM);
+    PB.registerFunctionAnalyses(FAM);
+    PB.registerLoopAnalyses(LAM);
+    PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
 
+   // Create the pass manager.
+   // This one corresponds to a typical -O2 optimization pipeline.
     llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(llvm::OptimizationLevel::O2);
+   // Optimize the IR!
+   MPM.run(*TheModule, MAM);
+   if (shouldEmitIR) {
+      std::error_code EC;
+      std::string llPath = p.stem().string();
+      // Write IR to .ll file
+      llvm::raw_fd_ostream dest(llPath + ".ll", EC, llvm::sys::fs::OF_None);
+      TheModule->print(dest, nullptr);
+      return 0;
+    }
 
-    MPM.run(*TheModule, MAM);
     llvm::legacy::PassManager pass;
     auto FileType = llvm::CodeGenFileType::ObjectFile;
 
@@ -197,9 +220,10 @@ int main(int argc, char *argv[]) {
       llvm::errs() << "TargetMachine can't emit a file of this type";
       return 1;
     }
+
     pass.run(*TheModule);
     dest.flush();
-    std::string command = "clang " + Filename + " -o " + outputFileName;
+    std::string command = std::format("clang {} {} -o {}", LIB_PATH, Filename, outputFileName);
 
     int val = std::system(command.c_str());
     std::filesystem::remove(Filename);
