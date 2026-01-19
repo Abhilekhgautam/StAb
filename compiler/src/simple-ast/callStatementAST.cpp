@@ -3,6 +3,7 @@
 //
 
 #include "./ast.h"
+#include <llvm/IR/Constants.h>
 #include <regex>
 
 std::string replaceBracesWithPercentD(const std::string &input) {
@@ -59,11 +60,16 @@ llvm::Value *STAB::CallStatementAST::codegen(Scope *s) {
 
   if (Callee == "input") {
     auto inputFunc = TheModule->getOrInsertFunction(
-        "input",
+        "input_ints",
         llvm::FunctionType::get(llvm::IntegerType::getInt32Ty(*TheContext),
                                 llvm::PointerType::get(*TheContext, 0), true));
     std::vector<llvm::Value *> ArgsV;
-    std::string stringFormat;
+    llvm::Value* count =
+    llvm::ConstantInt::get(
+        llvm::Type::getInt32Ty(*TheContext),
+       Args.size() 
+    );
+    ArgsV.push_back(count);
     for (unsigned i = 0, e = Args.size(); i != e; ++i) {
       if (Args[i]->getType() == "int") {
         STAB::VariableExprAST *variable =
@@ -80,12 +86,8 @@ llvm::Value *STAB::CallStatementAST::codegen(Scope *s) {
         if (auto val = std::get_if<llvm::AllocaInst *>(&var.value())) {
           ArgsV.emplace_back(*val);
         }
-
-        stringFormat += "%d";
       }
     }
-
-    ArgsV.insert(ArgsV.begin(), Builder->CreateGlobalString(stringFormat));
     return Builder->CreateCall(inputFunc, ArgsV, "inputCall");
   }
 

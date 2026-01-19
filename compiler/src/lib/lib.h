@@ -15,7 +15,7 @@
 
 #include <string>
 
-extern "C++" DECLSPEC void println(char* str, ...);
-extern "C++" DECLSPEC void print(char* str, ...);
-
+extern "C" DECLSPEC void println(char* str, ...);
+extern "C" DECLSPEC void print(char* str, ...);
+extern "C" DECLSPEC void input_ints(int count, ...);
 #endif //STAB_LIB_H
