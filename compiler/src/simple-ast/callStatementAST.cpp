@@ -26,7 +26,6 @@ llvm::Value *STAB::CallStatementAST::codegen(Scope *s) {
             dynamic_cast<STAB::StringExprAST *>(Args[0]);
         std::string val = strVal->getVal();
         auto replaced_val = replaceBracesWithPercentD(val);
-        replaced_val += '\n';
         Args[0] = new STAB::StringExprAST(replaced_val, loc);
       }
       // add new line for println
