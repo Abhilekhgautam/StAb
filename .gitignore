@@ -6,3 +6,7 @@
 prog
 # ignore parser output
 *.output
+#ignore generated .out file
+*.out
+#ignore the compiler build
+stab
