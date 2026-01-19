@@ -1,7 +1,7 @@
 .RECIPEPREFIX = >
 
 LLVM_CONFIG = llvm-config
-LLVM_CXXFLAGS = `$(LLVM_CONFIG) --cxxflags` -fexceptions -frtti
+LLVM_CXXFLAGS = `$(LLVM_CONFIG) --cxxflags` -fexceptions -frtti -std=c++20
 LLVM_LDFLAGS = `$(LLVM_CONFIG) --ldflags --system-libs --libs all`
 
 SRCS = src/lib/lib.cpp \
